@@ -19,9 +19,15 @@ export class DefaultBuilder {
   }
 
   protected typeName(name: string, plural = false) {
+    const casing =
+      this.options.case === 'camelCase' ? 'pascalCase' : this.options.case;
     if (plural) {
-      return pluralizeTransform(name, this.options.case);
+      return pluralizeTransform(name, casing);
     }
-    return transform(singular(name), this.options.case);
+    return transform(singular(name), casing);
+  }
+
+  protected columnName(name: string) {
+    return transform(name, this.options.case);
   }
 }
