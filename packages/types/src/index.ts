@@ -8,6 +8,7 @@ export interface ForeignKeyMetadata {
 
 export interface TableMetadata {
   name: string;
+  primaryKey: string | null;
   columns: Record<string, ColumnMetadata>;
   candidateKeys: Record<string, string[]>;
   foreignKeys: Record<string, ForeignKeyMetadata>;

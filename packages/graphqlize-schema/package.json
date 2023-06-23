@@ -1,5 +1,5 @@
 {
-  "name": "@vdtn359/sql-mapper",
+  "name": "@vdtn359/graphqlize-schema",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -12,15 +12,20 @@
     "build": "tsc"
   },
   "dependencies": {
-    "knex": "^2.4.2",
-    "knex-schema-inspector": "^3.0.1"
-  },
-  "devDependencies": {
-    "@vdtn359/graphqlize-types": "workspace:*"
+    "lodash": "^4.17.21",
+    "graphql-compose": "^9.0.10",
+    "@pothos/core": "^3.30.0",
+    "pluralize": "^8.0.0",
+    "change-case": "^4.1.2"
   },
   "peerDependencies": {
     "graphql": "^16",
     "graphql-scalars": "^1.22.2"
+  },
+  "devDependencies": {
+    "@vdtn359/graphqlize-types": "^1.0.0",
+    "@types/pluralize": "^0.0.29",
+    "@types/lodash": "^4.14.195"
   },
   "keywords": [],
   "author": "",

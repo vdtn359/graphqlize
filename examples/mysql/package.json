@@ -1,5 +1,6 @@
 {
-  "name": "@vdtn359/sql-mapper",
+  "name": "@vdtn359/mysql-graphqlize-example",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -12,15 +13,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "knex": "^2.4.2",
-    "knex-schema-inspector": "^3.0.1"
-  },
-  "devDependencies": {
-    "@vdtn359/graphqlize-types": "workspace:*"
-  },
-  "peerDependencies": {
-    "graphql": "^16",
-    "graphql-scalars": "^1.22.2"
+    "@vdtn359/graphqlize-schema": "workspace:*",
+    "@vdtn359/sql-mapper": "workspace:*",
+    "graphql-yoga": "^4.0.2",
+    "mysql2": "^3.4.0"
   },
   "keywords": [],
   "author": "",

@@ -49,6 +49,7 @@ export class SqlMapper implements DatabaseMapper {
       this.tables[table] = {
         name: table,
         columns: {},
+        primaryKey,
         candidateKeys: {
           ...(primaryKey && {
             [primaryKey]: [primaryKey],

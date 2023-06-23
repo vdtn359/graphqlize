@@ -1,5 +1,6 @@
 {
-  "name": "@vdtn359/graphqlize",
+  "name": "@vdtn359/graphqlize-parent",
+  "private": true,
   "version": "0.0.0",
   "description": "",
   "scripts": {
