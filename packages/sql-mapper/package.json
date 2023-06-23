@@ -1,0 +1,25 @@
+{
+  "name": "@vdtn359/sql-mapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@vdtn359/graphqlize-types": "workspace:*",
+    "graphql": "^16.7.1",
+    "graphql-scalars": "^1.22.2",
+    "knex": "^2.4.2",
+    "mysql2": "^3.4.0",
+    "knex-schema-inspector": "^3.0.1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

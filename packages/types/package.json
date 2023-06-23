@@ -1,0 +1,21 @@
+{
+  "name": "@vdtn359/graphqlize-types",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc"
+  },
+  "peerDependencies": {
+    "graphql": "^16",
+    "graphql-scalars": "^1.22.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
