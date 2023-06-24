@@ -1,4 +1,4 @@
-import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
+import type { DatabaseMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
 import { DefaultBuilder } from './default';
@@ -6,21 +6,55 @@ import { SchemaOptionType } from './options';
 import { mergeTransform } from '../utils';
 import { GetInputBuilder } from './get-input';
 import { ListInputBuilder } from './list-input';
+import { GetResolver } from '../resolvers/get';
+import { DefaultResolver } from '../resolvers/default';
+import { DataLoaderManager } from '../resolvers/data-loader-manager';
 
 export class TableBuilder extends DefaultBuilder {
   private readonly metadata: TableMetadata;
+
+  private readonly mapper: DatabaseMapper;
+
+  private readonly getResolver: DefaultResolver;
+
+  private readonly columnLookup: Record<string, string> = {};
 
   constructor({
     composer,
     options,
     metadata,
+    mapper,
   }: {
     composer: SchemaComposer;
     options: SchemaOptionType;
     metadata: TableMetadata;
+    mapper: DatabaseMapper;
   }) {
     super({ composer, options });
     this.metadata = metadata;
+    this.mapper = mapper;
+
+    for (const columnName of Object.keys(this.metadata.columns)) {
+      this.columnLookup[this.columnName(columnName)] = columnName;
+    }
+
+    for (const compositeKeyName of Object.keys(this.metadata.columns)) {
+      const keyTypeName = this.columnName(compositeKeyName);
+      if (!this.columnLookup[keyTypeName]) {
+        this.columnLookup[keyTypeName] = compositeKeyName;
+      }
+    }
+    const dataLoaderManager = new DataLoaderManager(this.metadata, mapper);
+
+    this.getResolver = new GetResolver({
+      mapper: this.mapper,
+      tableBuilder: this,
+      dataLoaderManager,
+    });
+  }
+
+  reverseLookup(fieldName: string) {
+    return this.columnLookup[fieldName];
   }
 
   buildObjectTC() {
@@ -33,7 +67,7 @@ export class TableBuilder extends DefaultBuilder {
           const type = columnMetadata.type as any;
           tc.addFields({
             [this.columnName(columnName)]: {
-              type: columnMetadata.nullable ? new GraphQLNonNull(type) : type,
+              type: columnMetadata.nullable ? type : new GraphQLNonNull(type),
             },
           });
         }
@@ -91,7 +125,8 @@ export class TableBuilder extends DefaultBuilder {
     this.composer.Query.addFields({
       [methodName]: {
         type: objectType,
-        resolve: () => null,
+        resolve: (parent, args, context) =>
+          this.getResolver.resolve(parent, args ?? {}, context),
       },
     });
     const getInputSchema = getInputBuilder.buildSchema();
@@ -114,5 +149,9 @@ export class TableBuilder extends DefaultBuilder {
         args: listInputBuilder.buildSchema(),
       },
     });
+  }
+
+  getTableMetadata() {
+    return this.metadata;
   }
 }

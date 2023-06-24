@@ -27,6 +27,7 @@ export class SchemaBuilder extends DefaultBuilder {
           composer: this.composer,
           options: this.options,
           metadata: tableMetadata,
+          mapper: this.mapper,
         });
 
         tableBuilder.buildSchema();

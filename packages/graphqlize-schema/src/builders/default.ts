@@ -41,7 +41,10 @@ export class DefaultBuilder {
     return singularName;
   }
 
-  protected columnName(name: string) {
-    return transform(name, this.options.case);
+  columnName(name: string) {
+    return name
+      .split('__')
+      .map((part) => transform(part, this.options.case))
+      .join('__');
   }
 }

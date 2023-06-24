@@ -12,6 +12,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "dataloader": "^2.2.2",
     "lodash": "^4.17.21",
     "graphql-compose": "^9.0.10",
     "@pothos/core": "^3.30.0",

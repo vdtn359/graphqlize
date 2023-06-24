@@ -60,8 +60,9 @@ export class GetInputBuilder extends DefaultBuilder {
           });
         } else {
           const candidateTC = this.buildCompositeKeyTC(candidateKeys);
+
           tc.addFields({
-            [candidateTC.getTypeName()]: {
+            [this.columnName(keyName)]: {
               type: candidateTC.getType(),
             },
           });

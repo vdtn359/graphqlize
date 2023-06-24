@@ -11,6 +11,7 @@ export interface TableMetadata {
   primaryKey: string | null;
   columns: Record<string, ColumnMetadata>;
   candidateKeys: Record<string, string[]>;
+  compositeKeys: Record<string, string[]>;
   foreignKeys: Record<string, ForeignKeyMetadata>;
 }
 
@@ -23,6 +24,10 @@ export interface ColumnMetadata {
   rawType: string;
 }
 
+export interface TableMapper<T> {
+  findByKeys(keys: readonly Record<string, any>[]): Promise<T[]>;
+}
+
 export interface DatabaseMapper {
   getTableMetadata(table: string): Promise<TableMetadata>;
 
@@ -33,4 +38,6 @@ export interface DatabaseMapper {
   getColumn(table: string, column: string): Promise<ColumnMetadata>;
 
   mapColumn(table: string, column: string): Promise<GraphQLType>;
+
+  getTableMapper<T>(table: string): TableMapper<T>;
 }
