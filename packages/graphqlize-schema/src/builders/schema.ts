@@ -6,7 +6,9 @@ import { DefaultBuilder } from './default';
 import { TableBuilder } from './table';
 
 export class SchemaBuilder extends DefaultBuilder {
-  constructor(
+  private tableBuilders: Record<string, TableBuilder> = {};
+
+  private constructor(
     private readonly mapper: DatabaseMapper,
     options?: SchemaOptions
   ) {
@@ -16,24 +18,43 @@ export class SchemaBuilder extends DefaultBuilder {
     });
   }
 
-  async toSchema() {
-    const tables = await this.mapper.listTables();
+  static async init(mapper: DatabaseMapper, options?: SchemaOptions) {
+    const schemaBuilder = new SchemaBuilder(mapper, options);
+    const tables = await mapper.listTables();
 
     await Promise.all(
       tables.map(async (table) => {
-        const tableMetadata = await this.mapper.getTableMetadata(table);
+        const tableMetadata = await mapper.getTableMetadata(table);
 
-        const tableBuilder = new TableBuilder({
-          composer: this.composer,
-          options: this.options,
+        schemaBuilder.tableBuilders[table] = new TableBuilder({
+          composer: schemaBuilder.composer,
+          options: schemaBuilder.options,
+          schemaBuilder,
           metadata: tableMetadata,
-          mapper: this.mapper,
+          mapper,
         });
-
-        tableBuilder.buildSchema();
       })
     );
 
+    for (const tableBuilder of Object.values(schemaBuilder.tableBuilders)) {
+      tableBuilder.buildSchema();
+    }
+
+    for (const tableBuilder of Object.values(schemaBuilder.tableBuilders)) {
+      tableBuilder.buildObjectAssociation();
+    }
+
+    return schemaBuilder;
+  }
+
+  getTableBuilder(table: string) {
+    if (!this.tableBuilders[table]) {
+      throw new Error(`Table ${table} not found`);
+    }
+    return this.tableBuilders[table];
+  }
+
+  async toSchema() {
     return this.composer.buildSchema();
   }
 }

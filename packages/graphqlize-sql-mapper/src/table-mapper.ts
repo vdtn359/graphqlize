@@ -11,7 +11,9 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     if (!keys.length) {
       return [];
     }
-    const queryBuilder = this.knex(this.tableMetadata.name).select();
+    const queryBuilder = this.knex(this.tableMetadata.name)
+      .select()
+      .limit(keys.length);
 
     const columns = Object.keys(keys[0]);
 

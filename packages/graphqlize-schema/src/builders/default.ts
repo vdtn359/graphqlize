@@ -1,4 +1,5 @@
 import { SchemaComposer } from 'graphql-compose';
+import pluralize from 'pluralize';
 import { SchemaOptionType } from './options';
 import {
   mergeTransform,
@@ -41,10 +42,12 @@ export class DefaultBuilder {
     return singularName;
   }
 
-  columnName(name: string) {
-    return name
+  columnName(name: string, plural = false) {
+    const transformedName = name
       .split('__')
       .map((part) => transform(part, this.options.case))
       .join('__');
+
+    return plural ? pluralize(transformedName) : transformedName;
   }
 }

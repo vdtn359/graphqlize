@@ -49,18 +49,23 @@ export class SqlMapper implements DatabaseMapper {
       }))
     );
 
-    for (const { table, columns, primaryKey, foreignKeys } of result) {
+    for (const tableInfo of result) {
+      const { table, columns, foreignKeys } = tableInfo;
+      const hasId = columns.find((column) => column.name === 'id');
+      if (!tableInfo.primaryKey && hasId) {
+        tableInfo.primaryKey = 'id';
+      }
       this.tables[table] = {
         name: table,
         columns: {},
-        primaryKey,
+        primaryKey: null,
         candidateKeys: {},
         compositeKeys: {},
         belongsTo: {},
         hasOne: {},
         hasMany: {},
       };
-      this.buildCandidateKeys(columns, table);
+      this.buildCandidateKeys(tableInfo.primaryKey, columns, table);
       this.buildBelongsTo(foreignKeys, table);
     }
 
@@ -69,7 +74,15 @@ export class SqlMapper implements DatabaseMapper {
     }
   }
 
-  private buildCandidateKeys(columns: Column[], table: string) {
+  private buildCandidateKeys(
+    primaryKey: string | null,
+    columns: Column[],
+    table: string
+  ) {
+    if (primaryKey) {
+      this.tables[table].candidateKeys[primaryKey] = [primaryKey];
+    }
+
     for (const column of columns) {
       this.tables[table].columns[column.name] = {
         name: column.name,

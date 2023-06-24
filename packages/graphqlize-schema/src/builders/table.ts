@@ -9,6 +9,7 @@ import { ListInputBuilder } from './list-input';
 import { GetResolver } from '../resolvers/get';
 import { DefaultResolver } from '../resolvers/default';
 import { DataLoaderManager } from '../resolvers/data-loader-manager';
+import type { SchemaBuilder } from './schema';
 
 export class TableBuilder extends DefaultBuilder {
   private readonly metadata: TableMetadata;
@@ -17,22 +18,27 @@ export class TableBuilder extends DefaultBuilder {
 
   private readonly getResolver: DefaultResolver;
 
+  private readonly schemaBuilder: SchemaBuilder;
+
   private readonly columnLookup: Record<string, string> = {};
 
   constructor({
     composer,
     options,
     metadata,
+    schemaBuilder,
     mapper,
   }: {
     composer: SchemaComposer;
     options: SchemaOptionType;
     metadata: TableMetadata;
+    schemaBuilder: SchemaBuilder;
     mapper: DatabaseMapper;
   }) {
     super({ composer, options });
     this.metadata = metadata;
     this.mapper = mapper;
+    this.schemaBuilder = schemaBuilder;
 
     for (const columnName of Object.keys(this.metadata.columns)) {
       this.columnLookup[this.columnName(columnName)] = columnName;
@@ -73,6 +79,60 @@ export class TableBuilder extends DefaultBuilder {
         }
       }
     );
+  }
+
+  buildObjectAssociation() {
+    this.buildBelongsToAssociation();
+    this.buildHasManyAssociation();
+  }
+
+  buildBelongsToAssociation() {
+    const tc = this.composer.getOTC(this.typeName(this.metadata.name));
+    for (const [constraintName, foreignKey] of Object.entries(
+      this.metadata.belongsTo
+    )) {
+      const { referenceTable, columns } = foreignKey;
+      if (columns.length > 1) {
+        // TODO support multi foreign keys
+        return;
+      }
+      const [column] = columns;
+      const isNullable = this.metadata.columns[column].nullable;
+
+      const referencedTypeBuilder =
+        this.schemaBuilder.getTableBuilder(referenceTable);
+      const referencedType = referencedTypeBuilder.buildObjectTC();
+
+      tc.addFields({
+        [this.columnName(constraintName)]: {
+          type: isNullable
+            ? referencedType
+            : new GraphQLNonNull(referencedType.getType()),
+        },
+      });
+    }
+  }
+
+  buildHasManyAssociation() {
+    const tc = this.composer.getOTC(this.typeName(this.metadata.name));
+    for (const [constraintName, foreignKey] of Object.entries(
+      this.metadata.hasMany
+    )) {
+      const { referenceTable, columns } = foreignKey;
+      if (columns.length > 1) {
+        // TODO support multi foreign keys
+        return;
+      }
+      const referencedTypeBuilder =
+        this.schemaBuilder.getTableBuilder(referenceTable);
+      const referencedType = referencedTypeBuilder.buildObjectTC();
+
+      tc.addFields({
+        [this.columnName(constraintName, true)]: {
+          type: new GraphQLList(new GraphQLNonNull(referencedType.getType())),
+        },
+      });
+    }
   }
 
   buildMultiObjectTC() {

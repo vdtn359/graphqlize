@@ -4,7 +4,7 @@ import { SchemaBuilder } from '@vdtn359/graphqlize-schema';
 import { SqlMapper } from '@vdtn359/graphqlize-sql-mapper';
 
 async function run() {
-  const builder = new SchemaBuilder(
+  const builder = await SchemaBuilder.init(
     await SqlMapper.create({
       client: 'mysql2',
       connection: {
