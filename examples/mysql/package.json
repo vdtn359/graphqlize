@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@vdtn359/graphqlize-schema": "workspace:*",
-    "@vdtn359/sql-mapper": "workspace:*",
+    "@vdtn359/graphqlize-sql-mapper": "workspace:*",
     "graphql-yoga": "^4.0.2",
     "mysql2": "^3.4.0"
   },

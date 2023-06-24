@@ -1,4 +1,4 @@
-import type { DatabaseMapper } from '@vdtn359/graphqlize-types';
+import type { DatabaseMapper } from '@vdtn359/graphqlize-mapper';
 import { schemaComposer } from 'graphql-compose';
 import { merge } from 'lodash';
 import { DEFAULT_OPTIONS, SchemaOptions } from './options';

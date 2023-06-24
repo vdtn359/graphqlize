@@ -1,4 +1,4 @@
-import type { TableMetadata } from '@vdtn359/graphqlize-types';
+import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
 import { DefaultBuilder } from './default';

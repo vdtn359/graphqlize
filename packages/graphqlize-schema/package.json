@@ -23,7 +23,7 @@
     "graphql-scalars": "^1.22.2"
   },
   "devDependencies": {
-    "@vdtn359/graphqlize-types": "^1.0.0",
+    "@vdtn359/graphqlize-mapper": "^1.0.0",
     "@types/pluralize": "^0.0.29",
     "@types/lodash": "^4.14.195"
   },

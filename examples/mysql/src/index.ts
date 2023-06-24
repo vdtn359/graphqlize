@@ -1,7 +1,7 @@
 import { createYoga } from 'graphql-yoga';
 import { createServer } from 'node:http';
 import { SchemaBuilder } from '@vdtn359/graphqlize-schema';
-import { SqlMapper } from '@vdtn359/sql-mapper';
+import { SqlMapper } from '@vdtn359/graphqlize-sql-mapper';
 
 async function run() {
   const builder = new SchemaBuilder(

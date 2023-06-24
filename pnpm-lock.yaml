@@ -101,15 +101,24 @@ importers:
       '@vdtn359/graphqlize-schema':
         specifier: workspace:*
         version: link:../../packages/graphqlize-schema
-      '@vdtn359/sql-mapper':
+      '@vdtn359/graphqlize-sql-mapper':
         specifier: workspace:*
-        version: link:../../packages/sql-mapper
+        version: link:../../packages/graphqlize-sql-mapper
       graphql-yoga:
         specifier: ^4.0.2
         version: 4.0.2(graphql@16.7.1)
       mysql2:
         specifier: ^3.4.0
         version: 3.4.0
+
+  packages/graphqlize-mapper:
+    dependencies:
+      graphql:
+        specifier: ^16
+        version: 16.7.1
+      graphql-scalars:
+        specifier: ^1.22.2
+        version: 1.22.2(graphql@16.7.1)
 
   packages/graphqlize-schema:
     dependencies:
@@ -141,11 +150,11 @@ importers:
       '@types/pluralize':
         specifier: ^0.0.29
         version: 0.0.29
-      '@vdtn359/graphqlize-types':
+      '@vdtn359/graphqlize-mapper':
         specifier: ^1.0.0
-        version: link:../types
+        version: link:../graphqlize-mapper
 
-  packages/sql-mapper:
+  packages/graphqlize-sql-mapper:
     dependencies:
       graphql:
         specifier: ^16
@@ -160,18 +169,9 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
     devDependencies:
-      '@vdtn359/graphqlize-types':
+      '@vdtn359/graphqlize-mapper':
         specifier: workspace:*
-        version: link:../types
-
-  packages/types:
-    dependencies:
-      graphql:
-        specifier: ^16
-        version: 16.7.1
-      graphql-scalars:
-        specifier: ^1.22.2
-        version: 1.22.2(graphql@16.7.1)
+        version: link:../graphqlize-mapper
 
 packages:
 

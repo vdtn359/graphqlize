@@ -1,5 +1,5 @@
 {
-  "name": "@vdtn359/sql-mapper",
+  "name": "@vdtn359/graphqlize-sql-mapper",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
     "knex-schema-inspector": "^3.0.1"
   },
   "devDependencies": {
-    "@vdtn359/graphqlize-types": "workspace:*"
+    "@vdtn359/graphqlize-mapper": "workspace:*"
   },
   "peerDependencies": {
     "graphql": "^16",

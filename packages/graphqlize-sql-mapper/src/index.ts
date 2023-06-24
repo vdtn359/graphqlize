@@ -2,7 +2,7 @@ import type {
   ColumnMetadata,
   DatabaseMapper,
   TableMetadata,
-} from '@vdtn359/types';
+} from '@vdtn359/graphqlize-mapper';
 import schemaInspector from 'knex-schema-inspector';
 import { knex, Knex } from 'knex';
 import { GraphQLDateTime, GraphQLJSONObject } from 'graphql-scalars';
