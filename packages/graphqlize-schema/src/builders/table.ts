@@ -5,6 +5,7 @@ import { DefaultBuilder } from './default';
 import { SchemaOptionType } from './options';
 import { mergeTransform } from '../utils';
 import { GetInputBuilder } from './get-input';
+import { ListInputBuilder } from './list-input';
 
 export class TableBuilder extends DefaultBuilder {
   private readonly metadata: TableMetadata;
@@ -29,9 +30,10 @@ export class TableBuilder extends DefaultBuilder {
         for (const [columnName, columnMetadata] of Object.entries(
           this.metadata.columns
         )) {
+          const type = columnMetadata.type as any;
           tc.addFields({
             [this.columnName(columnName)]: {
-              type: columnMetadata.type as any,
+              type: columnMetadata.nullable ? new GraphQLNonNull(type) : type,
             },
           });
         }
@@ -53,7 +55,7 @@ export class TableBuilder extends DefaultBuilder {
           },
           limit: 'Int!',
           offset: 'Int!',
-          count: 'Int!',
+          count: 'Int',
         });
       }
     );
@@ -92,17 +94,24 @@ export class TableBuilder extends DefaultBuilder {
         resolve: () => null,
       },
     });
-    const schema = getInputBuilder.buildSchema();
-    if (schema) {
-      this.composer.Query.addFieldArgs(methodName, { by: schema.NonNull });
+    const getInputSchema = getInputBuilder.buildSchema();
+    if (getInputSchema) {
+      this.composer.Query.addFieldArgs(methodName, getInputSchema);
     }
   }
 
   buildListMethod(multiObjectType: ObjectTypeComposer) {
+    const listInputBuilder = new ListInputBuilder({
+      composer: this.composer,
+      options: this.options,
+      metadata: this.metadata,
+      tableBuilder: this,
+    });
     this.composer.Query.addFields({
       [this.listMethodName(multiObjectType)]: {
         type: new GraphQLNonNull(multiObjectType.getType()),
         resolve: () => null,
+        args: listInputBuilder.buildSchema(),
       },
     });
   }

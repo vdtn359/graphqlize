@@ -1,6 +1,11 @@
 import { SchemaComposer } from 'graphql-compose';
 import { SchemaOptionType } from './options';
-import { pluralizeTransform, singular, transform } from '../utils';
+import {
+  mergeTransform,
+  pluralizeTransform,
+  singular,
+  transform,
+} from '../utils';
 
 export class DefaultBuilder {
   protected composer: SchemaComposer;
@@ -18,13 +23,22 @@ export class DefaultBuilder {
     this.options = options;
   }
 
+  getTypeNameCasing(): SchemaOptionType['case'] {
+    return this.options.case === 'camelCase'
+      ? ('pascalCase' as const)
+      : this.options.case;
+  }
+
   protected typeName(name: string, plural = false) {
-    const casing =
-      this.options.case === 'camelCase' ? 'pascalCase' : this.options.case;
+    const casing = this.getTypeNameCasing();
+    const singularName = transform(singular(name), casing);
     if (plural) {
-      return pluralizeTransform(name, casing);
+      const pluralName = pluralizeTransform(name, casing);
+      if (pluralName === singularName) {
+        return mergeTransform([singularName, 'List'], casing);
+      }
     }
-    return transform(singular(name), casing);
+    return singularName;
   }
 
   protected columnName(name: string) {

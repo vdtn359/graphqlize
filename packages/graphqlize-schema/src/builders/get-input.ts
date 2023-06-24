@@ -27,19 +27,27 @@ export class GetInputBuilder extends DefaultBuilder {
     this.tableBuilder = tableBuilder;
   }
 
-  inputName(objectType: ObjectTypeComposer) {
-    return mergeTransform(
-      ['get', objectType.getTypeName(), 'input'],
-      this.options.case
-    );
+  filterName(objectType: ObjectTypeComposer) {
+    const casing = this.getTypeNameCasing();
+    return mergeTransform(['get', objectType.getTypeName(), 'filter'], casing);
   }
 
   buildSchema() {
+    const filter = this.buildFilter();
+    if (!filter) {
+      return null;
+    }
+    return {
+      by: filter.NonNull,
+    };
+  }
+
+  buildFilter() {
     const objectType = this.tableBuilder.buildObjectTC();
     if (!Object.keys(this.metadata.candidateKeys).length) {
       return null;
     }
-    return this.composer.getOrCreateITC(this.inputName(objectType), (tc) => {
+    return this.composer.getOrCreateITC(this.filterName(objectType), (tc) => {
       for (const [keyName, candidateKeys] of Object.entries(
         this.metadata.candidateKeys
       )) {
@@ -63,8 +71,7 @@ export class GetInputBuilder extends DefaultBuilder {
   }
 
   private getCompositeKeyNames(compositeKeys: string[]) {
-    const casing =
-      this.options.case === 'camelCase' ? 'pascalCase' : this.options.case;
+    const casing = this.getTypeNameCasing();
     return mergeTransform(
       [this.metadata.name, ...compositeKeys, 'key'],
       casing

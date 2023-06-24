@@ -5,7 +5,7 @@ import type {
 } from '@vdtn359/types';
 import schemaInspector from 'knex-schema-inspector';
 import { knex, Knex } from 'knex';
-import { GraphQLDateTime } from 'graphql-scalars';
+import { GraphQLDateTime, GraphQLJSONObject } from 'graphql-scalars';
 import {
   GraphQLBoolean,
   GraphQLFloat,
@@ -155,6 +155,9 @@ export class SqlMapper implements DatabaseMapper {
     }
     if (transformedType === 'enum') {
       return GraphQLString;
+    }
+    if (transformedType.includes('json')) {
+      return GraphQLJSONObject;
     }
     throw new Error(`Unmapped type: ${dataType}`);
   }

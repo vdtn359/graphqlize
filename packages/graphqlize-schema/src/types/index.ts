@@ -1,0 +1,1 @@
+export { getFilterType } from './factory';

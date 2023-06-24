@@ -6,4 +6,6 @@ export const DEFAULT_OPTIONS = {
   case: 'camelCase' as const,
 };
 
-export type SchemaOptionType = SchemaOptions & typeof DEFAULT_OPTIONS;
+export type SchemaOptionType = SchemaOptions & {
+  case: NonNullable<SchemaOptions['case']>;
+};
