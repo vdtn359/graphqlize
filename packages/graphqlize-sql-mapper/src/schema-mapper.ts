@@ -14,6 +14,8 @@ import {
   GraphQLInt,
   GraphQLString,
 } from 'graphql';
+import { Column } from 'knex-schema-inspector/dist/types/column';
+import { ForeignKey } from 'knex-schema-inspector/dist/types/foreign-key';
 import { SqlTableMapper } from './table-mapper';
 
 export class SqlMapper implements DatabaseMapper {
@@ -52,37 +54,62 @@ export class SqlMapper implements DatabaseMapper {
         name: table,
         columns: {},
         primaryKey,
-        candidateKeys: {
-          ...(primaryKey && {
-            [primaryKey]: [primaryKey],
-          }),
-        },
+        candidateKeys: {},
         compositeKeys: {},
-        foreignKeys: foreignKeys.reduce(
-          (agg, current) => ({
-            ...agg,
-            [current.constraint_name ?? current.column]: {
-              foreignKey: [current.column],
-              referenceTable: current.foreign_key_table,
-              referenceColumns: [current.foreign_key_column],
-            },
-          }),
-          {}
-        ),
+        belongsTo: {},
+        hasOne: {},
+        hasMany: {},
       };
-      for (const column of columns) {
-        this.tables[table].columns[column.name] = {
-          name: column.name,
-          nullable: column.is_nullable,
-          isPrimaryKey: column.is_primary_key,
-          type: SqlMapper.mapType(column.data_type),
-          defaultValue: column.default_value,
-          rawType: column.data_type,
-        };
+      this.buildCandidateKeys(columns, table);
+      this.buildBelongsTo(foreignKeys, table);
+    }
 
-        if (column.is_unique) {
-          this.tables[table].candidateKeys[column.name] = [column.name];
-        }
+    for (const { table, foreignKeys } of result) {
+      this.buildHasMany(foreignKeys, table);
+    }
+  }
+
+  private buildCandidateKeys(columns: Column[], table: string) {
+    for (const column of columns) {
+      this.tables[table].columns[column.name] = {
+        name: column.name,
+        nullable: column.is_nullable,
+        isPrimaryKey: column.is_primary_key,
+        type: SqlMapper.mapType(column.data_type),
+        defaultValue: column.default_value,
+        rawType: column.data_type,
+      };
+
+      if (column.is_unique) {
+        this.tables[table].candidateKeys[column.name] = [column.name];
+      }
+    }
+  }
+
+  private buildBelongsTo(foreignKeys: ForeignKey[], table: string) {
+    this.tables[table].belongsTo = foreignKeys.reduce((agg, current) => {
+      const constraintName = current.column.includes('_')
+        ? current.column.replace(/_id$/, '')
+        : current.column;
+      return {
+        ...agg,
+        [constraintName]: {
+          columns: [current.column],
+          referenceTable: current.foreign_key_table,
+          referenceColumns: [current.foreign_key_column],
+        },
+      };
+    }, {});
+  }
+
+  private buildHasMany(foreignKeys: ForeignKey[], table: string) {
+    for (const foreignKey of foreignKeys) {
+      if (table !== foreignKey.foreign_key_table) {
+        this.tables[foreignKey.foreign_key_table].hasMany[table] = {
+          columns: [foreignKey.column],
+          referenceTable: foreignKey.foreign_key_table,
+          referenceColumns: [foreignKey.foreign_key_column],
+        };
       }
     }
   }

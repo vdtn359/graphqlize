@@ -1,7 +1,7 @@
 import type { GraphQLType } from 'graphql';
 
 export interface ForeignKeyMetadata {
-  column: string[];
+  columns: string[];
   referenceTable: string;
   referenceColumns: string[];
 }
@@ -12,7 +12,9 @@ export interface TableMetadata {
   columns: Record<string, ColumnMetadata>;
   candidateKeys: Record<string, string[]>;
   compositeKeys: Record<string, string[]>;
-  foreignKeys: Record<string, ForeignKeyMetadata>;
+  belongsTo: Record<string, ForeignKeyMetadata>;
+  hasMany: Record<string, ForeignKeyMetadata>;
+  hasOne: Record<string, ForeignKeyMetadata>;
 }
 
 export interface ColumnMetadata {
