@@ -1,25 +1,25 @@
 import type { DatabaseMapper } from '@vdtn359/graphqlize-mapper';
 import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
-import { DataLoaderManager } from './data-loader-manager';
+import { Repository } from './repository';
 
 export class GetResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
-  private dataloaderManager: DataLoaderManager;
+  private dataloaderManager: Repository;
 
   constructor({
     mapper,
     tableBuilder,
-    dataLoaderManager,
+    repository,
   }: {
     mapper: DatabaseMapper;
     tableBuilder: TableBuilder;
-    dataLoaderManager: DataLoaderManager;
+    repository: Repository;
   }) {
     super(tableBuilder);
     this.mapper = mapper;
-    this.dataloaderManager = dataLoaderManager;
+    this.dataloaderManager = repository;
   }
 
   async resolve(parent: any, { by: queries }: Record<string, any>) {
@@ -30,12 +30,15 @@ export class GetResolver extends DefaultResolver {
 
     const dataLoaderName = this.tableBuilder.reverseLookup(typeName);
     let keyValue;
+    let columns: string[];
     if (this.tableMetadata.compositeKeys[dataLoaderName]) {
       keyValue = this.reverseToDB(queries[typeName]);
+      columns = this.tableMetadata.compositeKeys[dataLoaderName];
     } else {
       keyValue = this.reverseToDB(queries);
+      columns = [dataLoaderName];
     }
-    const result = await this.dataloaderManager.load(dataLoaderName, keyValue);
+    const result = await this.dataloaderManager.loadOne(columns, keyValue);
     return this.convertFromDB(result);
   }
 }

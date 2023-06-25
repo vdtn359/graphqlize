@@ -8,8 +8,9 @@ import { GetInputBuilder } from './get-input';
 import { ListInputBuilder } from './list-input';
 import { GetResolver } from '../resolvers/get';
 import { DefaultResolver } from '../resolvers/default';
-import { DataLoaderManager } from '../resolvers/data-loader-manager';
+import { Repository } from '../resolvers/repository';
 import type { SchemaBuilder } from './schema';
+import { BelongToResolver } from '../resolvers/belong-to';
 
 export class TableBuilder extends DefaultBuilder {
   private readonly metadata: TableMetadata;
@@ -21,6 +22,8 @@ export class TableBuilder extends DefaultBuilder {
   private readonly schemaBuilder: SchemaBuilder;
 
   private readonly columnLookup: Record<string, string> = {};
+
+  private repository: Repository;
 
   constructor({
     composer,
@@ -50,12 +53,12 @@ export class TableBuilder extends DefaultBuilder {
         this.columnLookup[keyTypeName] = compositeKeyName;
       }
     }
-    const dataLoaderManager = new DataLoaderManager(this.metadata, mapper);
+    this.repository = new Repository(this.metadata, mapper);
 
     this.getResolver = new GetResolver({
       mapper: this.mapper,
       tableBuilder: this,
-      dataLoaderManager,
+      repository: this.repository,
     });
   }
 
@@ -108,6 +111,15 @@ export class TableBuilder extends DefaultBuilder {
           type: isNullable
             ? referencedType
             : new GraphQLNonNull(referencedType.getType()),
+          resolve: (parent, args, context) => {
+            const belongToResolver: DefaultResolver = new BelongToResolver({
+              mapper: this.mapper,
+              tableBuilder: this,
+              repository: this.repository,
+              foreignKey,
+            });
+            return belongToResolver.resolve(parent, args, context);
+          },
         },
       });
     }
@@ -213,5 +225,13 @@ export class TableBuilder extends DefaultBuilder {
 
   getTableMetadata() {
     return this.metadata;
+  }
+
+  getSchemaBuilder() {
+    return this.schemaBuilder;
+  }
+
+  getRepository() {
+    return this.repository;
   }
 }
