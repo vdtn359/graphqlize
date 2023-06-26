@@ -27,7 +27,10 @@ export interface ColumnMetadata {
 }
 
 export interface TableMapper<T> {
-  findByKeys(keys: readonly Record<string, any>[]): Promise<T[]>;
+  findByColumns(
+    keys: readonly Record<string, any>[],
+    unique?: boolean
+  ): Promise<T[]>;
 }
 
 export interface DatabaseMapper {

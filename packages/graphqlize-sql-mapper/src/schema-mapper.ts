@@ -119,9 +119,9 @@ export class SqlMapper implements DatabaseMapper {
     for (const foreignKey of foreignKeys) {
       if (table !== foreignKey.foreign_key_table) {
         this.tables[foreignKey.foreign_key_table].hasMany[table] = {
-          columns: [foreignKey.column],
-          referenceTable: foreignKey.foreign_key_table,
-          referenceColumns: [foreignKey.foreign_key_column],
+          columns: [foreignKey.foreign_key_column],
+          referenceTable: table,
+          referenceColumns: [foreignKey.column],
         };
       }
     }

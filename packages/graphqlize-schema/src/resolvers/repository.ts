@@ -23,12 +23,17 @@ export class Repository<T = any> {
     for (const { referenceColumns } of Object.values(tableMetadata.hasMany)) {
       this.createDataLoader(referenceColumns, true);
     }
+
+    for (const { columns } of Object.values(tableMetadata.belongsTo)) {
+      this.createDataLoader(columns);
+    }
   }
 
   getDataLoaderName(columns: string[]) {
     return columns.sort().join(',');
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   createDataLoader(columns: string[], unique = false) {
     const dataLoaders = unique ? this.uniqueDataLoaders : this.multiDataLoaders;
     const dataLoaderName = this.getDataLoaderName(columns);
@@ -40,7 +45,7 @@ export class Repository<T = any> {
         const tableMapper = this.mapper.getTableMapper<T>(
           this.tableMetadata.name
         );
-        const result = await tableMapper.findByKeys(keys);
+        const result = await tableMapper.findByColumns(keys, unique);
         const resultMap: Record<string, T[]> = {};
         for (const item of result) {
           const key = this.getByColumns(columns, item);
@@ -52,11 +57,14 @@ export class Repository<T = any> {
 
         return keys.map((key) => {
           const currentValue = this.getByColumns(columns, key);
-
+          const values = resultMap[currentValue] ?? [];
+          for (const value of values) {
+            this.preload(value);
+          }
           if (unique) {
             return (resultMap[currentValue] ?? [])[0] ?? null;
           }
-          return resultMap[currentValue] ?? [];
+          return values;
         });
       }
     );

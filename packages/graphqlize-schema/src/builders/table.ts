@@ -11,6 +11,7 @@ import { DefaultResolver } from '../resolvers/default';
 import { Repository } from '../resolvers/repository';
 import type { SchemaBuilder } from './schema';
 import { BelongToResolver } from '../resolvers/belong-to';
+import { HasManyResolver } from '../resolvers/has-many';
 
 export class TableBuilder extends DefaultBuilder {
   private readonly metadata: TableMetadata;
@@ -142,6 +143,15 @@ export class TableBuilder extends DefaultBuilder {
       tc.addFields({
         [this.columnName(constraintName, true)]: {
           type: new GraphQLList(new GraphQLNonNull(referencedType.getType())),
+          resolve: (parent, args, context) => {
+            const hasManyResolver: DefaultResolver = new HasManyResolver({
+              mapper: this.mapper,
+              tableBuilder: this,
+              repository: this.repository,
+              foreignKey,
+            });
+            return hasManyResolver.resolve(parent, args, context);
+          },
         },
       });
     }

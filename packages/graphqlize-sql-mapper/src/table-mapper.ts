@@ -7,16 +7,16 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     private readonly tableMetadata: TableMetadata
   ) {}
 
-  async findByKeys(keys: readonly Record<string, any>[]) {
+  async findByColumns(keys: readonly Record<string, any>[], unique = false) {
     if (!keys.length) {
       return [];
     }
-    const queryBuilder = this.knex(this.tableMetadata.name)
-      .select()
-      .limit(keys.length);
-
     const columns = Object.keys(keys[0]);
+    const queryBuilder = this.knex(this.tableMetadata.name).select();
 
+    if (unique) {
+      queryBuilder.limit(keys.length);
+    }
     if (columns.length === 1) {
       queryBuilder.whereIn(
         columns[0],
