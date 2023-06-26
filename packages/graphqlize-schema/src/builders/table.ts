@@ -11,7 +11,7 @@ import { DefaultResolver } from '../resolvers/default';
 import { Repository } from '../resolvers/repository';
 import type { SchemaBuilder } from './schema';
 import { BelongToResolver } from '../resolvers/belong-to';
-import { HasManyResolver } from '../resolvers/has-many';
+import { HasResolver } from '../resolvers/has';
 
 export class TableBuilder extends DefaultBuilder {
   private readonly metadata: TableMetadata;
@@ -88,6 +88,7 @@ export class TableBuilder extends DefaultBuilder {
   buildObjectAssociation() {
     this.buildBelongsToAssociation();
     this.buildHasManyAssociation();
+    this.buildHasOneAssociation();
   }
 
   buildBelongsToAssociation() {
@@ -142,15 +143,47 @@ export class TableBuilder extends DefaultBuilder {
 
       tc.addFields({
         [this.columnName(constraintName, true)]: {
-          type: new GraphQLList(new GraphQLNonNull(referencedType.getType())),
+          type: referencedType.getType(),
           resolve: (parent, args, context) => {
-            const hasManyResolver: DefaultResolver = new HasManyResolver({
+            const hasManyResolver: DefaultResolver = new HasResolver({
               mapper: this.mapper,
               tableBuilder: this,
               repository: this.repository,
               foreignKey,
             });
             return hasManyResolver.resolve(parent, args, context);
+          },
+        },
+      });
+    }
+  }
+
+  buildHasOneAssociation() {
+    const tc = this.composer.getOTC(this.typeName(this.metadata.name));
+    for (const [constraintName, foreignKey] of Object.entries(
+      this.metadata.hasOne
+    )) {
+      const { referenceTable, columns } = foreignKey;
+      if (columns.length > 1) {
+        // TODO support multi foreign keys
+        return;
+      }
+      const referencedTypeBuilder =
+        this.schemaBuilder.getTableBuilder(referenceTable);
+      const referencedType = referencedTypeBuilder.buildObjectTC();
+
+      tc.addFields({
+        [this.columnName(constraintName, true)]: {
+          type: new GraphQLList(new GraphQLNonNull(referencedType.getType())),
+          resolve: async (parent, args, context) => {
+            const hasManyResolver: DefaultResolver = new HasResolver({
+              mapper: this.mapper,
+              tableBuilder: this,
+              repository: this.repository,
+              foreignKey,
+            });
+            const result = await hasManyResolver.resolve(parent, args, context);
+            return result[0] ?? null;
           },
         },
       });

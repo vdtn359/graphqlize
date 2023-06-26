@@ -6,7 +6,7 @@ import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
 import { Repository } from './repository';
 
-export class HasManyResolver extends DefaultResolver {
+export class HasResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
   private repository: Repository;

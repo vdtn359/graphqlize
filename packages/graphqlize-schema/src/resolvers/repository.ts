@@ -24,6 +24,10 @@ export class Repository<T = any> {
       this.createDataLoader(referenceColumns, true);
     }
 
+    for (const { referenceColumns } of Object.values(tableMetadata.hasOne)) {
+      this.createDataLoader(referenceColumns, true);
+    }
+
     for (const { columns } of Object.values(tableMetadata.belongsTo)) {
       this.createDataLoader(columns);
     }
