@@ -171,7 +171,13 @@ importers:
       knex-schema-inspector:
         specifier: ^3.0.1
         version: 3.0.1
+      pluralize:
+        specifier: ^8.0.0
+        version: 8.0.0
     devDependencies:
+      '@types/pluralize':
+        specifier: ^0.0.29
+        version: 0.0.29
       '@vdtn359/graphqlize-mapper':
         specifier: workspace:*
         version: link:../graphqlize-mapper

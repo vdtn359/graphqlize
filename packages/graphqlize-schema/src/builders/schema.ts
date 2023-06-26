@@ -1,21 +1,22 @@
 import type { DatabaseMapper } from '@vdtn359/graphqlize-mapper';
-import { schemaComposer } from 'graphql-compose';
+import { SchemaComposer, schemaComposer } from 'graphql-compose';
 import { merge } from 'lodash';
-import { DEFAULT_OPTIONS, SchemaOptions } from './options';
-import { DefaultBuilder } from './default';
+import { DEFAULT_OPTIONS, SchemaOptions, SchemaOptionType } from './options';
 import { TableBuilder } from './table';
 
-export class SchemaBuilder extends DefaultBuilder {
+export class SchemaBuilder {
   private tableBuilders: Record<string, TableBuilder> = {};
+
+  private composer: SchemaComposer;
+
+  private options: SchemaOptionType;
 
   private constructor(
     private readonly mapper: DatabaseMapper,
     options?: SchemaOptions
   ) {
-    super({
-      options: merge(DEFAULT_OPTIONS, options),
-      composer: schemaComposer.clone(),
-    });
+    this.options = merge(DEFAULT_OPTIONS, options);
+    this.composer = schemaComposer.clone();
   }
 
   static async init(mapper: DatabaseMapper, options?: SchemaOptions) {

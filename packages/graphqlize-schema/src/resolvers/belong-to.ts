@@ -40,6 +40,7 @@ export class BelongToResolver extends DefaultResolver {
       return null;
     }
     const schemaBuilder = this.tableBuilder.getSchemaBuilder();
+    const translator = this.tableBuilder.getTranslator();
     const referencedTableBuilder =
       schemaBuilder.getTableBuilder(referenceTable);
     const referencedTableRepository = referencedTableBuilder.getRepository();
@@ -47,6 +48,6 @@ export class BelongToResolver extends DefaultResolver {
     const result = await referencedTableRepository.loadOne([referencedColumn], {
       [referencedColumn]: parent.$raw[column],
     });
-    return this.convertFromDB(result);
+    return translator.convertFromDB(result);
   }
 }

@@ -6,7 +6,7 @@ import { Repository } from './repository';
 export class GetResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
-  private dataloaderManager: Repository;
+  private repository: Repository;
 
   constructor({
     mapper,
@@ -19,7 +19,7 @@ export class GetResolver extends DefaultResolver {
   }) {
     super(tableBuilder);
     this.mapper = mapper;
-    this.dataloaderManager = repository;
+    this.repository = repository;
   }
 
   async resolve(parent: any, { by: queries }: Record<string, any>) {
@@ -28,17 +28,19 @@ export class GetResolver extends DefaultResolver {
       throw new Error('At least one candidate key must be specified');
     }
 
-    const dataLoaderName = this.tableBuilder.reverseLookup(typeName);
+    const translator = this.tableBuilder.getTranslator();
+
+    const dataLoaderName = translator.columnTypeLookup(typeName);
     let keyValue;
     let columns: string[];
     if (this.tableMetadata.compositeKeys[dataLoaderName]) {
-      keyValue = this.reverseToDB(queries[typeName]);
+      keyValue = translator.reverseToDB(queries[typeName]);
       columns = this.tableMetadata.compositeKeys[dataLoaderName];
     } else {
-      keyValue = this.reverseToDB(queries);
+      keyValue = translator.reverseToDB(queries);
       columns = [dataLoaderName];
     }
-    const result = await this.dataloaderManager.loadOne(columns, keyValue);
-    return this.convertFromDB(result);
+    const result = await this.repository.loadOne(columns, keyValue);
+    return translator.convertFromDB(result);
   }
 }

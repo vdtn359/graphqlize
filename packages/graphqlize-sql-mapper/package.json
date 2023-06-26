@@ -13,9 +13,11 @@
   },
   "dependencies": {
     "knex": "^2.4.2",
-    "knex-schema-inspector": "^3.0.1"
+    "knex-schema-inspector": "^3.0.1",
+    "pluralize": "^8.0.0"
   },
   "devDependencies": {
+    "@types/pluralize": "^0.0.29",
     "@vdtn359/graphqlize-mapper": "workspace:*"
   },
   "peerDependencies": {

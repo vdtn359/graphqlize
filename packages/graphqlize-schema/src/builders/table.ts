@@ -1,7 +1,6 @@
 import type { DatabaseMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
-import { DefaultBuilder } from './default';
 import { SchemaOptionType } from './options';
 import { mergeTransform } from '../utils';
 import { GetInputBuilder } from './get-input';
@@ -12,19 +11,27 @@ import { Repository } from '../resolvers/repository';
 import type { SchemaBuilder } from './schema';
 import { BelongToResolver } from '../resolvers/belong-to';
 import { HasResolver } from '../resolvers/has';
+import { ListResolver } from '../resolvers/list';
+import { TableTranslator } from './translator';
 
-export class TableBuilder extends DefaultBuilder {
+export class TableBuilder {
   private readonly metadata: TableMetadata;
 
   private readonly mapper: DatabaseMapper;
 
   private readonly getResolver: DefaultResolver;
 
+  private readonly translator: TableTranslator;
+
+  private readonly listResolver: DefaultResolver;
+
   private readonly schemaBuilder: SchemaBuilder;
 
-  private readonly columnLookup: Record<string, string> = {};
-
   private repository: Repository;
+
+  private composer: SchemaComposer;
+
+  private options: SchemaOptionType;
 
   constructor({
     composer,
@@ -39,21 +46,15 @@ export class TableBuilder extends DefaultBuilder {
     schemaBuilder: SchemaBuilder;
     mapper: DatabaseMapper;
   }) {
-    super({ composer, options });
+    this.options = options;
+    this.translator = new TableTranslator({
+      tableBuilder: this,
+      casing: options.case,
+    });
     this.metadata = metadata;
+    this.composer = composer;
     this.mapper = mapper;
     this.schemaBuilder = schemaBuilder;
-
-    for (const columnName of Object.keys(this.metadata.columns)) {
-      this.columnLookup[this.columnName(columnName)] = columnName;
-    }
-
-    for (const compositeKeyName of Object.keys(this.metadata.columns)) {
-      const keyTypeName = this.columnName(compositeKeyName);
-      if (!this.columnLookup[keyTypeName]) {
-        this.columnLookup[keyTypeName] = compositeKeyName;
-      }
-    }
     this.repository = new Repository(this.metadata, mapper);
 
     this.getResolver = new GetResolver({
@@ -61,22 +62,24 @@ export class TableBuilder extends DefaultBuilder {
       tableBuilder: this,
       repository: this.repository,
     });
-  }
 
-  reverseLookup(fieldName: string) {
-    return this.columnLookup[fieldName];
+    this.listResolver = new ListResolver({
+      mapper: this.mapper,
+      tableBuilder: this,
+      repository: this.repository,
+    });
   }
 
   buildObjectTC() {
     return this.composer.getOrCreateOTC(
-      this.typeName(this.metadata.name),
+      this.translator.typeName(this.metadata.name),
       (tc) => {
         for (const [columnName, columnMetadata] of Object.entries(
           this.metadata.columns
         )) {
           const type = columnMetadata.type as any;
           tc.addFields({
-            [this.columnName(columnName)]: {
+            [this.translator.columnName(columnName)]: {
               type: columnMetadata.nullable ? type : new GraphQLNonNull(type),
             },
           });
@@ -92,7 +95,9 @@ export class TableBuilder extends DefaultBuilder {
   }
 
   buildBelongsToAssociation() {
-    const tc = this.composer.getOTC(this.typeName(this.metadata.name));
+    const tc = this.composer.getOTC(
+      this.translator.typeName(this.metadata.name)
+    );
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.belongsTo
     )) {
@@ -109,7 +114,7 @@ export class TableBuilder extends DefaultBuilder {
       const referencedType = referencedTypeBuilder.buildObjectTC();
 
       tc.addFields({
-        [this.columnName(constraintName)]: {
+        [this.translator.associationName(constraintName)]: {
           type: isNullable
             ? referencedType
             : new GraphQLNonNull(referencedType.getType()),
@@ -128,7 +133,9 @@ export class TableBuilder extends DefaultBuilder {
   }
 
   buildHasManyAssociation() {
-    const tc = this.composer.getOTC(this.typeName(this.metadata.name));
+    const tc = this.composer.getOTC(
+      this.translator.typeName(this.metadata.name)
+    );
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasMany
     )) {
@@ -142,7 +149,7 @@ export class TableBuilder extends DefaultBuilder {
       const referencedType = referencedTypeBuilder.buildObjectTC();
 
       tc.addFields({
-        [this.columnName(constraintName, true)]: {
+        [this.translator.associationName(constraintName)]: {
           type: referencedType.getType(),
           resolve: (parent, args, context) => {
             const hasManyResolver: DefaultResolver = new HasResolver({
@@ -159,7 +166,9 @@ export class TableBuilder extends DefaultBuilder {
   }
 
   buildHasOneAssociation() {
-    const tc = this.composer.getOTC(this.typeName(this.metadata.name));
+    const tc = this.composer.getOTC(
+      this.translator.typeName(this.metadata.name)
+    );
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasOne
     )) {
@@ -173,7 +182,7 @@ export class TableBuilder extends DefaultBuilder {
       const referencedType = referencedTypeBuilder.buildObjectTC();
 
       tc.addFields({
-        [this.columnName(constraintName, true)]: {
+        [this.translator.associationName(constraintName)]: {
           type: new GraphQLList(new GraphQLNonNull(referencedType.getType())),
           resolve: async (parent, args, context) => {
             const hasManyResolver: DefaultResolver = new HasResolver({
@@ -194,7 +203,7 @@ export class TableBuilder extends DefaultBuilder {
     const objectType = this.buildObjectTC();
 
     return this.composer.getOrCreateOTC(
-      this.typeName(this.metadata.name, true),
+      this.translator.typeName(this.metadata.name, true),
       (tc) => {
         tc.addFields({
           records: {
@@ -251,18 +260,23 @@ export class TableBuilder extends DefaultBuilder {
   }
 
   buildListMethod(multiObjectType: ObjectTypeComposer) {
-    const listInputBuilder = new ListInputBuilder({
-      composer: this.composer,
-      options: this.options,
-      metadata: this.metadata,
-      tableBuilder: this,
-    });
+    const listInputBuilder = this.getListMethodBuilder();
+
     this.composer.Query.addFields({
       [this.listMethodName(multiObjectType)]: {
         type: new GraphQLNonNull(multiObjectType.getType()),
-        resolve: () => null,
+        resolve: (parent, args, context) =>
+          this.listResolver.resolve(parent, args ?? {}, context),
         args: listInputBuilder.buildSchema(),
       },
+    });
+  }
+
+  getListMethodBuilder() {
+    return new ListInputBuilder({
+      composer: this.composer,
+      metadata: this.metadata,
+      tableBuilder: this,
     });
   }
 
@@ -276,5 +290,9 @@ export class TableBuilder extends DefaultBuilder {
 
   getRepository() {
     return this.repository;
+  }
+
+  getTranslator() {
+    return this.translator;
   }
 }

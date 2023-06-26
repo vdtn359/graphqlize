@@ -118,4 +118,8 @@ export class Repository<T = any> {
   private getByColumns(columns: string[], item: any) {
     return JSON.stringify(columns.map((column) => item[column]));
   }
+
+  list() {
+    return [];
+  }
 }

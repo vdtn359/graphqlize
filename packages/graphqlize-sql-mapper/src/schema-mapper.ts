@@ -15,6 +15,7 @@ import {
   GraphQLString,
 } from 'graphql';
 import { Column } from 'knex-schema-inspector/dist/types/column';
+import { plural as pluralize } from 'pluralize';
 import { ForeignKey } from 'knex-schema-inspector/dist/types/foreign-key';
 import { SqlTableMapper } from './table-mapper';
 
@@ -118,7 +119,7 @@ export class SqlMapper implements DatabaseMapper {
   private buildHasMany(foreignKeys: ForeignKey[], table: string) {
     for (const foreignKey of foreignKeys) {
       if (table !== foreignKey.foreign_key_table) {
-        this.tables[foreignKey.foreign_key_table].hasMany[table] = {
+        this.tables[foreignKey.foreign_key_table].hasMany[pluralize(table)] = {
           columns: [foreignKey.foreign_key_column],
           referenceTable: table,
           referenceColumns: [foreignKey.column],

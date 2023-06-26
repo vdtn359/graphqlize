@@ -1,68 +1,82 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
-import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
-import { DefaultBuilder } from './default';
-import { SchemaOptionType } from './options';
+import { SchemaComposer } from 'graphql-compose';
 import type { TableBuilder } from './table';
-import { mergeTransform } from '../utils';
 import { getFilterType } from '../types';
+import { TableTranslator } from './translator';
 
-export class ListInputBuilder extends DefaultBuilder {
+export class ListInputBuilder {
   private readonly metadata: TableMetadata;
 
   private readonly tableBuilder: TableBuilder;
 
+  private composer: SchemaComposer;
+
+  private translator: TableTranslator;
+
   constructor({
     composer,
-    options,
     metadata,
     tableBuilder,
   }: {
     composer: SchemaComposer;
-    options: SchemaOptionType;
     metadata: TableMetadata;
     tableBuilder: TableBuilder;
   }) {
-    super({ composer, options });
+    this.composer = composer;
     this.metadata = metadata;
     this.tableBuilder = tableBuilder;
-  }
-
-  filterName(objectType: ObjectTypeComposer) {
-    const casing = this.getTypeNameCasing();
-    return mergeTransform(['list', objectType.getTypeName(), 'input'], casing);
-  }
-
-  sortName(objectType: ObjectTypeComposer) {
-    const casing = this.getTypeNameCasing();
-    return mergeTransform(['sort', objectType.getTypeName()], casing);
+    this.translator = this.tableBuilder.getTranslator();
   }
 
   buildSchema() {
-    const objectType = this.tableBuilder.buildMultiObjectTC();
     return {
-      filter: this.buildFilter(objectType),
-      pagination: this.buildPagination(),
-      sort: this.buildSort(objectType),
+      filter: this.buildFilter(),
+      pagination: {
+        type: this.buildPagination(),
+        defaultValue: {
+          page: 0,
+          limit: 20,
+        },
+      },
+      sort: this.buildSort(),
     };
   }
 
-  buildFilter(objectType: ObjectTypeComposer) {
-    return this.composer.getOrCreateITC(this.filterName(objectType), (tc) => {
-      for (const [columnName, columnMetadata] of Object.entries(
-        this.metadata.columns
-      )) {
-        tc.addFields({
-          [this.columnName(columnName)]: {
-            type: getFilterType(columnMetadata.type as any, this.composer),
-          },
-        });
+  buildFilter() {
+    return this.composer.getOrCreateITC(
+      this.translator.listFilterName(),
+      (tc) => {
+        for (const [columnName, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          tc.addFields({
+            [this.translator.columnName(columnName)]: {
+              type: getFilterType(columnMetadata.type as any, this.composer),
+            },
+          });
+        }
+
+        for (const [constraintName, foreignKey] of Object.entries(
+          this.metadata.belongsTo
+        )) {
+          const { referenceTable } = foreignKey;
+          const schemaBuilder = this.tableBuilder.getSchemaBuilder();
+          const referencedTableBuilder =
+            schemaBuilder.getTableBuilder(referenceTable);
+
+          tc.addFields({
+            [this.translator.columnName(constraintName)]: {
+              type: referencedTableBuilder.getListMethodBuilder().buildFilter(),
+            },
+          });
+        }
       }
-    });
+    );
   }
 
-  buildSort(objectType: ObjectTypeComposer) {
+  buildSort() {
     const sortDirection = this.composer.getOrCreateETC(
-      this.typeName('SortDirection'),
+      this.translator.typeName('SortDirection'),
       (etc) => {
         etc.addFields({
           ASC: {
@@ -74,10 +88,10 @@ export class ListInputBuilder extends DefaultBuilder {
         });
       }
     );
-    return this.composer.getOrCreateITC(this.sortName(objectType), (tc) => {
+    return this.composer.getOrCreateITC(this.translator.sortName(), (tc) => {
       for (const columnName of Object.keys(this.metadata.columns)) {
         tc.addFields({
-          [this.columnName(columnName)]: {
+          [this.translator.columnName(columnName)]: {
             type: sortDirection,
           },
         });
@@ -86,24 +100,27 @@ export class ListInputBuilder extends DefaultBuilder {
   }
 
   buildPagination() {
-    return this.composer.getOrCreateITC(this.typeName('Pagination'), (tc) => {
-      tc.addFields({
-        disabled: {
-          type: 'Boolean',
-        },
-        page: {
-          type: 'Int',
-          defaultValue: 0,
-        },
-        size: {
-          type: 'Int',
-          defaultValue: 20,
-        },
-        offset: {
-          type: 'Int',
-          defaultValue: 0,
-        },
-      });
-    });
+    return this.composer.getOrCreateITC(
+      this.translator.typeName('Pagination'),
+      (tc) => {
+        tc.addFields({
+          disabled: {
+            type: 'Boolean',
+          },
+          page: {
+            type: 'Int',
+            defaultValue: 0,
+          },
+          limit: {
+            type: 'Int',
+            defaultValue: 20,
+          },
+          offset: {
+            type: 'Int',
+            defaultValue: 0,
+          },
+        });
+      }
+    );
   }
 }

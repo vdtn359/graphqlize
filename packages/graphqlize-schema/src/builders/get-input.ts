@@ -1,19 +1,21 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
-import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
+import { SchemaComposer } from 'graphql-compose';
 import { GraphQLNonNull } from 'graphql';
-import { DefaultBuilder } from './default';
 import { SchemaOptionType } from './options';
 import type { TableBuilder } from './table';
-import { mergeTransform } from '../utils';
+import { TableTranslator } from './translator';
 
-export class GetInputBuilder extends DefaultBuilder {
+export class GetInputBuilder {
   private readonly metadata: TableMetadata;
 
   private readonly tableBuilder: TableBuilder;
 
+  private composer: SchemaComposer;
+
+  private translator: TableTranslator;
+
   constructor({
     composer,
-    options,
     metadata,
     tableBuilder,
   }: {
@@ -22,14 +24,10 @@ export class GetInputBuilder extends DefaultBuilder {
     metadata: TableMetadata;
     tableBuilder: TableBuilder;
   }) {
-    super({ composer, options });
+    this.composer = composer;
     this.metadata = metadata;
     this.tableBuilder = tableBuilder;
-  }
-
-  filterName(objectType: ObjectTypeComposer) {
-    const casing = this.getTypeNameCasing();
-    return mergeTransform(['get', objectType.getTypeName(), 'filter'], casing);
+    this.translator = this.tableBuilder.getTranslator();
   }
 
   buildSchema() {
@@ -43,49 +41,43 @@ export class GetInputBuilder extends DefaultBuilder {
   }
 
   buildFilter() {
-    const objectType = this.tableBuilder.buildObjectTC();
     if (!Object.keys(this.metadata.candidateKeys).length) {
       return null;
     }
-    return this.composer.getOrCreateITC(this.filterName(objectType), (tc) => {
-      for (const [keyName, candidateKeys] of Object.entries(
-        this.metadata.candidateKeys
-      )) {
-        if (candidateKeys.length === 1) {
-          const candidateColumn = this.metadata.columns[candidateKeys[0]];
-          tc.addFields({
-            [this.columnName(keyName)]: {
-              type: candidateColumn.type as any,
-            },
-          });
-        } else {
-          const candidateTC = this.buildCompositeKeyTC(candidateKeys);
+    return this.composer.getOrCreateITC(
+      this.translator.getFilterName(),
+      (tc) => {
+        for (const [keyName, candidateKeys] of Object.entries(
+          this.metadata.candidateKeys
+        )) {
+          if (candidateKeys.length === 1) {
+            const candidateColumn = this.metadata.columns[candidateKeys[0]];
+            tc.addFields({
+              [this.translator.columnName(keyName)]: {
+                type: candidateColumn.type as any,
+              },
+            });
+          } else {
+            const candidateTC = this.buildCompositeKeyTC(candidateKeys);
 
-          tc.addFields({
-            [this.columnName(keyName)]: {
-              type: candidateTC.getType(),
-            },
-          });
+            tc.addFields({
+              [this.translator.columnName(keyName)]: {
+                type: candidateTC.getType(),
+              },
+            });
+          }
         }
       }
-    });
-  }
-
-  private getCompositeKeyNames(compositeKeys: string[]) {
-    const casing = this.getTypeNameCasing();
-    return mergeTransform(
-      [this.metadata.name, ...compositeKeys, 'key'],
-      casing
     );
   }
 
   private buildCompositeKeyTC(candidateKeys: string[]) {
-    const name = this.getCompositeKeyNames(candidateKeys);
+    const name = this.translator.getCompositeKeyNames(candidateKeys);
     return this.composer.getOrCreateITC(name, (tc) => {
       for (const candidateKey of candidateKeys) {
         const candidateColumn = this.metadata.columns[candidateKey];
         tc.addFields({
-          [this.columnName(candidateKey)]: {
+          [this.translator.columnName(candidateKey)]: {
             type: new GraphQLNonNull(candidateColumn.type as any),
           },
         });

@@ -43,6 +43,7 @@ export class HasResolver extends DefaultResolver {
     const referencedTableBuilder =
       schemaBuilder.getTableBuilder(referenceTable);
     const referencedTableRepository = referencedTableBuilder.getRepository();
+    const translator = this.tableBuilder.getTranslator();
 
     const result = await referencedTableRepository.loadMany(
       [referencedColumn],
@@ -50,6 +51,6 @@ export class HasResolver extends DefaultResolver {
         [referencedColumn]: parent.$raw[column],
       }
     );
-    return result.map((item) => this.convertFromDB(item));
+    return result.map((item) => translator.convertFromDB(item));
   }
 }
