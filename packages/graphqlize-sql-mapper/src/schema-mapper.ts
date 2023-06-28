@@ -27,7 +27,16 @@ export class SqlMapper implements DatabaseMapper {
   private tables: Record<string, TableMetadata> = {};
 
   private constructor(options: Knex.Config) {
-    this.instance = knex(options);
+    this.instance = knex({
+      // @ts-ignore: only applicable for mysql
+      typeCast(field, next) {
+        if (field.type === 'TINY') {
+          return field.string() === '1';
+        }
+        return next();
+      },
+      ...options,
+    });
     this.inspector = schemaInspector(this.instance);
   }
 

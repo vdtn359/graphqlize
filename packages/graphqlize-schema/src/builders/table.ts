@@ -47,10 +47,6 @@ export class TableBuilder {
     mapper: DatabaseMapper;
   }) {
     this.options = options;
-    this.translator = new TableTranslator({
-      tableBuilder: this,
-      casing: options.case,
-    });
     this.metadata = metadata;
     this.composer = composer;
     this.mapper = mapper;
@@ -68,6 +64,15 @@ export class TableBuilder {
       tableBuilder: this,
       repository: this.repository,
     });
+
+    this.translator = new TableTranslator({
+      tableBuilder: this,
+      casing: options.case,
+    });
+  }
+
+  buildTranslatorMap() {
+    this.translator.init();
   }
 
   buildObjectTC() {

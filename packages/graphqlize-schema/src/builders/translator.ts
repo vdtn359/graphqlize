@@ -1,5 +1,5 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
-import { mapKeys } from 'lodash';
+import { mapKeys, transform as objectTransform } from 'lodash';
 import { SchemaOptionType } from './options';
 import {
   mergeTransform,
@@ -30,11 +30,8 @@ export class TableTranslator {
     casing: SchemaOptionType['case'];
   }) {
     this.tableBuilder = tableBuilder;
-    this.tableMetadata = this.tableBuilder.getTableMetadata();
+    this.tableMetadata = tableBuilder.getTableMetadata();
     this.casing = casing;
-
-    this.buildColumnsLookup();
-    this.buildAssociationsLookup();
   }
 
   private buildColumnsLookup() {
@@ -123,7 +120,21 @@ export class TableTranslator {
   }
 
   reverseToDB(fields: Record<string, any>) {
-    return mapKeys(fields, (value, key) => this.columnTypeLookup(key) ?? key);
+    return objectTransform(fields, (ret: any, value, key) => {
+      if (this.columnLookup[key]) {
+        // eslint-disable-next-line no-param-reassign
+        ret[this.columnLookup[key]] = value;
+        return;
+      }
+      if (this.associationLookup[key]) {
+        const translator = this.associationMap[key];
+        // eslint-disable-next-line no-param-reassign
+        ret[this.associationLookup[key]] = translator.reverseToDB(value);
+        return;
+      }
+      // eslint-disable-next-line no-param-reassign
+      ret[key] = value;
+    });
   }
 
   convertFromDB(record: Record<string, any>) {
@@ -136,5 +147,10 @@ export class TableTranslator {
 
   columnTypeLookup(typeName: string) {
     return this.columnLookup[typeName];
+  }
+
+  init() {
+    this.buildColumnsLookup();
+    this.buildAssociationsLookup();
   }
 }

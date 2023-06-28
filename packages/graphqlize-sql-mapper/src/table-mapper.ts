@@ -1,5 +1,6 @@
 import type { TableMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
+import { QueryBuilder } from './builders/query-builder';
 
 export class SqlTableMapper<T = any> implements TableMapper<T> {
   constructor(
@@ -33,5 +34,21 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     }
 
     return queryBuilder;
+  }
+
+  findByFilter({
+    filter,
+    pagination,
+  }: {
+    filter: Record<string, any>;
+    pagination: Record<string, any>;
+  }): Promise<T[]> {
+    const queryBuilder = new QueryBuilder({
+      filter,
+      pagination,
+      knex: this.knex,
+      metadata: this.tableMetadata,
+    });
+    return queryBuilder.select();
   }
 }

@@ -38,6 +38,7 @@ export class SchemaBuilder {
     );
 
     for (const tableBuilder of Object.values(schemaBuilder.tableBuilders)) {
+      tableBuilder.buildTranslatorMap();
       tableBuilder.buildSchema();
     }
 

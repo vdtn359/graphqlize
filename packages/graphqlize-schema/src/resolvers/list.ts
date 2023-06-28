@@ -2,14 +2,11 @@ import type { DatabaseMapper } from '@vdtn359/graphqlize-mapper';
 import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
 import { Repository } from './repository';
-import { TableTranslator } from '../builders/translator';
 
 export class ListResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
   private repository: Repository;
-
-  private translator: TableTranslator;
 
   constructor({
     mapper,
@@ -21,21 +18,21 @@ export class ListResolver extends DefaultResolver {
     repository: Repository;
   }) {
     super(tableBuilder);
-    this.translator = tableBuilder.getTranslator();
     this.mapper = mapper;
     this.repository = repository;
   }
 
   async resolve(parent: any, { filter, pagination }: Record<string, any> = {}) {
+    const translator = this.tableBuilder.getTranslator();
     const normalisedPagination = this.normalisePagination(pagination);
-    const transformedFilter = this.translator.reverseToDB(filter);
-    const result: any[] = this.repository.list({
+    const transformedFilter = translator.reverseToDB(filter);
+    const result: any[] = await this.repository.list({
       filter: transformedFilter,
       pagination: normalisedPagination,
     });
 
     const transformedResults = result.map((item) =>
-      this.translator.convertFromDB(item)
+      translator.convertFromDB(item)
     );
 
     return {
@@ -44,20 +41,6 @@ export class ListResolver extends DefaultResolver {
       offset: pagination.offset,
     };
   }
-
-  // transformFilter(filter: Record<string, any>) {
-  //   const result: Record<string, any> = {};
-  //   for (const [key, value] of Object.values(filter)) {
-  //     if (this.tableMetadata.belongsTo[key]) {
-  //       // belong to relation
-  //       const { referenceTable } = this.tableMetadata.belongsTo[key];
-  //     }
-  //
-  //     result[this.tableBuilder.reverseLookup(key)] = value;
-  //   }
-  //
-  //   return result;
-  // }
 
   private normalisePagination(pagination: any = {}) {
     if (pagination.disabled) {

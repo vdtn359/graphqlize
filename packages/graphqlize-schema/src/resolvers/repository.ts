@@ -1,4 +1,8 @@
-import type { DatabaseMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
+import type {
+  DatabaseMapper,
+  TableMapper,
+  TableMetadata,
+} from '@vdtn359/graphqlize-mapper';
 import DataLoader from 'dataloader';
 
 export class Repository<T = any> {
@@ -12,10 +16,13 @@ export class Repository<T = any> {
     DataLoader<Record<string, any>, T[]>
   > = {};
 
+  private tableMapper: TableMapper<T>;
+
   constructor(
     private readonly tableMetadata: TableMetadata,
     private readonly mapper: DatabaseMapper
   ) {
+    this.tableMapper = this.mapper.getTableMapper<T>(this.tableMetadata.name);
     for (const candidateKeys of Object.values(tableMetadata.candidateKeys)) {
       this.createDataLoader(candidateKeys, true);
     }
@@ -46,10 +53,7 @@ export class Repository<T = any> {
     }
     dataLoaders[dataLoaderName] = new DataLoader<Record<string, any>, any>(
       async (keys) => {
-        const tableMapper = this.mapper.getTableMapper<T>(
-          this.tableMetadata.name
-        );
-        const result = await tableMapper.findByColumns(keys, unique);
+        const result = await this.tableMapper.findByColumns(keys, unique);
         const resultMap: Record<string, T[]> = {};
         for (const item of result) {
           const key = this.getByColumns(columns, item);
@@ -119,7 +123,7 @@ export class Repository<T = any> {
     return JSON.stringify(columns.map((column) => item[column]));
   }
 
-  list() {
-    return [];
+  list({ filter, pagination }: { filter: any; pagination: any }) {
+    return this.tableMapper.findByFilter({ filter, pagination });
   }
 }

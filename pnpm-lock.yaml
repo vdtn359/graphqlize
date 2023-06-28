@@ -159,6 +159,9 @@ importers:
 
   packages/graphqlize-sql-mapper:
     dependencies:
+      change-case:
+        specifier: ^4.1.2
+        version: 4.1.2
       graphql:
         specifier: ^16
         version: 16.7.1

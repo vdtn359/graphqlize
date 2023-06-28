@@ -31,6 +31,11 @@ export interface TableMapper<T> {
     keys: readonly Record<string, any>[],
     unique?: boolean
   ): Promise<T[]>;
+
+  findByFilter(params: {
+    filter: Record<string, any>;
+    pagination: Record<string, any>;
+  }): Promise<T[]>;
 }
 
 export interface DatabaseMapper {
