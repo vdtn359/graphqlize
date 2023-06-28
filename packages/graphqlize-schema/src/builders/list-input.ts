@@ -56,16 +56,18 @@ export class ListInputBuilder {
           });
         }
 
-        for (const [constraintName, foreignKey] of Object.entries(
-          this.metadata.belongsTo
-        )) {
+        for (const [constraintName, foreignKey] of Object.entries({
+          ...this.metadata.belongsTo,
+          ...this.metadata.hasOne,
+          ...this.metadata.hasMany,
+        })) {
           const { referenceTable } = foreignKey;
           const schemaBuilder = this.tableBuilder.getSchemaBuilder();
           const referencedTableBuilder =
             schemaBuilder.getTableBuilder(referenceTable);
 
           tc.addFields({
-            [this.translator.columnName(constraintName)]: {
+            [this.translator.associationName(constraintName)]: {
               type: referencedTableBuilder.getListMethodBuilder().buildFilter(),
             },
           });

@@ -67,11 +67,11 @@ export class FilterBuilder {
       case '_gt':
         return queryBuilder.where(column, '>', value);
       case '_gte':
-        return queryBuilder.whereNot(column, '>=', value);
+        return queryBuilder.where(column, '>=', value);
       case '_lt':
         return queryBuilder.where(column, '<', value);
       case '_lte':
-        return queryBuilder.whereNot(column, '<=', value);
+        return queryBuilder.where(column, '<=', value);
       case '_in':
         return queryBuilder.whereIn(column, value);
       case '_notIn':
@@ -148,7 +148,45 @@ export class FilterBuilder {
     filterBuilder.where();
   }
 
-  join(foreignKey: ForeignKeyMetadata, alias: string) {
+  manyAssociationFilter({
+    queryBuilder,
+    filterValue,
+    foreignKey,
+  }: {
+    queryBuilder: Knex.QueryBuilder;
+    filterValue: Record<string, any>;
+    foreignKey: ForeignKeyMetadata;
+  }) {
+    if (!Object.values(filterValue).filter((val) => val !== undefined).length) {
+      return;
+    }
+    const { referenceTable } = foreignKey;
+    const referenceTableMetadata =
+      this.schemaMapper.getTableMetadata(referenceTable);
+
+    queryBuilder.whereExists((subQueryBuilder) => {
+      const filterBuilder = new FilterBuilder({
+        filter: filterValue,
+        queryBuilder: subQueryBuilder,
+        aliasMap: this.aliasMap,
+        schemaMapper: this.schemaMapper,
+        metadata: referenceTableMetadata,
+      });
+
+      filterBuilder.exists();
+      filterBuilder.whereJoin(foreignKey, this.alias);
+      filterBuilder.where();
+    });
+  }
+
+  exists() {
+    this.queryBuilder.select(1);
+    this.queryBuilder.from({
+      [this.getAlias()]: this.metadata.name,
+    });
+  }
+
+  private join(foreignKey: ForeignKeyMetadata, alias: string) {
     const { referenceTable, columns, referenceColumns } = foreignKey;
 
     this.queryBuilder.leftJoin(
@@ -165,6 +203,18 @@ export class FilterBuilder {
         }
       }
     );
+  }
+
+  private whereJoin(foreignKey: ForeignKeyMetadata, alias: string) {
+    const { columns, referenceColumns } = foreignKey;
+
+    for (let i = 0; i < columns.length; i++) {
+      this.queryBuilder.andWhere(
+        `${this.alias}.${referenceColumns[i]}`,
+        '=',
+        `${alias}.${columns[i]}`
+      );
+    }
   }
 
   where() {
@@ -190,6 +240,14 @@ export class FilterBuilder {
           queryBuilder: this.queryBuilder,
           filterValue: value,
           foreignKey: this.metadata.hasOne[key],
+        });
+      }
+
+      if (this.metadata.hasMany[key]) {
+        this.manyAssociationFilter({
+          queryBuilder: this.queryBuilder,
+          filterValue: value,
+          foreignKey: this.metadata.hasMany[key],
         });
       }
     }
