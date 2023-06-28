@@ -9,7 +9,7 @@ export function buildJsonFilter(composer: SchemaComposer) {
   );
   return composer.getOrCreateITC('JsonFilter', (tc) => {
     tc.addFields({
-      _fields: 'JsonFieldFilter',
+      _fields: '[JsonFieldFilter!]!',
     });
   });
 }

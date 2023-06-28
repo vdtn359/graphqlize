@@ -64,98 +64,129 @@ export class WhereBuilder {
     column,
     operator,
     value,
+    type,
   }: {
     knexBuilder: Knex.QueryBuilder;
     column: any;
     operator: string;
     value: any;
+    type: string;
   }) {
-    const expression = column;
     const dialectHandler = getDialectHandler(knexBuilder.client.dialect);
     switch (operator) {
       case '_eq':
-        return knexBuilder.where(expression, value);
+        return knexBuilder.andWhere(column, value);
       case '_neq':
-        return knexBuilder.whereNot(expression, value);
+        return knexBuilder.andWhereNot(column, value);
       case '_gt':
-        return knexBuilder.where(expression, '>', value);
+        return knexBuilder.andWhere(column, '>', value);
       case '_gte':
-        return knexBuilder.where(expression, '>=', value);
+        return knexBuilder.andWhere(column, '>=', value);
       case '_lt':
-        return knexBuilder.where(expression, '<', value);
+        return knexBuilder.andWhere(column, '<', value);
       case '_lte':
-        return knexBuilder.where(expression, '<=', value);
+        return knexBuilder.andWhere(column, '<=', value);
       case '_in':
-        return knexBuilder.whereIn(expression, value);
+        return knexBuilder.whereIn(column, value);
       case '_notIn':
-        return knexBuilder.whereNotIn(expression, value);
+        return knexBuilder.whereNotIn(column, value);
       case '_regExp':
-        return knexBuilder.whereRaw(`${expression} REGEXP ${value}`);
+        return knexBuilder.andWhereRaw(`${column} REGEXP ${value}`);
       case '_iRegExp':
-        return knexBuilder.whereRaw(
-          `LOWER(${expression}) REGEXP LOWER(${value})`
+        return knexBuilder.andWhereRaw(
+          `LOWER(${column}) REGEXP LOWER(${value})`
         );
       case '_between':
-        return knexBuilder.whereBetween(expression, value);
+        return knexBuilder.andWhereBetween(column, value);
       case '_notBetween':
-        return knexBuilder.whereNotBetween(expression, value);
+        return knexBuilder.andWhereNotBetween(column, value);
       case '_like':
-        return knexBuilder.whereLike(expression, value);
+        return knexBuilder.andWhereLike(column, value);
       case '_contains':
-        return knexBuilder.whereLike(expression, `%${value}%`);
+        if (type === 'set') {
+          return knexBuilder.andWhereRaw(
+            `FIND_IN_SET(?, ${column.toString()}) IS NOT NULL`,
+            value
+          );
+        }
+        return knexBuilder.andWhereLike(column, `%${value}%`);
       case '_startWith':
-        return knexBuilder.whereLike(expression, `${value}%`);
+        return knexBuilder.andWhereLike(column, `${value}%`);
       case '_endsWith':
-        return knexBuilder.whereLike(expression, `%${value}`);
+        return knexBuilder.andWhereLike(column, `%${value}`);
       case '_iLike':
-        return knexBuilder.whereILike(expression, value);
+        return knexBuilder.andWhereILike(column, value);
+      case '_fields':
+        return knexBuilder.andWhere((subQuery) => {
+          for (const field of value) {
+            this.columnFilter({
+              knexBuilder: subQuery,
+              filterValue: field.value,
+              column: dialectHandler.json(
+                this.knex,
+                column.toString(),
+                field.field
+              ),
+              type,
+            });
+          }
+        });
+
       case '_year':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.year(this.knex, expression),
+          column: dialectHandler.year(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_month':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.month(this.knex, expression),
+          column: dialectHandler.month(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_day':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.day(this.knex, expression),
+          column: dialectHandler.day(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_date':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.date(this.knex, expression),
+          column: dialectHandler.date(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_hour':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.hour(this.knex, expression),
+          column: dialectHandler.hour(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_minute':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.minute(this.knex, expression),
+          column: dialectHandler.minute(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_second':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.second(this.knex, expression),
+          column: dialectHandler.second(this.knex, column),
           filterValue: value,
+          type,
         });
       case '_dayOfWeek':
         return this.columnFilter({
           knexBuilder,
-          column: dialectHandler.dayOfWeek(this.knex, expression),
+          column: dialectHandler.dayOfWeek(this.knex, column),
           filterValue: value,
+          type,
         });
       default:
         return null;
@@ -166,10 +197,12 @@ export class WhereBuilder {
     knexBuilder,
     column,
     filterValue,
+    type,
   }: {
     knexBuilder: Knex.QueryBuilder;
     column: any;
     filterValue: Record<string, any>;
+    type: string;
   }) {
     for (const [expression, value] of Object.entries(filterValue)) {
       this.basicFilter({
@@ -177,6 +210,7 @@ export class WhereBuilder {
         column,
         value,
         operator: expression,
+        type,
       });
     }
   }
@@ -201,6 +235,7 @@ export class WhereBuilder {
           knexBuilder: this.knexBuilder,
           column: columnAlias,
           filterValue: value,
+          type: this.metadata.columns[key].rawType.toLowerCase(),
         });
       }
 
