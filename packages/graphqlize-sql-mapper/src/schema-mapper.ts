@@ -1,5 +1,4 @@
 import type {
-  ColumnMetadata,
   DatabaseMapper,
   TableMapper,
   TableMetadata,
@@ -137,36 +136,36 @@ export class SqlMapper implements DatabaseMapper {
     }
   }
 
-  async listColumns(table: string) {
-    const tableMetadata = await this.getTableMetadata(table);
+  listColumns(table: string) {
+    const tableMetadata = this.getTableMetadata(table);
     return tableMetadata.columns;
   }
 
   listTables() {
-    return Promise.resolve(Object.keys(this.tables));
+    return Object.keys(this.tables);
   }
 
-  async hasColumn(table: string, column: string) {
-    const tableMetadata = await this.getTableMetadata(table);
+  hasColumn(table: string, column: string) {
+    const tableMetadata = this.getTableMetadata(table);
     return !!tableMetadata.columns[column];
   }
 
-  async getColumn(table: string, column: string): Promise<ColumnMetadata> {
-    const tableMetadata = await this.getTableMetadata(table);
+  getColumn(table: string, column: string) {
+    const tableMetadata = this.getTableMetadata(table);
     if (!tableMetadata.columns[column]) {
       throw new Error(`Column ${column} not found in table ${table}`);
     }
-    return Promise.resolve(tableMetadata.columns[column]);
+    return tableMetadata.columns[column];
   }
 
-  getTableMetadata(table: string): Promise<TableMetadata> {
+  getTableMetadata(table: string): TableMetadata {
     if (!this.tables[table]) {
       throw new Error(`Table ${table} not found`);
     }
-    return Promise.resolve(this.tables[table]);
+    return this.tables[table];
   }
 
-  async mapColumn(table: string, column: string) {
+  mapColumn(table: string, column: string) {
     const columnMetadata = this.tables[table].columns[column];
     if (!columnMetadata) {
       throw new Error(`Column ${column} not found in table ${table}`);
@@ -219,6 +218,6 @@ export class SqlMapper implements DatabaseMapper {
     if (!this.tables[table]) {
       throw new Error(`Table ${table} not found`);
     }
-    return new SqlTableMapper(this.instance, this.tables[table]);
+    return new SqlTableMapper(this.instance, this.tables[table], this);
   }
 }

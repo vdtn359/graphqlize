@@ -1,6 +1,10 @@
-import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
+import type {
+  ForeignKeyMetadata,
+  TableMetadata,
+} from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { generateAlias } from '../utils';
+import type { SqlMapper } from '../schema-mapper';
 
 export class FilterBuilder {
   private metadata: TableMetadata;
@@ -13,17 +17,22 @@ export class FilterBuilder {
 
   private alias: string;
 
+  private schemaMapper: SqlMapper;
+
   constructor({
     filter,
     metadata,
     queryBuilder,
     aliasMap,
+    schemaMapper,
   }: {
     filter: Record<string, any>;
     metadata: TableMetadata;
     queryBuilder: Knex.QueryBuilder;
     aliasMap: Record<string, number>;
+    schemaMapper: SqlMapper;
   }) {
+    this.schemaMapper = schemaMapper;
     this.filter = filter;
     this.metadata = metadata;
     this.queryBuilder = queryBuilder;
@@ -111,6 +120,53 @@ export class FilterBuilder {
     }
   }
 
+  singleAssociationFilter({
+    queryBuilder,
+    filterValue,
+    foreignKey,
+  }: {
+    queryBuilder: Knex.QueryBuilder;
+    filterValue: Record<string, any>;
+    foreignKey: ForeignKeyMetadata;
+  }) {
+    if (!Object.values(filterValue).filter((val) => val !== undefined).length) {
+      return;
+    }
+    const { referenceTable } = foreignKey;
+    const referenceTableMetadata =
+      this.schemaMapper.getTableMetadata(referenceTable);
+
+    const filterBuilder = new FilterBuilder({
+      filter: filterValue,
+      queryBuilder,
+      aliasMap: this.aliasMap,
+      schemaMapper: this.schemaMapper,
+      metadata: referenceTableMetadata,
+    });
+
+    filterBuilder.join(foreignKey, this.alias);
+    filterBuilder.where();
+  }
+
+  join(foreignKey: ForeignKeyMetadata, alias: string) {
+    const { referenceTable, columns, referenceColumns } = foreignKey;
+
+    this.queryBuilder.leftJoin(
+      {
+        [this.getAlias()]: referenceTable,
+      },
+      (qb) => {
+        for (let i = 0; i < columns.length; i++) {
+          qb.andOn(
+            `${this.alias}.${referenceColumns[i]}`,
+            '=',
+            `${alias}.${columns[i]}`
+          );
+        }
+      }
+    );
+  }
+
   where() {
     for (const [key, value] of Object.entries(this.filter)) {
       if (this.metadata.columns[key]) {
@@ -118,6 +174,22 @@ export class FilterBuilder {
           queryBuilder: this.queryBuilder,
           column: key,
           filterValue: value,
+        });
+      }
+
+      if (this.metadata.belongsTo[key]) {
+        this.singleAssociationFilter({
+          queryBuilder: this.queryBuilder,
+          filterValue: value,
+          foreignKey: this.metadata.belongsTo[key],
+        });
+      }
+
+      if (this.metadata.hasOne[key]) {
+        this.singleAssociationFilter({
+          queryBuilder: this.queryBuilder,
+          filterValue: value,
+          foreignKey: this.metadata.hasOne[key],
         });
       }
     }

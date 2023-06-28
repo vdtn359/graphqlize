@@ -39,15 +39,20 @@ export interface TableMapper<T> {
 }
 
 export interface DatabaseMapper {
-  getTableMetadata(table: string): Promise<TableMetadata>;
+  getTableMetadata(table: string): Promise<TableMetadata> | TableMetadata;
 
-  listTables(): Promise<string[]>;
+  listTables(): Promise<string[]> | string[];
 
-  listColumns(table: string): Promise<Record<string, ColumnMetadata>>;
+  listColumns(
+    table: string
+  ): Promise<Record<string, ColumnMetadata>> | Record<string, ColumnMetadata>;
 
-  getColumn(table: string, column: string): Promise<ColumnMetadata>;
+  getColumn(
+    table: string,
+    column: string
+  ): Promise<ColumnMetadata> | ColumnMetadata;
 
-  mapColumn(table: string, column: string): Promise<GraphQLType>;
+  mapColumn(table: string, column: string): Promise<GraphQLType> | GraphQLType;
 
   getTableMapper<T>(table: string): TableMapper<T>;
 }

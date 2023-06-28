@@ -1,11 +1,13 @@
 import type { TableMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { QueryBuilder } from './builders/query-builder';
+import type { SqlMapper } from './schema-mapper';
 
 export class SqlTableMapper<T = any> implements TableMapper<T> {
   constructor(
     private readonly knex: Knex,
-    private readonly tableMetadata: TableMetadata
+    private readonly tableMetadata: TableMetadata,
+    private readonly schemaMapper: SqlMapper
   ) {}
 
   async findByColumns(keys: readonly Record<string, any>[], unique = false) {
@@ -48,6 +50,7 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       pagination,
       knex: this.knex,
       metadata: this.tableMetadata,
+      schemaMapper: this.schemaMapper,
     });
     return queryBuilder.select();
   }

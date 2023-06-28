@@ -1,6 +1,7 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { FilterBuilder } from './filter-builder';
+import type { SqlMapper } from '../schema-mapper';
 
 export class QueryBuilder {
   private metadata: TableMetadata;
@@ -11,17 +12,22 @@ export class QueryBuilder {
 
   private knex: Knex;
 
+  private schemaMapper: SqlMapper;
+
   constructor({
     filter,
     pagination,
     metadata,
     knex,
+    schemaMapper,
   }: {
     filter: Record<string, any>;
     pagination: Record<string, any>;
     metadata: TableMetadata;
+    schemaMapper: SqlMapper;
     knex: Knex;
   }) {
+    this.schemaMapper = schemaMapper;
     this.pagination = pagination;
     this.metadata = metadata;
     this.knex = knex;
@@ -37,6 +43,7 @@ export class QueryBuilder {
       metadata: this.metadata,
       aliasMap,
       queryBuilder,
+      schemaMapper: this.schemaMapper,
     });
     queryBuilder.from({
       [filterBuilder.getAlias()]: this.metadata.name,
