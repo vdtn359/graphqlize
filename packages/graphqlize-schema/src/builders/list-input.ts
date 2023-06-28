@@ -46,6 +46,12 @@ export class ListInputBuilder {
     return this.composer.getOrCreateITC(
       this.translator.listFilterName(),
       (tc) => {
+        tc.addFields({
+          _nested: {
+            type: 'Boolean',
+          },
+        });
+
         for (const [columnName, columnMetadata] of Object.entries(
           this.metadata.columns
         )) {

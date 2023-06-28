@@ -10,6 +10,8 @@ import type { SelectBuilder } from './select-builder';
 export class WhereBuilder {
   private metadata: TableMetadata;
 
+  private isTopLevel: boolean;
+
   private filter: Record<string, any>;
 
   private knexBuilder: Knex.QueryBuilder;
@@ -29,6 +31,7 @@ export class WhereBuilder {
     selectBuilder,
     knex,
     alias,
+    isTopLevel = false,
   }: {
     filter: Record<string, any>;
     metadata: TableMetadata;
@@ -36,6 +39,7 @@ export class WhereBuilder {
     selectBuilder: SelectBuilder;
     knexBuilder: Knex.QueryBuilder;
     alias: string;
+    isTopLevel?: boolean;
   }) {
     this.knex = knex;
     this.selectBuilder = selectBuilder;
@@ -44,10 +48,15 @@ export class WhereBuilder {
     this.metadata = metadata;
     this.knexBuilder = knexBuilder;
     this.alias = alias;
+    this.isTopLevel = isTopLevel;
   }
 
   getAlias() {
     return this.alias;
+  }
+
+  getTopLevel() {
+    return this.isTopLevel;
   }
 
   private basicFilter({
@@ -196,7 +205,7 @@ export class WhereBuilder {
       }
 
       if (this.metadata.belongsTo[key]) {
-        this.selectBuilder.joinFilter({
+        this.selectBuilder.singleAssociationFilter({
           whereBuilder: this,
           filterValue: value,
           foreignKey: this.metadata.belongsTo[key],
@@ -204,7 +213,7 @@ export class WhereBuilder {
       }
 
       if (this.metadata.hasOne[key]) {
-        this.selectBuilder.joinFilter({
+        this.selectBuilder.singleAssociationFilter({
           whereBuilder: this,
           filterValue: value,
           foreignKey: this.metadata.hasOne[key],
@@ -212,7 +221,7 @@ export class WhereBuilder {
       }
 
       if (this.metadata.hasMany[key]) {
-        this.selectBuilder.subQueryFilter({
+        this.selectBuilder.manyAssociationFilter({
           whereBuilder: this,
           filterValue: value,
           foreignKey: this.metadata.hasMany[key],

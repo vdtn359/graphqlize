@@ -48,7 +48,9 @@ export class SelectBuilder {
       knexBuilder,
       selectBuilder: this,
       alias: this.claimAlias(this.metadata.name),
+      isTopLevel: true,
     });
+    knexBuilder.select(`${filterBuilder.getAlias()}.*`);
     knexBuilder.from({
       [filterBuilder.getAlias()]: this.metadata.name,
     });
@@ -64,7 +66,58 @@ export class SelectBuilder {
     return `${tableAlias}_${this.aliasMap[tableAlias]}`;
   }
 
-  joinFilter({
+  singleAssociationFilter({
+    whereBuilder,
+    filterValue,
+    foreignKey,
+  }: {
+    whereBuilder: WhereBuilder;
+    filterValue: Record<string, any>;
+    foreignKey: ForeignKeyMetadata;
+  }) {
+    // eslint-disable-next-line no-underscore-dangle
+    if (filterValue?._nested !== true) {
+      this.joinFilter({
+        whereBuilder,
+        filterValue,
+        foreignKey,
+      });
+    } else {
+      this.subQueryFilter({
+        whereBuilder,
+        filterValue,
+        foreignKey,
+      });
+    }
+  }
+
+  manyAssociationFilter({
+    whereBuilder,
+    filterValue,
+    foreignKey,
+  }: {
+    whereBuilder: WhereBuilder;
+    filterValue: Record<string, any>;
+    foreignKey: ForeignKeyMetadata;
+  }) {
+    // eslint-disable-next-line no-underscore-dangle
+    if (whereBuilder.getTopLevel() && filterValue?._nested !== false) {
+      // perform an exists filter to ensure pagination is not affected
+      this.subQueryFilter({
+        whereBuilder,
+        filterValue,
+        foreignKey,
+      });
+    } else {
+      this.joinFilter({
+        whereBuilder,
+        filterValue,
+        foreignKey,
+      });
+    }
+  }
+
+  private joinFilter({
     whereBuilder,
     filterValue,
     foreignKey,
@@ -99,7 +152,7 @@ export class SelectBuilder {
     targetWhereBuilder.where();
   }
 
-  subQueryFilter({
+  private subQueryFilter({
     whereBuilder,
     filterValue,
     foreignKey,
