@@ -5,6 +5,7 @@ import type {
 import { Knex } from 'knex';
 import { generateAlias } from '../utils';
 import type { SqlMapper } from '../schema-mapper';
+import { getDialectHandler } from '../dialects/factory';
 
 export class FilterBuilder {
   private metadata: TableMetadata;
@@ -19,19 +20,24 @@ export class FilterBuilder {
 
   private schemaMapper: SqlMapper;
 
+  private knex: Knex;
+
   constructor({
     filter,
     metadata,
     queryBuilder,
     aliasMap,
     schemaMapper,
+    knex,
   }: {
     filter: Record<string, any>;
     metadata: TableMetadata;
+    knex: Knex;
     queryBuilder: Knex.QueryBuilder;
     aliasMap: Record<string, number>;
     schemaMapper: SqlMapper;
   }) {
+    this.knex = knex;
     this.schemaMapper = schemaMapper;
     this.filter = filter;
     this.metadata = metadata;
@@ -51,49 +57,101 @@ export class FilterBuilder {
   basicFilter({
     queryBuilder,
     column,
-    expression,
+    operator,
     value,
   }: {
     queryBuilder: Knex.QueryBuilder;
-    column: string;
-    expression: string;
+    column: any;
+    operator: string;
     value: any;
   }) {
-    switch (expression) {
+    const expression = column;
+    const dialectHandler = getDialectHandler(queryBuilder.client.dialect);
+    switch (operator) {
       case '_eq':
-        return queryBuilder.where(column, value);
+        return queryBuilder.where(expression, value);
       case '_neq':
-        return queryBuilder.whereNot(column, value);
+        return queryBuilder.whereNot(expression, value);
       case '_gt':
-        return queryBuilder.where(column, '>', value);
+        return queryBuilder.where(expression, '>', value);
       case '_gte':
-        return queryBuilder.where(column, '>=', value);
+        return queryBuilder.where(expression, '>=', value);
       case '_lt':
-        return queryBuilder.where(column, '<', value);
+        return queryBuilder.where(expression, '<', value);
       case '_lte':
-        return queryBuilder.where(column, '<=', value);
+        return queryBuilder.where(expression, '<=', value);
       case '_in':
-        return queryBuilder.whereIn(column, value);
+        return queryBuilder.whereIn(expression, value);
       case '_notIn':
-        return queryBuilder.whereNotIn(column, value);
+        return queryBuilder.whereNotIn(expression, value);
       case '_regExp':
-        return queryBuilder.whereRaw(`${column} REGEXP ${value}`);
+        return queryBuilder.whereRaw(`${expression} REGEXP ${value}`);
       case '_iRegExp':
-        return queryBuilder.whereRaw(`LOWER(${column}) REGEXP LOWER(${value})`);
+        return queryBuilder.whereRaw(
+          `LOWER(${expression}) REGEXP LOWER(${value})`
+        );
       case '_between':
-        return queryBuilder.whereBetween(column, value);
+        return queryBuilder.whereBetween(expression, value);
       case '_notBetween':
-        return queryBuilder.whereNotBetween(column, value);
+        return queryBuilder.whereNotBetween(expression, value);
       case '_like':
-        return queryBuilder.whereLike(column, value);
+        return queryBuilder.whereLike(expression, value);
       case '_contains':
-        return queryBuilder.whereLike(column, `%${value}%`);
+        return queryBuilder.whereLike(expression, `%${value}%`);
       case '_startWith':
-        return queryBuilder.whereLike(column, `${value}%`);
+        return queryBuilder.whereLike(expression, `${value}%`);
       case '_endsWith':
-        return queryBuilder.whereLike(column, `%${value}`);
+        return queryBuilder.whereLike(expression, `%${value}`);
       case '_iLike':
-        return queryBuilder.whereILike(column, value);
+        return queryBuilder.whereILike(expression, value);
+      case '_year':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.year(this.knex, expression),
+          filterValue: value,
+        });
+      case '_month':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.month(this.knex, expression),
+          filterValue: value,
+        });
+      case '_day':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.day(this.knex, expression),
+          filterValue: value,
+        });
+      case '_date':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.date(this.knex, expression),
+          filterValue: value,
+        });
+      case '_hour':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.hour(this.knex, expression),
+          filterValue: value,
+        });
+      case '_minute':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.minute(this.knex, expression),
+          filterValue: value,
+        });
+      case '_second':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.second(this.knex, expression),
+          filterValue: value,
+        });
+      case '_dayOfWeek':
+        return this.columnFilter({
+          queryBuilder,
+          column: dialectHandler.dayOfWeek(this.knex, expression),
+          filterValue: value,
+        });
       default:
         return null;
     }
@@ -105,17 +163,15 @@ export class FilterBuilder {
     filterValue,
   }: {
     queryBuilder: Knex.QueryBuilder;
-    column: string;
+    column: any;
     filterValue: Record<string, any>;
   }) {
-    const columnAlias = `${this.alias}.${column}`;
-
     for (const [expression, value] of Object.entries(filterValue)) {
       this.basicFilter({
         queryBuilder,
-        column: columnAlias,
+        column,
         value,
-        expression,
+        operator: expression,
       });
     }
   }
@@ -142,6 +198,7 @@ export class FilterBuilder {
       aliasMap: this.aliasMap,
       schemaMapper: this.schemaMapper,
       metadata: referenceTableMetadata,
+      knex: this.knex,
     });
 
     filterBuilder.join(foreignKey, this.alias);
@@ -171,6 +228,7 @@ export class FilterBuilder {
         aliasMap: this.aliasMap,
         schemaMapper: this.schemaMapper,
         metadata: referenceTableMetadata,
+        knex: this.knex,
       });
 
       filterBuilder.exists();
@@ -220,9 +278,10 @@ export class FilterBuilder {
   where() {
     for (const [key, value] of Object.entries(this.filter)) {
       if (this.metadata.columns[key]) {
+        const columnAlias = this.knex.raw('??', `${this.alias}.${key}`);
         this.columnFilter({
           queryBuilder: this.queryBuilder,
-          column: key,
+          column: columnAlias,
           filterValue: value,
         });
       }

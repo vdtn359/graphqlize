@@ -41,6 +41,7 @@ export class QueryBuilder {
     const filterBuilder = new FilterBuilder({
       filter: this.filter,
       metadata: this.metadata,
+      knex: this.knex,
       aliasMap,
       queryBuilder,
       schemaMapper: this.schemaMapper,
