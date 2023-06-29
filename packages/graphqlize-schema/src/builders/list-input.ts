@@ -1,5 +1,6 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { SchemaComposer } from 'graphql-compose';
+import { GraphQLList, GraphQLNonNull } from 'graphql';
 import type { TableBuilder } from './table';
 import { getFilterType } from '../types';
 import { TableTranslator } from './translator';
@@ -49,6 +50,15 @@ export class ListInputBuilder {
         tc.addFields({
           _nested: {
             type: 'Boolean',
+          },
+          _not: {
+            type: tc.getType(),
+          },
+          _and: {
+            type: new GraphQLList(new GraphQLNonNull(tc.getType())),
+          },
+          _or: {
+            type: new GraphQLList(new GraphQLNonNull(tc.getType())),
           },
         });
 

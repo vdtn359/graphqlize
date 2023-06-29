@@ -121,6 +121,16 @@ export class TableTranslator {
 
   reverseToDB(fields: Record<string, any>) {
     return objectTransform(fields, (ret: any, value, key) => {
+      if (['_and', '_or'].includes(key)) {
+        // eslint-disable-next-line no-param-reassign
+        ret[key] = value.map((element: any) => this.reverseToDB(element));
+        return;
+      }
+      if (['_not'].includes(key)) {
+        // eslint-disable-next-line no-param-reassign
+        ret[key] = this.reverseToDB(value);
+        return;
+      }
       if (this.columnLookup[key]) {
         // eslint-disable-next-line no-param-reassign
         ret[this.columnLookup[key]] = value;

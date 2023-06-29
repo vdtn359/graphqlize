@@ -18,7 +18,7 @@ import { plural as pluralize } from 'pluralize';
 import { ForeignKey } from 'knex-schema-inspector/dist/types/foreign-key';
 import { SqlTableMapper } from './table-mapper';
 
-export class SqlMapper implements DatabaseMapper {
+export class SchemaMapper implements DatabaseMapper {
   instance: Knex;
 
   private inspector: ReturnType<typeof schemaInspector>;
@@ -40,7 +40,7 @@ export class SqlMapper implements DatabaseMapper {
   }
 
   static async create(options: Knex.Config) {
-    const mapper = new SqlMapper(options);
+    const mapper = new SchemaMapper(options);
     await mapper.init();
 
     return mapper;
@@ -97,7 +97,7 @@ export class SqlMapper implements DatabaseMapper {
         name: column.name,
         nullable: column.is_nullable,
         isPrimaryKey: column.is_primary_key,
-        type: SqlMapper.mapType(column.data_type),
+        type: SchemaMapper.mapType(column.data_type),
         defaultValue: column.default_value,
         rawType: column.data_type,
       };
@@ -170,7 +170,7 @@ export class SqlMapper implements DatabaseMapper {
     if (!columnMetadata) {
       throw new Error(`Column ${column} not found in table ${table}`);
     }
-    return SqlMapper.mapType(columnMetadata.type.toString());
+    return SchemaMapper.mapType(columnMetadata.type.toString());
   }
 
   static mapType(dataType: string) {

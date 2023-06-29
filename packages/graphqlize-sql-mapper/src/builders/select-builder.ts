@@ -4,21 +4,27 @@ import type {
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { WhereBuilder } from './where-builder';
-import type { SqlMapper } from '../schema-mapper';
+import type { SchemaMapper } from '../schema-mapper';
 import { generateAlias } from '../utils';
 
 export class SelectBuilder {
   private readonly metadata: TableMetadata;
 
-  private pagination: Record<string, any>;
+  private pagination?: Record<string, any>;
 
   private readonly filter: Record<string, any>;
 
   private readonly knex: Knex;
 
-  private readonly schemaMapper: SqlMapper;
+  private readonly schemaMapper: SchemaMapper;
 
-  private readonly aliasMap: Record<string, number> = {};
+  private readonly aliasMap: Record<string, number>;
+
+  private readonly topWhereBuilder: WhereBuilder;
+
+  private readonly knexBuilder: Knex.QueryBuilder;
+
+  private readonly isTopLevel: boolean;
 
   constructor({
     filter,
@@ -26,36 +32,36 @@ export class SelectBuilder {
     metadata,
     knex,
     schemaMapper,
+    knexBuilder,
+    aliasMap = {},
+    isTopLevel = true,
   }: {
     filter: Record<string, any>;
-    pagination: Record<string, any>;
     metadata: TableMetadata;
-    schemaMapper: SqlMapper;
+    schemaMapper: SchemaMapper;
+    knexBuilder?: Knex.QueryBuilder;
     knex: Knex;
+    pagination?: Record<string, any>;
+    isTopLevel?: boolean;
+    aliasMap?: Record<string, number>;
   }) {
     this.schemaMapper = schemaMapper;
     this.pagination = pagination;
     this.metadata = metadata;
     this.knex = knex;
     this.filter = filter;
-  }
+    this.aliasMap = aliasMap;
+    this.isTopLevel = isTopLevel;
+    this.knexBuilder = knexBuilder ?? this.knex.select();
 
-  private applyFilter(knexBuilder: Knex.QueryBuilder) {
-    const filterBuilder = new WhereBuilder({
+    this.topWhereBuilder = new WhereBuilder({
       filter: this.filter,
       metadata: this.metadata,
       knex: this.knex,
-      knexBuilder,
+      knexBuilder: this.knexBuilder,
       selectBuilder: this,
       alias: this.claimAlias(this.metadata.name),
-      isTopLevel: true,
     });
-    knexBuilder.select(`${filterBuilder.getAlias()}.*`);
-    knexBuilder.from({
-      [filterBuilder.getAlias()]: this.metadata.name,
-    });
-
-    filterBuilder.where();
   }
 
   private claimAlias(table: string) {
@@ -101,7 +107,7 @@ export class SelectBuilder {
     foreignKey: ForeignKeyMetadata;
   }) {
     // eslint-disable-next-line no-underscore-dangle
-    if (whereBuilder.getTopLevel() && filterValue?._nested !== false) {
+    if (this.isTopLevel && filterValue?._nested !== false) {
       // perform an exists filter to ensure pagination is not affected
       this.subQueryFilter({
         whereBuilder,
@@ -129,27 +135,24 @@ export class SelectBuilder {
     if (!Object.values(filterValue).filter((val) => val !== undefined).length) {
       return;
     }
-    const knexBuilder = whereBuilder.getKnexBuilder();
     const { referenceTable } = foreignKey;
     const referenceTableMetadata =
       this.schemaMapper.getTableMetadata(referenceTable);
 
     const targetWhereBuilder = new WhereBuilder({
       filter: filterValue,
-      knexBuilder,
+      knexBuilder: whereBuilder.getKnexBuilder(),
       selectBuilder: this,
       metadata: referenceTableMetadata,
       knex: this.knex,
       alias: this.claimAlias(referenceTable),
     });
-
     this.join(
-      knexBuilder,
       foreignKey,
       whereBuilder.getAlias(),
       targetWhereBuilder.getAlias()
     );
-    targetWhereBuilder.where();
+    targetWhereBuilder.build();
   }
 
   private subQueryFilter({
@@ -170,45 +173,31 @@ export class SelectBuilder {
       this.schemaMapper.getTableMetadata(referenceTable);
 
     knexBuilder.whereExists((subQueryBuilder) => {
-      const targetWhereBuilder = new WhereBuilder({
+      const selectBuilder = new SelectBuilder({
         filter: filterValue,
         knexBuilder: subQueryBuilder,
-        selectBuilder: this,
-        metadata: referenceTableMetadata,
         knex: this.knex,
-        alias: this.claimAlias(referenceTable),
+        metadata: referenceTableMetadata,
+        schemaMapper: this.schemaMapper,
+        aliasMap: this.aliasMap,
+        isTopLevel: false,
       });
 
-      this.exists(
-        subQueryBuilder,
-        referenceTableMetadata,
-        targetWhereBuilder.getAlias()
-      );
-      targetWhereBuilder.whereJoin(foreignKey, whereBuilder.getAlias());
-      targetWhereBuilder.where();
-    });
-  }
-
-  private exists(
-    knexBuilder: Knex.QueryBuilder,
-    tableMetadata: TableMetadata,
-    alias: string
-  ) {
-    knexBuilder.select(1);
-    knexBuilder.from({
-      [alias]: tableMetadata.name,
+      selectBuilder.build(1);
+      selectBuilder
+        .getWhereBuilder()
+        .whereJoin(foreignKey, whereBuilder.getAlias());
     });
   }
 
   private join(
-    knexBuilder: Knex.QueryBuilder,
     foreignKey: ForeignKeyMetadata,
     alias: string,
     targetAlias: string
   ) {
     const { referenceTable, columns, referenceColumns } = foreignKey;
 
-    knexBuilder.leftJoin(
+    this.knexBuilder.leftJoin(
       {
         [targetAlias]: referenceTable,
       },
@@ -228,9 +217,22 @@ export class SelectBuilder {
     return this.schemaMapper;
   }
 
-  select() {
-    const queryBuilder = this.knex.select();
-    this.applyFilter(queryBuilder);
-    return queryBuilder;
+  build(fields: any = '*') {
+    if (fields === '*') {
+      this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
+    } else {
+      this.knexBuilder.select(fields);
+    }
+    this.knexBuilder.from({
+      [this.topWhereBuilder.getAlias()]: this.metadata.name,
+    });
+    // build where statements
+    this.topWhereBuilder.build();
+
+    return this.knexBuilder;
+  }
+
+  private getWhereBuilder() {
+    return this.topWhereBuilder;
   }
 }

@@ -3,26 +3,25 @@ import type {
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
-import type { SqlMapper } from '../schema-mapper';
+import type { SchemaMapper } from '../schema-mapper';
 import { getDialectHandler } from '../dialects/factory';
 import type { SelectBuilder } from './select-builder';
+import QueryCallback = Knex.QueryCallback;
 
 export class WhereBuilder {
-  private metadata: TableMetadata;
+  private readonly metadata: TableMetadata;
 
-  private isTopLevel: boolean;
+  private readonly filter: Record<string, any>;
 
-  private filter: Record<string, any>;
+  private readonly knexBuilder: Knex.QueryBuilder;
 
-  private knexBuilder: Knex.QueryBuilder;
+  private readonly selectBuilder: SelectBuilder;
 
-  private selectBuilder: SelectBuilder;
+  private readonly alias: string;
 
-  private alias: string;
+  private readonly schemaMapper: SchemaMapper;
 
-  private schemaMapper: SqlMapper;
-
-  private knex: Knex;
+  private readonly knex: Knex;
 
   constructor({
     filter,
@@ -31,7 +30,6 @@ export class WhereBuilder {
     selectBuilder,
     knex,
     alias,
-    isTopLevel = false,
   }: {
     filter: Record<string, any>;
     metadata: TableMetadata;
@@ -39,7 +37,6 @@ export class WhereBuilder {
     selectBuilder: SelectBuilder;
     knexBuilder: Knex.QueryBuilder;
     alias: string;
-    isTopLevel?: boolean;
   }) {
     this.knex = knex;
     this.selectBuilder = selectBuilder;
@@ -48,15 +45,10 @@ export class WhereBuilder {
     this.metadata = metadata;
     this.knexBuilder = knexBuilder;
     this.alias = alias;
-    this.isTopLevel = isTopLevel;
   }
 
   getAlias() {
     return this.alias;
-  }
-
-  getTopLevel() {
-    return this.isTopLevel;
   }
 
   private basicFilter({
@@ -227,8 +219,123 @@ export class WhereBuilder {
     }
   }
 
-  where() {
+  private andBuilder({
+    filters,
+    knexBuilder,
+  }: {
+    filters: any[];
+    knexBuilder: Knex.QueryBuilder;
+  }) {
+    for (const filter of filters) {
+      const whereBuilder = new WhereBuilder({
+        filter,
+        knexBuilder,
+        alias: this.alias,
+        knex: this.knex,
+        selectBuilder: this.selectBuilder,
+        metadata: this.metadata,
+      });
+      whereBuilder.build();
+    }
+  }
+
+  private orBuilder({
+    filters,
+    knexBuilder,
+  }: {
+    filters: any[];
+    knexBuilder: Knex.QueryBuilder;
+  }) {
+    const orCallbacks: QueryCallback[] = filters
+      .map((filter) =>
+        this.callbackBuilder((orBuilder) => {
+          const whereBuilder = new WhereBuilder({
+            filter,
+            knexBuilder: orBuilder,
+            alias: this.alias,
+            knex: this.knex,
+            selectBuilder: this.selectBuilder,
+            metadata: this.metadata,
+          });
+          whereBuilder.build();
+        })
+      )
+      .filter(Boolean) as QueryCallback[];
+
+    if (!orCallbacks.length) {
+      return;
+    }
+
+    knexBuilder.andWhere((subQuery) => {
+      orCallbacks.forEach((orCallback) => {
+        subQuery.orWhere(orCallback);
+      });
+    });
+  }
+
+  private notBuilder({
+    filter,
+    knexBuilder,
+  }: {
+    filter: Record<string, any>;
+    knexBuilder: Knex.QueryBuilder;
+  }) {
+    const notCallback = this.callbackBuilder((notBuilder) => {
+      const whereBuilder = new WhereBuilder({
+        filter,
+        knexBuilder: notBuilder,
+        alias: this.alias,
+        knex: this.knex,
+        selectBuilder: this.selectBuilder,
+        metadata: this.metadata,
+      });
+      whereBuilder.build();
+    });
+    if (!notCallback) {
+      return;
+    }
+    knexBuilder.andWhereNot(notCallback);
+  }
+
+  private callbackBuilder(
+    callback: (knexBuilder: Knex.QueryBuilder) => void
+  ): Knex.QueryCallback | null {
+    const knexBuilder = this.knex.select();
+    callback(knexBuilder);
+
+    const compiledQuery = knexBuilder.client.queryCompiler(knexBuilder);
+    const { bindings } = knexBuilder.toSQL();
+    const where = compiledQuery.where().substring(6);
+
+    if (!where.trim()) {
+      return null;
+    }
+
+    return (orBuilder: Knex.QueryBuilder) => {
+      orBuilder.whereRaw(where, bindings);
+    };
+  }
+
+  build() {
     for (const [key, value] of Object.entries(this.filter)) {
+      if (key === '_and') {
+        this.andBuilder({
+          knexBuilder: this.knexBuilder,
+          filters: value,
+        });
+      }
+      if (key === '_or') {
+        this.orBuilder({
+          knexBuilder: this.knexBuilder,
+          filters: value,
+        });
+      }
+      if (key === '_not') {
+        this.notBuilder({
+          knexBuilder: this.knexBuilder,
+          filter: value,
+        });
+      }
       if (this.metadata.columns[key]) {
         const columnAlias = this.knex.raw('??', `${this.alias}.${key}`);
         this.columnFilter({

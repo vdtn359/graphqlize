@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "npx tsx src/index.ts"
   },
   "dependencies": {
     "@vdtn359/graphqlize-schema": "workspace:*",

@@ -1,13 +1,13 @@
 import type { TableMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { SelectBuilder } from './builders/select-builder';
-import type { SqlMapper } from './schema-mapper';
+import type { SchemaMapper } from './schema-mapper';
 
 export class SqlTableMapper<T = any> implements TableMapper<T> {
   constructor(
     private readonly knex: Knex,
     private readonly tableMetadata: TableMetadata,
-    private readonly schemaMapper: SqlMapper
+    private readonly schemaMapper: SchemaMapper
   ) {}
 
   async findByColumns(keys: readonly Record<string, any>[], unique = false) {
@@ -52,6 +52,6 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       metadata: this.tableMetadata,
       schemaMapper: this.schemaMapper,
     });
-    return queryBuilder.select();
+    return queryBuilder.build();
   }
 }

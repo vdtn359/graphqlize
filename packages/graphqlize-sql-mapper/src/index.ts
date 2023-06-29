@@ -1,1 +1,1 @@
-export { SqlMapper } from './schema-mapper';
+export { SchemaMapper } from './schema-mapper';
