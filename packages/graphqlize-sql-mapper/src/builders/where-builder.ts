@@ -6,7 +6,6 @@ import { Knex } from 'knex';
 import type { SchemaMapper } from '../schema-mapper';
 import { getDialectHandler } from '../dialects/factory';
 import type { SelectBuilder } from './select-builder';
-import QueryCallback = Knex.QueryCallback;
 
 export class WhereBuilder {
   private readonly metadata: TableMetadata;
@@ -246,7 +245,7 @@ export class WhereBuilder {
     filters: any[];
     knexBuilder: Knex.QueryBuilder;
   }) {
-    const orCallbacks: QueryCallback[] = filters
+    const orCallbacks: Knex.QueryCallback[] = filters
       .map((filter) =>
         this.callbackBuilder((orBuilder) => {
           const whereBuilder = new WhereBuilder({
@@ -260,7 +259,7 @@ export class WhereBuilder {
           whereBuilder.build();
         })
       )
-      .filter(Boolean) as QueryCallback[];
+      .filter(Boolean) as Knex.QueryCallback[];
 
     if (!orCallbacks.length) {
       return;
@@ -305,7 +304,7 @@ export class WhereBuilder {
 
     const compiledQuery = knexBuilder.client.queryCompiler(knexBuilder);
     const { bindings } = knexBuilder.toSQL();
-    const where = compiledQuery.where().substring(6);
+    const where = (compiledQuery.where() ?? '').substring(6);
 
     if (!where.trim()) {
       return null;

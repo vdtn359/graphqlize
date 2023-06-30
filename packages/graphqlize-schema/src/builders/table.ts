@@ -13,6 +13,7 @@ import { BelongToResolver } from '../resolvers/belong-to';
 import { HasResolver } from '../resolvers/has';
 import { ListResolver } from '../resolvers/list';
 import { TableTranslator } from './translator';
+import { CountResolver } from '../resolvers/count';
 
 export class TableBuilder {
   private readonly metadata: TableMetadata;
@@ -24,6 +25,8 @@ export class TableBuilder {
   private readonly translator: TableTranslator;
 
   private readonly listResolver: DefaultResolver;
+
+  private readonly countResolver: DefaultResolver;
 
   private readonly schemaBuilder: SchemaBuilder;
 
@@ -60,6 +63,12 @@ export class TableBuilder {
     });
 
     this.listResolver = new ListResolver({
+      mapper: this.mapper,
+      tableBuilder: this,
+      repository: this.repository,
+    });
+
+    this.countResolver = new CountResolver({
       mapper: this.mapper,
       tableBuilder: this,
       repository: this.repository,
@@ -215,10 +224,16 @@ export class TableBuilder {
             type: new GraphQLNonNull(
               new GraphQLList(new GraphQLNonNull(objectType.getType()))
             ),
+            resolve: (parent, args, context) =>
+              this.listResolver.resolve(parent, args ?? {}, context),
           },
           limit: 'Int!',
           offset: 'Int!',
-          count: 'Int',
+          count: {
+            type: 'Int',
+            resolve: (parent, args, context) =>
+              this.countResolver.resolve(parent, args ?? {}, context),
+          },
         });
       }
     );
@@ -270,11 +285,50 @@ export class TableBuilder {
     this.composer.Query.addFields({
       [this.listMethodName(multiObjectType)]: {
         type: new GraphQLNonNull(multiObjectType.getType()),
-        resolve: (parent, args, context) =>
-          this.listResolver.resolve(parent, args ?? {}, context),
+        resolve: (parent, args) => {
+          const pagination = this.normalisePagination(args.pagination);
+          return {
+            ...pagination,
+            filter: args.filter,
+            pagination,
+          };
+        },
         args: listInputBuilder.buildSchema(),
       },
     });
+  }
+
+  private normalisePagination(pagination: any = {}) {
+    if (pagination.disabled) {
+      return {
+        page: 0,
+        disable: true,
+        limit: 0,
+        offset: 0,
+      };
+    }
+
+    let page = pagination.page ?? null;
+    let limit = pagination.limit ?? 20;
+
+    if (limit > 100) {
+      limit = 100;
+    }
+    let offset = pagination.offset ?? null;
+
+    if (page != null) {
+      offset = page * limit;
+    }
+
+    if (offset != null && page === null) {
+      page = Math.floor(offset / limit);
+    }
+
+    return {
+      offset,
+      page,
+      limit,
+    };
   }
 
   getListMethodBuilder() {

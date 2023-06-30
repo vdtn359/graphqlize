@@ -36,6 +36,8 @@ export interface TableMapper<T> {
     filter: Record<string, any>;
     pagination: Record<string, any>;
   }): Promise<T[]>;
+
+  countByFilter(params: { filter: Record<string, any> }): Promise<number>;
 }
 
 export interface DatabaseMapper {

@@ -107,7 +107,7 @@ export class SelectBuilder {
     foreignKey: ForeignKeyMetadata;
   }) {
     // eslint-disable-next-line no-underscore-dangle
-    if (this.isTopLevel && filterValue?._nested !== false) {
+    if (this.isTopLevel || filterValue?._nested !== false) {
       // perform an exists filter to ensure pagination is not affected
       this.subQueryFilter({
         whereBuilder,
@@ -183,7 +183,7 @@ export class SelectBuilder {
         isTopLevel: false,
       });
 
-      selectBuilder.build(1);
+      selectBuilder.list(1);
       selectBuilder
         .getWhereBuilder()
         .whereJoin(foreignKey, whereBuilder.getAlias());
@@ -217,12 +217,7 @@ export class SelectBuilder {
     return this.schemaMapper;
   }
 
-  build(fields: any = '*') {
-    if (fields === '*') {
-      this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
-    } else {
-      this.knexBuilder.select(fields);
-    }
+  private build() {
     this.knexBuilder.from({
       [this.topWhereBuilder.getAlias()]: this.metadata.name,
     });
@@ -232,7 +227,24 @@ export class SelectBuilder {
     return this.knexBuilder;
   }
 
+  list(fields: any = '*') {
+    if (fields === '*') {
+      this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
+    } else {
+      this.knexBuilder.select(fields);
+    }
+    return this.build();
+  }
+
   private getWhereBuilder() {
     return this.topWhereBuilder;
+  }
+
+  async count() {
+    const queryBuilder = this.build();
+
+    const [result = {}] = await queryBuilder.count();
+
+    return result['count(*)'] ?? 0;
   }
 }

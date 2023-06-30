@@ -52,6 +52,16 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       metadata: this.tableMetadata,
       schemaMapper: this.schemaMapper,
     });
-    return queryBuilder.build();
+    return queryBuilder.list();
+  }
+
+  countByFilter({ filter }: { filter: Record<string, any> }) {
+    const queryBuilder = new SelectBuilder({
+      filter,
+      knex: this.knex,
+      metadata: this.tableMetadata,
+      schemaMapper: this.schemaMapper,
+    });
+    return queryBuilder.count();
   }
 }

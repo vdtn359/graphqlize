@@ -126,4 +126,8 @@ export class Repository<T = any> {
   list({ filter, pagination }: { filter: any; pagination: any }) {
     return this.tableMapper.findByFilter({ filter, pagination });
   }
+
+  count({ filter }: { filter: any }) {
+    return this.tableMapper.countByFilter({ filter });
+  }
 }

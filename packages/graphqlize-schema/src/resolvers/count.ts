@@ -3,7 +3,7 @@ import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
 import { Repository } from './repository';
 
-export class ListResolver extends DefaultResolver {
+export class CountResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
   private repository: Repository;
@@ -22,14 +22,12 @@ export class ListResolver extends DefaultResolver {
     this.repository = repository;
   }
 
-  async resolve({ filter, pagination }: Record<string, any> = {}) {
+  async resolve({ filter }: Record<string, any> = {}) {
     const translator = this.tableBuilder.getTranslator();
     const transformedFilter = translator.reverseToDB(filter);
-    const result: any[] = await this.repository.list({
-      filter: transformedFilter,
-      pagination,
-    });
 
-    return result.map((item) => translator.convertFromDB(item));
+    return this.repository.count({
+      filter: transformedFilter,
+    });
   }
 }
