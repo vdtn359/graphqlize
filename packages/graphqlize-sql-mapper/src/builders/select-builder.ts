@@ -1,6 +1,7 @@
 import type {
   TableMetadata,
   ForeignKeyMetadata,
+  Pagination,
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { WhereBuilder } from './where-builder';
@@ -10,7 +11,7 @@ import { generateAlias } from '../utils';
 export class SelectBuilder {
   private readonly metadata: TableMetadata;
 
-  private pagination?: Record<string, any>;
+  private pagination?: Pagination;
 
   private readonly filter: Record<string, any>;
 
@@ -41,7 +42,7 @@ export class SelectBuilder {
     schemaMapper: SchemaMapper;
     knexBuilder?: Knex.QueryBuilder;
     knex: Knex;
-    pagination?: Record<string, any>;
+    pagination?: Pagination;
     isTopLevel?: boolean;
     aliasMap?: Record<string, number>;
   }) {
@@ -232,6 +233,11 @@ export class SelectBuilder {
       this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
     } else {
       this.knexBuilder.select(fields);
+    }
+
+    if (this.pagination && !this.pagination.disabled) {
+      this.knexBuilder.limit(this.pagination.limit);
+      this.knexBuilder.offset(this.pagination.offset);
     }
     return this.build();
   }

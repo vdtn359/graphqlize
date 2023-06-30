@@ -1,4 +1,8 @@
-import type { DatabaseMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
+import type {
+  DatabaseMapper,
+  Pagination,
+  TableMetadata,
+} from '@vdtn359/graphqlize-mapper';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
 import { SchemaOptionType } from './options';
@@ -298,17 +302,17 @@ export class TableBuilder {
     });
   }
 
-  private normalisePagination(pagination: any = {}) {
+  private normalisePagination(pagination: Pagination & { page?: number }) {
     if (pagination.disabled) {
       return {
         page: 0,
-        disable: true,
+        disabled: true,
         limit: 0,
         offset: 0,
       };
     }
 
-    let page = pagination.page ?? null;
+    const page = pagination.page ?? null;
     let limit = pagination.limit ?? 20;
 
     if (limit > 100) {
@@ -320,13 +324,8 @@ export class TableBuilder {
       offset = page * limit;
     }
 
-    if (offset != null && page === null) {
-      page = Math.floor(offset / limit);
-    }
-
     return {
       offset,
-      page,
       limit,
     };
   }

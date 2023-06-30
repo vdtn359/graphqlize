@@ -35,7 +35,6 @@ export class ListInputBuilder {
       pagination: {
         type: this.buildPagination(),
         defaultValue: {
-          page: 0,
           limit: 20,
         },
       },
@@ -127,7 +126,6 @@ export class ListInputBuilder {
           },
           page: {
             type: 'Int',
-            defaultValue: 0,
           },
           limit: {
             type: 'Int',

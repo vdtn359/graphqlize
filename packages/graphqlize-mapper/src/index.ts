@@ -34,7 +34,7 @@ export interface TableMapper<T> {
 
   findByFilter(params: {
     filter: Record<string, any>;
-    pagination: Record<string, any>;
+    pagination: Pagination;
   }): Promise<T[]>;
 
   countByFilter(params: { filter: Record<string, any> }): Promise<number>;
@@ -57,4 +57,10 @@ export interface DatabaseMapper {
   mapColumn(table: string, column: string): Promise<GraphQLType> | GraphQLType;
 
   getTableMapper<T>(table: string): TableMapper<T>;
+}
+
+export interface Pagination {
+  disabled?: boolean;
+  offset: number;
+  limit: number;
 }
