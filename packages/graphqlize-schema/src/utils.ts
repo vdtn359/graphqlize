@@ -23,3 +23,6 @@ export const pluralizeTransform = (
   str: string,
   casing: keyof typeof transformer
 ) => transform(pluralize(str), casing);
+
+export const hasColumns = (object: any, columns: string[]) =>
+  columns.some((column) => object[column]);

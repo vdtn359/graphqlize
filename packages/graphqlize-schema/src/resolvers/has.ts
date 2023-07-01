@@ -4,6 +4,7 @@ import type {
 } from '@vdtn359/graphqlize-mapper';
 import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
+import { hasColumns } from '../utils';
 
 export class HasResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
@@ -25,12 +26,9 @@ export class HasResolver extends DefaultResolver {
   }
 
   async resolve(parent: any) {
-    // TODO: support foreign relationship with more than 1 keys
-    const [column] = this.foreignKey.columns;
-    const [referencedColumn] = this.foreignKey.referenceColumns;
-    const { referenceTable } = this.foreignKey;
+    const { referenceTable, columns, referenceColumns } = this.foreignKey;
 
-    if (!parent?.$raw?.[column]) {
+    if (!hasColumns(parent?.$raw ?? {}, columns)) {
       return [];
     }
     const schemaBuilder = this.tableBuilder.getSchemaBuilder();
@@ -40,10 +38,14 @@ export class HasResolver extends DefaultResolver {
     const translator = this.tableBuilder.getTranslator();
 
     const result = await referencedTableRepository.loadMany(
-      [referencedColumn],
-      {
-        [referencedColumn]: parent.$raw[column],
-      }
+      referenceColumns,
+      referenceColumns.reduce(
+        (agg, referenceColumn, currentIndex) => ({
+          ...agg,
+          [referenceColumn]: parent.$raw[columns[currentIndex]],
+        }),
+        {}
+      )
     );
     return result.map((item) => translator.convertFromDB(item));
   }

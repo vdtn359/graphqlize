@@ -6,7 +6,7 @@ import type {
 import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
 import { SchemaOptionType } from './options';
-import { mergeTransform } from '../utils';
+import { hasColumns, mergeTransform } from '../utils';
 import { GetInputBuilder } from './get-input';
 import { ListInputBuilder } from './list-input';
 import { GetResolver } from '../resolvers/get';
@@ -120,12 +120,9 @@ export class TableBuilder {
       this.metadata.belongsTo
     )) {
       const { referenceTable, columns } = foreignKey;
-      if (columns.length > 1) {
-        // TODO support multi foreign keys
-        return;
-      }
-      const [column] = columns;
-      const isNullable = this.metadata.columns[column].nullable;
+      const isNullable = columns.every(
+        (column) => this.metadata.columns[column].nullable
+      );
 
       const referencedTypeBuilder =
         this.schemaBuilder.getTableBuilder(referenceTable);
@@ -140,7 +137,6 @@ export class TableBuilder {
             const belongToResolver: DefaultResolver = new BelongToResolver({
               mapper: this.mapper,
               tableBuilder: this,
-              repository: this.repository,
               foreignKey,
             });
             return belongToResolver.resolve(parent, args, context);
@@ -157,13 +153,7 @@ export class TableBuilder {
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasMany
     )) {
-      const { referenceTable, columns, referenceColumns } = foreignKey;
-      if (columns.length > 1) {
-        // TODO support multi foreign keys
-        return;
-      }
-      const [column] = columns;
-      const [referenceColumn] = referenceColumns;
+      const { referenceTable } = foreignKey;
       const referencedTypeBuilder =
         this.schemaBuilder.getTableBuilder(referenceTable);
       const referencedType = referencedTypeBuilder.buildMultiObjectTC();
@@ -175,7 +165,9 @@ export class TableBuilder {
           type: new GraphQLNonNull(referencedType.getType()),
           resolve: async (parent, args, context) => {
             const pagination = this.normalisePagination(args.pagination);
-            if (!parent?.$raw?.[column]) {
+            const { columns, referenceColumns } = foreignKey;
+
+            if (!hasColumns(parent?.$raw ?? {}, columns)) {
               return {
                 ...pagination,
                 records: [],
@@ -206,9 +198,15 @@ export class TableBuilder {
               ...pagination,
               filter: {
                 ...args.filter,
-                [this.translator.columnName(referenceColumn)]: {
-                  _eq: parent.$raw?.[column],
-                },
+                ...referenceColumns.reduce(
+                  (agg, referenceColumn, currentIndex) => ({
+                    ...agg,
+                    [this.translator.columnName(referenceColumn)]: {
+                      _eq: parent.$raw[columns[currentIndex]],
+                    },
+                  }),
+                  {}
+                ),
               },
               pagination,
             };
@@ -226,11 +224,7 @@ export class TableBuilder {
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasOne
     )) {
-      const { referenceTable, columns } = foreignKey;
-      if (columns.length > 1) {
-        // TODO support multi foreign keys
-        return;
-      }
+      const { referenceTable } = foreignKey;
       const referencedTypeBuilder =
         this.schemaBuilder.getTableBuilder(referenceTable);
       const referencedType = referencedTypeBuilder.buildObjectTC();
