@@ -117,6 +117,7 @@ export class SchemaMapper implements DatabaseMapper {
         ...agg,
         [constraintName]: {
           columns: [current.column],
+          table,
           referenceTable: current.foreign_key_table,
           referenceColumns: [current.foreign_key_column],
         },
@@ -129,6 +130,7 @@ export class SchemaMapper implements DatabaseMapper {
       if (table !== foreignKey.foreign_key_table) {
         this.tables[foreignKey.foreign_key_table].hasMany[pluralize(table)] = {
           columns: [foreignKey.foreign_key_column],
+          table: foreignKey.foreign_key_table,
           referenceTable: table,
           referenceColumns: [foreignKey.column],
         };

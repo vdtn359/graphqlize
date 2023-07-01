@@ -168,6 +168,9 @@ importers:
       graphql-scalars:
         specifier: ^1.22.2
         version: 1.22.2(graphql@16.7.1)
+      json-stringify-deterministic:
+        specifier: ^1.0.8
+        version: 1.0.8
       knex:
         specifier: ^2.4.2
         version: 2.4.2
@@ -5509,6 +5512,11 @@ packages:
   /json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
     dev: true
+
+  /json-stringify-deterministic@1.0.8:
+    resolution: {integrity: sha512-rkJID3qeigo3VCrEcxX1333fTBBxW89YrdYcZexMnL/WdB8u0zctyG63e/DpahRJyrWCDhh7IQhiR7u2XEDQ4Q==}
+    engines: {node: '>= 4'}
+    dev: false
 
   /json5@1.0.2:
     resolution: {integrity: sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==}

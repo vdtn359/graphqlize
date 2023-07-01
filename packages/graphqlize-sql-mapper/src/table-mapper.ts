@@ -1,5 +1,6 @@
 import type {
   Pagination,
+  SortDirection,
   TableMapper,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
@@ -45,13 +46,16 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
   findByFilter({
     filter,
     pagination,
+    sort,
   }: {
-    filter: Record<string, any>;
-    pagination: Pagination;
+    filter?: Record<string, any>;
+    pagination?: Pagination;
+    sort: Record<string, SortDirection>[];
   }): Promise<T[]> {
     const queryBuilder = new SelectBuilder({
       filter,
       pagination,
+      sort,
       knex: this.knex,
       metadata: this.tableMetadata,
       schemaMapper: this.schemaMapper,

@@ -4,6 +4,7 @@ import type {
   Pagination,
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
+import jsonStringify from 'json-stringify-deterministic';
 import { WhereBuilder } from './where-builder';
 import type { SchemaMapper } from '../schema-mapper';
 import { generateAlias } from '../utils';
@@ -11,7 +12,9 @@ import { generateAlias } from '../utils';
 export class SelectBuilder {
   private readonly metadata: TableMetadata;
 
-  private pagination?: Pagination;
+  private readonly pagination?: Pagination;
+
+  private readonly sort?: Record<string, any>[];
 
   private readonly filter: Record<string, any>;
 
@@ -27,9 +30,14 @@ export class SelectBuilder {
 
   private readonly isTopLevel: boolean;
 
+  private joinMap: Record<string, Record<string, string>> = {};
+
+  private tableMap: Record<string, string> = {};
+
   constructor({
     filter,
     pagination,
+    sort,
     metadata,
     knex,
     schemaMapper,
@@ -37,7 +45,8 @@ export class SelectBuilder {
     aliasMap = {},
     isTopLevel = true,
   }: {
-    filter: Record<string, any>;
+    filter?: Record<string, any>;
+    sort?: Record<string, any>[];
     metadata: TableMetadata;
     schemaMapper: SchemaMapper;
     knexBuilder?: Knex.QueryBuilder;
@@ -50,7 +59,8 @@ export class SelectBuilder {
     this.pagination = pagination;
     this.metadata = metadata;
     this.knex = knex;
-    this.filter = filter;
+    this.filter = filter ?? {};
+    this.sort = sort;
     this.aliasMap = aliasMap;
     this.isTopLevel = isTopLevel;
     this.knexBuilder = knexBuilder ?? this.knex.select();
@@ -140,19 +150,23 @@ export class SelectBuilder {
     const referenceTableMetadata =
       this.schemaMapper.getTableMetadata(referenceTable);
 
+    const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+
     const targetWhereBuilder = new WhereBuilder({
       filter: filterValue,
       knexBuilder: whereBuilder.getKnexBuilder(),
       selectBuilder: this,
       metadata: referenceTableMetadata,
       knex: this.knex,
-      alias: this.claimAlias(referenceTable),
+      alias: existingJoin?.[referenceTable] ?? this.claimAlias(referenceTable),
     });
-    this.join(
-      foreignKey,
-      whereBuilder.getAlias(),
-      targetWhereBuilder.getAlias()
-    );
+    if (!existingJoin) {
+      this.join(
+        foreignKey,
+        whereBuilder.getAlias(),
+        targetWhereBuilder.getAlias()
+      );
+    }
     targetWhereBuilder.build();
   }
 
@@ -196,7 +210,15 @@ export class SelectBuilder {
     alias: string,
     targetAlias: string
   ) {
-    const { referenceTable, columns, referenceColumns } = foreignKey;
+    const joinKey = this.getJoinKey(foreignKey);
+    if (this.joinMap[joinKey]) {
+      return this.joinMap[joinKey];
+    }
+    const { table, referenceTable, columns, referenceColumns } = foreignKey;
+    this.joinMap[joinKey] = {
+      [table]: alias,
+      [referenceTable]: targetAlias,
+    };
 
     this.knexBuilder.leftJoin(
       {
@@ -212,6 +234,8 @@ export class SelectBuilder {
         }
       }
     );
+
+    return this.joinMap[joinKey];
   }
 
   getSchemaMapper() {
@@ -239,6 +263,10 @@ export class SelectBuilder {
       this.knexBuilder.limit(this.pagination.limit);
       this.knexBuilder.offset(this.pagination.offset);
     }
+
+    if (this.sort) {
+      this.applySort(this.topWhereBuilder.getAlias(), this.metadata, this.sort);
+    }
     return this.build();
   }
 
@@ -252,5 +280,59 @@ export class SelectBuilder {
     const [result = {}] = await queryBuilder.count();
 
     return result['count(*)'] ?? 0;
+  }
+
+  private applySort(
+    alias: string,
+    tableMetadata: TableMetadata,
+    sorts: Record<string, any>[]
+  ) {
+    for (const sortItem of sorts) {
+      for (const [field, sortValue] of Object.entries(sortItem)) {
+        if (
+          tableMetadata.columns[field] &&
+          typeof sortValue.sort === 'string'
+        ) {
+          this.knexBuilder.orderBy(
+            `${alias}.${field}`,
+            sortValue.sort,
+            sortValue.nulls
+          );
+        }
+        const references = {
+          ...tableMetadata.belongsTo,
+          ...tableMetadata.hasMany,
+          ...tableMetadata.hasOne,
+        };
+
+        if (references[field]) {
+          const foreignKey = references[field];
+          const { referenceTable } = foreignKey;
+          const referenceTableMetadata =
+            this.schemaMapper.getTableMetadata(referenceTable);
+          let existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+
+          if (!existingJoin) {
+            // not already join
+            existingJoin = this.join(
+              foreignKey,
+              alias,
+              this.claimAlias(referenceTable)
+            );
+          }
+
+          this.applySort(existingJoin[referenceTable], referenceTableMetadata, [
+            sortValue,
+          ]);
+        }
+      }
+    }
+  }
+
+  private getJoinKey(foreignKey: ForeignKeyMetadata) {
+    return jsonStringify({
+      [foreignKey.referenceTable]: [foreignKey.referenceColumns],
+      [foreignKey.table]: [foreignKey.columns],
+    });
   }
 }

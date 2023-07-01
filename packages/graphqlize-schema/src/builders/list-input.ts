@@ -38,7 +38,7 @@ export class ListInputBuilder {
           limit: 20,
         },
       },
-      sort: this.buildSort(),
+      sort: new GraphQLList(new GraphQLNonNull(this.buildSort().getType())),
     };
   }
 
@@ -97,10 +97,39 @@ export class ListInputBuilder {
       (etc) => {
         etc.addFields({
           ASC: {
-            value: 'ASC',
+            value: 'asc',
           },
           DESC: {
-            value: 'DESC',
+            value: 'desc',
+          },
+        });
+      }
+    );
+
+    const nullsDirection = this.composer.getOrCreateETC(
+      this.translator.typeName('NullsDirection'),
+      (etc) => {
+        etc.addFields({
+          FIRST: {
+            value: 'first',
+          },
+          LAST: {
+            value: 'last',
+          },
+        });
+      }
+    );
+
+    const sortOption = this.composer.getOrCreateITC(
+      this.translator.typeName('SortOption'),
+      (itc) => {
+        itc.addFields({
+          sort: {
+            type: new GraphQLNonNull(sortDirection.getType()),
+          },
+          nulls: {
+            type: nullsDirection,
+            defaultValue: 'last',
           },
         });
       }
@@ -109,7 +138,24 @@ export class ListInputBuilder {
       for (const columnName of Object.keys(this.metadata.columns)) {
         tc.addFields({
           [this.translator.columnName(columnName)]: {
-            type: sortDirection,
+            type: sortOption,
+          },
+        });
+      }
+
+      for (const [constraintName, foreignKey] of Object.entries({
+        ...this.metadata.belongsTo,
+        ...this.metadata.hasOne,
+        ...this.metadata.hasMany,
+      })) {
+        const { referenceTable } = foreignKey;
+        const schemaBuilder = this.tableBuilder.getSchemaBuilder();
+        const referencedTableBuilder =
+          schemaBuilder.getTableBuilder(referenceTable);
+
+        tc.addFields({
+          [this.translator.associationName(constraintName)]: {
+            type: referencedTableBuilder.getListInputBuilder().buildSort(),
           },
         });
       }

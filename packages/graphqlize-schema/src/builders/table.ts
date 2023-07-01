@@ -174,7 +174,7 @@ export class TableBuilder {
                 count: 0,
               };
             }
-            if (!args.filter && pagination.disabled) {
+            if (!args.filter && !args.sort && pagination.disabled) {
               // use dataloader to load all records when no filter or pagination required
               const hasManyResolver: DefaultResolver = new HasResolver({
                 mapper: this.mapper,
@@ -196,6 +196,7 @@ export class TableBuilder {
             // load via list resolver
             return {
               ...pagination,
+              sort: args.sort,
               filter: {
                 ...args.filter,
                 ...referenceColumns.reduce(
@@ -325,6 +326,7 @@ export class TableBuilder {
           return {
             ...pagination,
             filter: args.filter,
+            sort: args.sort,
             pagination,
           };
         },

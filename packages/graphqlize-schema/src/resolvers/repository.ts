@@ -1,5 +1,7 @@
 import type {
   DatabaseMapper,
+  Pagination,
+  SortDirection,
   TableMapper,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
@@ -123,11 +125,19 @@ export class Repository<T = any> {
     return JSON.stringify(columns.map((column) => item[column]));
   }
 
-  list({ filter, pagination }: { filter: any; pagination: any }) {
-    return this.tableMapper.findByFilter({ filter, pagination });
+  list({
+    filter,
+    pagination,
+    sort,
+  }: {
+    filter?: any;
+    pagination?: Pagination;
+    sort?: Record<string, SortDirection>[];
+  }) {
+    return this.tableMapper.findByFilter({ filter, pagination, sort });
   }
 
-  count({ filter }: { filter: any }) {
+  count({ filter }: { filter?: any }) {
     return this.tableMapper.countByFilter({ filter });
   }
 }

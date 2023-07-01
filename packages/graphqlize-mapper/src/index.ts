@@ -1,6 +1,7 @@
 import type { GraphQLType } from 'graphql';
 
 export interface ForeignKeyMetadata {
+  table: string;
   columns: string[];
   referenceTable: string;
   referenceColumns: string[];
@@ -33,11 +34,12 @@ export interface TableMapper<T> {
   ): Promise<T[]>;
 
   findByFilter(params: {
-    filter: Record<string, any>;
-    pagination: Pagination;
+    filter?: Record<string, any>;
+    sort?: Record<string, any>[];
+    pagination?: Pagination;
   }): Promise<T[]>;
 
-  countByFilter(params: { filter: Record<string, any> }): Promise<number>;
+  countByFilter(params: { filter?: Record<string, any> }): Promise<number>;
 }
 
 export interface DatabaseMapper {
@@ -64,3 +66,5 @@ export interface Pagination {
   offset: number;
   limit: number;
 }
+
+export type SortDirection = 'asc' | 'desc';
