@@ -1,4 +1,8 @@
-import type { TableMapper, TableMetadata } from '@vdtn359/graphqlize-mapper';
+import type {
+  Pagination,
+  TableMapper,
+  TableMetadata,
+} from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import { SelectBuilder } from './builders/select-builder';
 import type { SchemaMapper } from './schema-mapper';
@@ -43,7 +47,7 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     pagination,
   }: {
     filter: Record<string, any>;
-    pagination: Record<string, any>;
+    pagination: Pagination;
   }): Promise<T[]> {
     const queryBuilder = new SelectBuilder({
       filter,

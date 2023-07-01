@@ -4,29 +4,23 @@ import type {
 } from '@vdtn359/graphqlize-mapper';
 import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
-import { Repository } from './repository';
 
 export class HasResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
-
-  private repository: Repository;
 
   private foreignKey: ForeignKeyMetadata;
 
   constructor({
     mapper,
     tableBuilder,
-    repository,
     foreignKey,
   }: {
     mapper: DatabaseMapper;
     tableBuilder: TableBuilder;
-    repository: Repository;
     foreignKey: ForeignKeyMetadata;
   }) {
     super(tableBuilder);
     this.mapper = mapper;
-    this.repository = repository;
     this.foreignKey = foreignKey;
   }
 

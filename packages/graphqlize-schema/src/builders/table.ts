@@ -136,7 +136,7 @@ export class TableBuilder {
           type: isNullable
             ? referencedType
             : new GraphQLNonNull(referencedType.getType()),
-          resolve: (parent, args, context) => {
+          resolve: async (parent, args, context) => {
             const belongToResolver: DefaultResolver = new BelongToResolver({
               mapper: this.mapper,
               tableBuilder: this,
@@ -157,27 +157,63 @@ export class TableBuilder {
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasMany
     )) {
-      const { referenceTable, columns } = foreignKey;
+      const { referenceTable, columns, referenceColumns } = foreignKey;
       if (columns.length > 1) {
         // TODO support multi foreign keys
         return;
       }
+      const [column] = columns;
+      const [referenceColumn] = referenceColumns;
       const referencedTypeBuilder =
         this.schemaBuilder.getTableBuilder(referenceTable);
-      const referencedType = referencedTypeBuilder.buildObjectTC();
+      const referencedType = referencedTypeBuilder.buildMultiObjectTC();
+      const referencedListInputBuilder =
+        referencedTypeBuilder.getListInputBuilder();
 
       tc.addFields({
         [this.translator.associationName(constraintName)]: {
-          type: referencedType.getType(),
-          resolve: (parent, args, context) => {
-            const hasManyResolver: DefaultResolver = new HasResolver({
-              mapper: this.mapper,
-              tableBuilder: this,
-              repository: this.repository,
-              foreignKey,
-            });
-            return hasManyResolver.resolve(parent, args, context);
+          type: new GraphQLNonNull(referencedType.getType()),
+          resolve: async (parent, args, context) => {
+            const pagination = this.normalisePagination(args.pagination);
+            if (!parent?.$raw?.[column]) {
+              return {
+                ...pagination,
+                records: [],
+                count: 0,
+              };
+            }
+            if (!args.filter && pagination.disabled) {
+              // use dataloader to load all records when no filter or pagination required
+              const hasManyResolver: DefaultResolver = new HasResolver({
+                mapper: this.mapper,
+                tableBuilder: this,
+                foreignKey,
+              });
+              const records = await hasManyResolver.resolve(
+                parent,
+                args,
+                context
+              );
+              return {
+                ...pagination,
+                records,
+                count: records.length,
+              };
+            }
+
+            // load via list resolver
+            return {
+              ...pagination,
+              filter: {
+                ...args.filter,
+                [this.translator.columnName(referenceColumn)]: {
+                  _eq: parent.$raw?.[column],
+                },
+              },
+              pagination,
+            };
           },
+          args: referencedListInputBuilder.buildSchema(),
         },
       });
     }
@@ -201,15 +237,14 @@ export class TableBuilder {
 
       tc.addFields({
         [this.translator.associationName(constraintName)]: {
-          type: new GraphQLList(new GraphQLNonNull(referencedType.getType())),
+          type: referencedType.getType(),
           resolve: async (parent, args, context) => {
-            const hasManyResolver: DefaultResolver = new HasResolver({
+            const hasResolver: DefaultResolver = new HasResolver({
               mapper: this.mapper,
               tableBuilder: this,
-              repository: this.repository,
               foreignKey,
             });
-            const result = await hasManyResolver.resolve(parent, args, context);
+            const result = await hasResolver.resolve(parent, args, context);
             return result[0] ?? null;
           },
         },
@@ -229,6 +264,7 @@ export class TableBuilder {
               new GraphQLList(new GraphQLNonNull(objectType.getType()))
             ),
             resolve: (parent, args, context) =>
+              parent.records ??
               this.listResolver.resolve(parent, args ?? {}, context),
           },
           limit: 'Int!',
@@ -236,6 +272,7 @@ export class TableBuilder {
           count: {
             type: 'Int',
             resolve: (parent, args, context) =>
+              parent.count ??
               this.countResolver.resolve(parent, args ?? {}, context),
           },
         });
@@ -284,7 +321,7 @@ export class TableBuilder {
   }
 
   buildListMethod(multiObjectType: ObjectTypeComposer) {
-    const listInputBuilder = this.getListMethodBuilder();
+    const listInputBuilder = this.getListInputBuilder();
 
     this.composer.Query.addFields({
       [this.listMethodName(multiObjectType)]: {
@@ -330,7 +367,7 @@ export class TableBuilder {
     };
   }
 
-  getListMethodBuilder() {
+  getListInputBuilder() {
     return new ListInputBuilder({
       composer: this.composer,
       metadata: this.metadata,

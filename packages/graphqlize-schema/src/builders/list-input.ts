@@ -83,7 +83,7 @@ export class ListInputBuilder {
 
           tc.addFields({
             [this.translator.associationName(constraintName)]: {
-              type: referencedTableBuilder.getListMethodBuilder().buildFilter(),
+              type: referencedTableBuilder.getListInputBuilder().buildFilter(),
             },
           });
         }
