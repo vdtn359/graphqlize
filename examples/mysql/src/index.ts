@@ -1,30 +1,20 @@
 import { createYoga } from 'graphql-yoga';
 import { createServer } from 'node:http';
-import { SchemaBuilder } from '@vdtn359/graphqlize-schema';
-import { SchemaMapper } from '@vdtn359/graphqlize-sql-mapper';
+import { printSchema } from 'graphql';
+import fs from 'fs/promises';
+import { buildSchema } from './schema';
 
 async function run() {
-  const builder = await SchemaBuilder.init(
-    await SchemaMapper.create(
-      {
-        client: 'mysql2',
-        connection: {
-          host: '127.0.0.1',
-          user: 'root',
-          password: '',
-          database: 'stackla',
-          charset: 'utf8',
-        },
-      },
-      {
-        version: '1.0.0',
-      }
-    )
-  );
+  const schema = await buildSchema();
+  const schemaString = printSchema(schema);
   const yoga = createYoga({
-    schema: builder.toSchema(),
+    schema,
     graphiql: true,
     landingPage: false,
+  });
+
+  await fs.writeFile('schema.gql', schemaString, {
+    encoding: 'utf-8',
   });
 
   const server = createServer(yoga);

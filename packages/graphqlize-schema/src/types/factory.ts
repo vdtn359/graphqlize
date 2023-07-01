@@ -21,6 +21,7 @@ export const getFilterType = (
     case 'DateTime':
       return buildDateFilter(composer);
     case 'JSON':
+    case 'JSONObject':
       return buildJsonFilter(composer);
     case 'Boolean':
       return buildBooleanFilter(composer);

@@ -23,6 +23,7 @@ coverage
 # Maven
 target/
 dist/
+examples/mysql/schema.json
 
 # JetBrains IDE
 .idea/

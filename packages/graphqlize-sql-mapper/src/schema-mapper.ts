@@ -21,7 +21,7 @@ import { plural as pluralize } from 'pluralize';
 import { ForeignKey } from 'knex-schema-inspector/dist/types/foreign-key';
 import jsonStringify from 'json-stringify-deterministic';
 import { SqlTableMapper } from './table-mapper';
-import { SchemaOptions, TableOptions } from '../options';
+import { SchemaOptions, TableOptions } from './options';
 
 type IntrospectionResult = {
   table: string;
@@ -310,7 +310,11 @@ export class SchemaMapper implements DatabaseMapper {
 
   static mapType(dataType: string) {
     const transformedType = dataType.toLowerCase();
-    if (transformedType.includes('char') || transformedType.includes('text')) {
+    if (
+      transformedType.includes('char') ||
+      transformedType.includes('text') ||
+      transformedType === 'time'
+    ) {
       return GraphQLString;
     }
     if (transformedType.includes('tinyint') || transformedType === 'boolean') {

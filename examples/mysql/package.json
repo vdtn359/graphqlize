@@ -11,13 +11,18 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsc",
-    "start": "npx tsx src/index.ts"
+    "test": "jest --forceExit",
+    "start": "npx tsx src/index.ts",
+    "seed": "npx tsx tests/seed.ts"
   },
   "dependencies": {
     "@vdtn359/graphqlize-schema": "workspace:*",
     "@vdtn359/graphqlize-sql-mapper": "workspace:*",
     "graphql-yoga": "^4.0.2",
-    "mysql2": "^3.4.0"
+    "graphql": "^16.7.1",
+    "graphql-tag": "^2.12.6",
+    "mysql2": "^3.4.0",
+    "sequelize": "^6.32.1"
   },
   "keywords": [],
   "author": "",

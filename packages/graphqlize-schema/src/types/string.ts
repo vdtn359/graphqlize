@@ -13,13 +13,13 @@ export function buildStringFilter(composer: SchemaComposer) {
       _iLike: 'String',
       _regExp: 'String',
       _iRegExp: 'String',
-      _between: '[String]',
-      _notBetween: '[String]',
+      _between: '[String!]',
+      _notBetween: '[String!]',
       _in: '[String]',
       _notIn: '[String]',
       _contains: 'String',
       _startsWith: 'String',
-      _endWith: 'String',
+      _endsWith: 'String',
     });
   });
 }

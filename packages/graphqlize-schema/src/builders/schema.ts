@@ -56,7 +56,7 @@ export class SchemaBuilder {
     return this.tableBuilders[table];
   }
 
-  async toSchema() {
+  toSchema() {
     return this.composer.buildSchema();
   }
 }

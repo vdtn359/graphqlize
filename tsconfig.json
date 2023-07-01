@@ -1,5 +1,5 @@
 {
   "extends": "./node_modules/@vdtn359/base-typescript/tsconfig.json",
   "exclude": ["**/node_modules", "**/dist"],
-  "include": [".eslintrc.js", "watch.js"]
+  "include": [".eslintrc.js", "watch.js", "jest.config.js"]
 }
