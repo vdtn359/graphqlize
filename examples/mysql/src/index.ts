@@ -5,16 +5,21 @@ import { SchemaMapper } from '@vdtn359/graphqlize-sql-mapper';
 
 async function run() {
   const builder = await SchemaBuilder.init(
-    await SchemaMapper.create({
-      client: 'mysql2',
-      connection: {
-        host: '127.0.0.1',
-        user: 'root',
-        password: '',
-        database: 'stackla',
-        charset: 'utf8',
+    await SchemaMapper.create(
+      {
+        client: 'mysql2',
+        connection: {
+          host: '127.0.0.1',
+          user: 'root',
+          password: '',
+          database: 'stackla',
+          charset: 'utf8',
+        },
       },
-    })
+      {
+        version: '1.0.0',
+      }
+    )
   );
   const yoga = createYoga({
     schema: builder.toSchema(),

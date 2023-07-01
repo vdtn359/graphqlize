@@ -6,17 +6,29 @@ import type {
 import schemaInspector from 'knex-schema-inspector';
 import { knex, Knex } from 'knex';
 import { GraphQLDateTime, GraphQLJSONObject } from 'graphql-scalars';
+import fsPromise from 'fs/promises';
+
+import fs from 'fs';
 import {
   GraphQLBoolean,
   GraphQLFloat,
-  GraphQLList,
   GraphQLInt,
+  GraphQLList,
   GraphQLString,
 } from 'graphql';
 import { Column } from 'knex-schema-inspector/dist/types/column';
 import { plural as pluralize } from 'pluralize';
 import { ForeignKey } from 'knex-schema-inspector/dist/types/foreign-key';
+import jsonStringify from 'json-stringify-deterministic';
 import { SqlTableMapper } from './table-mapper';
+import { SchemaOptions, TableOptions } from '../options';
+
+type IntrospectionResult = {
+  table: string;
+  columns: Column[];
+  foreignKeys: ForeignKey[];
+  primaryKey: string | null;
+}[];
 
 export class SchemaMapper implements DatabaseMapper {
   instance: Knex;
@@ -25,7 +37,10 @@ export class SchemaMapper implements DatabaseMapper {
 
   private tables: Record<string, TableMetadata> = {};
 
-  private constructor(options: Knex.Config) {
+  private constructor(
+    config: Knex.Config,
+    private readonly options: SchemaOptions = {}
+  ) {
     this.instance = knex({
       // @ts-ignore: only applicable for mysql
       typeCast(field, next) {
@@ -34,29 +49,147 @@ export class SchemaMapper implements DatabaseMapper {
         }
         return next();
       },
-      ...options,
+      ...config,
     });
     this.inspector = schemaInspector(this.instance);
   }
 
-  static async create(options: Knex.Config) {
-    const mapper = new SchemaMapper(options);
+  static async create(config: Knex.Config, options?: SchemaOptions) {
+    const mapper = new SchemaMapper(config, options);
     await mapper.init();
 
     return mapper;
   }
 
-  async init() {
-    const tables = await this.inspector.tables();
+  private async getIntrospectionResult(): Promise<IntrospectionResult> {
+    if (!this.options.version) {
+      return this.introspect();
+    }
+    const { versionFile = 'schema.json' } = this.options;
+    const cachedResult = fs.existsSync(versionFile)
+      ? JSON.parse(
+          await fsPromise.readFile(versionFile, {
+            encoding: 'utf-8',
+          })
+        )
+      : null;
+    const shouldUseCacheResult =
+      cachedResult &&
+      jsonStringify(cachedResult.options) === jsonStringify(this.options);
+    if (shouldUseCacheResult) {
+      return cachedResult.results;
+    }
+    const introspectResult = await this.introspect();
 
-    const result = await Promise.all(
-      tables.map(async (table) => ({
-        table,
-        columns: await this.inspector.columnInfo(table),
-        foreignKeys: await this.inspector.foreignKeys(table),
-        primaryKey: await this.inspector.primary(table),
-      }))
+    await fsPromise.writeFile(
+      versionFile,
+      JSON.stringify({
+        options: this.options,
+        results: introspectResult,
+      }),
+      {
+        encoding: 'utf-8',
+      }
     );
+
+    return introspectResult;
+  }
+
+  private async introspect() {
+    let filteredTables =
+      this.options.includeTables ?? (await this.inspector.tables());
+    filteredTables = filteredTables.filter(
+      (table) => !this.options.excludeTables?.includes(table)
+    );
+
+    return Promise.all(
+      filteredTables.map(async (table) => {
+        const tableOption = this.options.tables?.[table] ?? {};
+
+        const filteredColumns = this.filterColumns(
+          await this.inspector.columnInfo(table),
+          tableOption
+        );
+
+        const filteredForeignKeys = this.filterForeignKeys(
+          filteredTables,
+          filteredColumns.map((column) => column.name),
+          await this.inspector.foreignKeys(table),
+          tableOption
+        );
+
+        const primaryKey = await this.inspector.primary(table);
+        return {
+          table,
+          columns: filteredColumns,
+          foreignKeys: filteredForeignKeys,
+          primaryKey: filteredColumns.some(
+            (column) => column.name === primaryKey
+          )
+            ? primaryKey
+            : null,
+        };
+      })
+    );
+  }
+
+  private filterColumns(columns: Column[], tableOptions: TableOptions) {
+    return columns.filter((column) =>
+      this.allowColumn(column.name, tableOptions)
+    );
+  }
+
+  private allowColumn(column: string, tableOptions: TableOptions) {
+    if (tableOptions.includeColumns?.length) {
+      return tableOptions.includeColumns.includes(column);
+    }
+    if (tableOptions.excludeColumns?.length) {
+      return !tableOptions.excludeColumns.includes(column);
+    }
+
+    return true;
+  }
+
+  private filterForeignKeys(
+    tables: string[],
+    columns: string[],
+    foreignKeys: ForeignKey[],
+    tableOptions: TableOptions
+  ) {
+    let filteredForeignKeys = foreignKeys;
+
+    if (tableOptions.includeForeignKeys?.length) {
+      filteredForeignKeys = filteredForeignKeys.filter((foreignKey) =>
+        tableOptions.includeForeignKeys?.includes(foreignKey.column)
+      );
+    }
+    if (tableOptions.excludeForeignKeys?.length) {
+      filteredForeignKeys = filteredForeignKeys.filter(
+        (foreignKey) =>
+          !tableOptions.excludeForeignKeys?.includes(foreignKey.column)
+      );
+    }
+    return filteredForeignKeys.filter((foreignKey) => {
+      if (!tables.includes(foreignKey.foreign_key_table)) {
+        return false;
+      }
+
+      if (!columns.includes(foreignKey.column)) {
+        return false;
+      }
+
+      const referenceTableOptions =
+        this.options.tables?.[foreignKey.foreign_key_table];
+
+      return !(
+        referenceTableOptions &&
+        !this.allowColumn(foreignKey.foreign_key_column, referenceTableOptions)
+      );
+    });
+  }
+
+  async init() {
+    const result = await this.getIntrospectionResult();
 
     for (const tableInfo of result) {
       const { table, columns, foreignKeys } = tableInfo;
