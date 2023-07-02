@@ -11,6 +11,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsc",
+    "lint": "eslint .",
     "test": "jest --forceExit",
     "start": "npx tsx src/index.ts",
     "seed": "npx tsx tests/seed.ts"

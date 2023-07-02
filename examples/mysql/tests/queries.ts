@@ -3,14 +3,14 @@ import { Server } from 'http';
 import { sendQuery } from './utils';
 import { userFragment } from './fragment';
 
-export const listUserFactories = async (
+export const listUsersQuery = async (
   server: Server,
   params: Record<string, any>
 ) =>
   sendQuery(server, {
     query: gql`
-      query Query {
-        listUsers(filter: { username: {} }) {
+      query Query($filter: ListUsersInput) {
+        listUsers(filter: $filter) {
           records {
             ...UserFragment
           }
@@ -19,4 +19,5 @@ export const listUserFactories = async (
       }
       ${userFragment}
     `,
+    variables: params,
   });

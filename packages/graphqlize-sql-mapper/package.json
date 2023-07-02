@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint ."
   },
   "dependencies": {
     "change-case": "^4.1.2",
@@ -20,7 +21,9 @@
   },
   "devDependencies": {
     "@types/pluralize": "^0.0.29",
-    "@vdtn359/graphqlize-mapper": "workspace:*"
+    "@vdtn359/graphqlize-mapper": "workspace:*",
+    "graphql": "^16",
+    "graphql-scalars": "^1.22.2"
   },
   "peerDependencies": {
     "graphql": "^16",

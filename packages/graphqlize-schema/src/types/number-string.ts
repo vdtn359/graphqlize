@@ -29,7 +29,7 @@ export function buildStringNumberFilter(composer: SchemaComposer) {
     tc.addFields({
       _eq: TYPE,
       _neq: TYPE,
-      _le: TYPE,
+      _lt: TYPE,
       _lte: TYPE,
       _gt: TYPE,
       _gte: TYPE,

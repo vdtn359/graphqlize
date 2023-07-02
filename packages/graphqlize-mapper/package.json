@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint ."
   },
   "peerDependencies": {
     "graphql": "^16",

@@ -37,6 +37,7 @@
         "tests/**",
         ".eslintrc.js",
         ".eslintignore",
+        "../../.eslintrc.js",
         "../../.prettierrc"
       ],
       "outputs": []

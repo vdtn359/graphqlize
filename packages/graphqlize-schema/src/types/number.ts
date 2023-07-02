@@ -5,7 +5,7 @@ export function buildNumberFilter(composer: SchemaComposer) {
     tc.addFields({
       _eq: 'Float',
       _neq: 'Float',
-      _le: 'Float',
+      _lt: 'Float',
       _lte: 'Float',
       _gt: 'Float',
       _gte: 'Float',

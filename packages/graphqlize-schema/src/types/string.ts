@@ -5,7 +5,7 @@ export function buildStringFilter(composer: SchemaComposer) {
     tc.addFields({
       _eq: 'String',
       _neq: 'String',
-      _le: 'String',
+      _lt: 'String',
       _lte: 'String',
       _gt: 'String',
       _gte: 'String',

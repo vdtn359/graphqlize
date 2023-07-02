@@ -4,7 +4,8 @@
     "outDir": "./dist/",
     "baseUrl": ".",
     "paths": {
-      "@vdtn359/*": ["../../packages/*/src", "./node_modules/@vdtn359/*"]
+      "@vdtn359/*": ["../../packages/*/src", "./node_modules/@vdtn359/*"],
+      "#tests/*": ["./tests/*"]
     }
   },
   "include": ["./**/*.ts", ".eslintrc.js", "watch.js", "jest.config.js"]

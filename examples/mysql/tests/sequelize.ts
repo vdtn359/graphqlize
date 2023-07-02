@@ -37,8 +37,10 @@ for (const modelDefiner of modelDefiners) {
 
 associate(sequelize);
 
-afterAll(async () => {
-  await sequelize.close();
-});
+if (typeof afterAll === 'function') {
+  afterAll(async () => {
+    await sequelize.close();
+  });
+}
 
 export { sequelize };

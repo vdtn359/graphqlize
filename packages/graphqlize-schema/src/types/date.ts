@@ -5,7 +5,7 @@ export function buildDateFilter(composer: SchemaComposer) {
     tc.addFields({
       _eq: 'Date',
       _neq: 'Date',
-      _le: 'Date',
+      _lt: 'Date',
       _lte: 'Date',
       _gt: 'Date',
       _gte: 'Date',

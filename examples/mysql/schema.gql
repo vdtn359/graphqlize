@@ -94,7 +94,7 @@ input ListUsersInput {
 input NumberFilter {
   _eq: Float
   _neq: Float
-  _le: Float
+  : Float
   _lte: Float
   _gt: Float
   _gte: Float
@@ -107,7 +107,7 @@ input NumberFilter {
 input StringFilter {
   _eq: String
   _neq: String
-  _le: String
+  _lt: String
   _lte: String
   _gt: String
   _gte: String
@@ -136,7 +136,7 @@ input JsonFieldFilter {
 input StringNumberFilter {
   _eq: StringNumber
   _neq: StringNumber
-  _le: StringNumber
+  _lt: StringNumber
   _lte: StringNumber
   _gt: StringNumber
   _gte: StringNumber
@@ -164,7 +164,7 @@ input BooleanFilter {
 input DateFilter {
   _eq: Date
   _neq: Date
-  _le: Date
+  _lt: Date
   _lte: Date
   _gt: Date
   _gte: Date
