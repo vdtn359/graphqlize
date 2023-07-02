@@ -1,6 +1,6 @@
 import { sequelize } from './sequelize';
 
-module.exports = async () => {
+export default async () => {
   await sequelize.close();
   process.exit(0);
 };

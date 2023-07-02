@@ -124,12 +124,11 @@ export class ListInputBuilder {
       this.translator.typeName('SortOption'),
       (itc) => {
         itc.addFields({
-          sort: {
+          direction: {
             type: new GraphQLNonNull(sortDirection.getType()),
           },
           nulls: {
             type: nullsDirection,
-            defaultValue: 'last',
           },
         });
       }

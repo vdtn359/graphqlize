@@ -11,7 +11,7 @@ import { associate } from './association';
 
 const logging = process.env.LOG_LEVEL === 'debug' ? undefined : false;
 
-const sequelize = new Sequelize({
+export const sequelize = new Sequelize({
   dialect: 'mysql',
   username: 'root',
   password: 'password',
@@ -36,5 +36,3 @@ for (const modelDefiner of modelDefiners) {
 }
 
 associate(sequelize);
-
-export { sequelize };

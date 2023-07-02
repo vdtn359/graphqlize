@@ -35,6 +35,6 @@ export class DefaultDialect implements BaseDialect {
   }
 
   json(knex: Knex, column: string, field: string) {
-    return knex.raw(`JSON_UNQUOTE(JSON_EXTRACT(${column}, '$.${field}')`);
+    return knex.raw(`JSON_UNQUOTE(JSON_EXTRACT(${column}, '$.${field}'))`);
   }
 }

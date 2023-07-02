@@ -291,11 +291,11 @@ export class SelectBuilder {
       for (const [field, sortValue] of Object.entries(sortItem)) {
         if (
           tableMetadata.columns[field] &&
-          typeof sortValue.sort === 'string'
+          typeof sortValue.direction === 'string'
         ) {
           this.knexBuilder.orderBy(
             `${alias}.${field}`,
-            sortValue.sort,
+            sortValue.direction,
             sortValue.nulls
           );
         }

@@ -9,8 +9,12 @@ export const listUsersQuery = async (
 ) =>
   sendQuery(server, {
     query: gql`
-      query Query($filter: ListUsersInput) {
-        listUsers(filter: $filter) {
+      query Query(
+        $filter: ListUsersInput
+        $pagination: Pagination
+        $sort: [SortUser!]
+      ) {
+        listUsers(filter: $filter, pagination: $pagination, sort: $sort) {
           records {
             ...UserFragment
           }
@@ -28,8 +32,12 @@ export const listStatsQuery = async (
 ) =>
   sendQuery(server, {
     query: gql`
-      query Query($filter: ListStatsInput) {
-        listStats(filter: $filter) {
+      query Query(
+        $filter: ListStatsInput
+        $pagination: Pagination
+        $sort: [SortStat!]
+      ) {
+        listStats(filter: $filter, pagination: $pagination, sort: $sort) {
           records {
             ...StatsFragment
           }
