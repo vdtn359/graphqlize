@@ -38,6 +38,7 @@ export const getServer = async () => {
   const schema = await buildSchema();
   const yoga = createYoga({
     schema,
+    maskedErrors: false,
   });
 
   return createServer(yoga);

@@ -31,7 +31,7 @@ export const customUserFragment = gql`
 `;
 
 export const statsFragment = gql`
-  fragment StatsFragment on Stats {
+  fragment StatsFragment on Stat {
     id
     exp
     likes

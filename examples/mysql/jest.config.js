@@ -9,4 +9,5 @@ module.exports = {
     prefix: '<rootDir>',
   }),
   globalSetup: './tests/setup.ts',
+  globalTeardown: './tests/teardown.ts',
 };

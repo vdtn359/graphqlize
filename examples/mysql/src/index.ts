@@ -11,6 +11,7 @@ async function run() {
     schema,
     graphiql: true,
     landingPage: false,
+    maskedErrors: false,
   });
 
   await fs.writeFile('schema.gql', schemaString, {
