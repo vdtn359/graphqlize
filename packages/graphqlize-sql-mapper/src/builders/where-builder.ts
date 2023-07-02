@@ -317,56 +317,66 @@ export class WhereBuilder {
 
   build() {
     for (const [key, value] of Object.entries(this.filter)) {
-      if (key === '_and') {
-        this.andBuilder({
-          knexBuilder: this.knexBuilder,
-          filters: value,
-        });
-      }
-      if (key === '_or') {
-        this.orBuilder({
-          knexBuilder: this.knexBuilder,
-          filters: value,
-        });
-      }
-      if (key === '_not') {
-        this.notBuilder({
-          knexBuilder: this.knexBuilder,
-          filter: value,
-        });
-      }
-      if (this.metadata.columns[key]) {
-        const columnAlias = this.knex.raw('??', `${this.alias}.${key}`);
-        this.columnFilter({
-          knexBuilder: this.knexBuilder,
-          column: columnAlias,
-          filterValue: value,
-          type: this.metadata.columns[key].rawType.toLowerCase(),
-        });
-      }
+      switch (key) {
+        case '_and':
+          this.andBuilder({
+            knexBuilder: this.knexBuilder,
+            filters: value,
+          });
+          break;
+        case '_or':
+          this.orBuilder({
+            knexBuilder: this.knexBuilder,
+            filters: value,
+          });
+          break;
+        case '_raw':
+          this.rawBuilder({
+            knexBuilder: this.knexBuilder,
+            filterValue: value,
+          });
+          break;
+        case '_not':
+          this.notBuilder({
+            knexBuilder: this.knexBuilder,
+            filter: value,
+          });
+          break;
+        default:
+          if (this.metadata.columns[key]) {
+            const columnAlias = this.knex.raw('??', `${this.alias}.${key}`);
+            this.columnFilter({
+              knexBuilder: this.knexBuilder,
+              column: columnAlias,
+              filterValue: value,
+              type: this.metadata.columns[key].rawType.toLowerCase(),
+            });
+          }
 
-      if (this.metadata.belongsTo[key]) {
-        this.selectBuilder.singleAssociationFilter({
-          whereBuilder: this,
-          filterValue: value,
-          foreignKey: this.metadata.belongsTo[key],
-        });
-      }
+          if (this.metadata.belongsTo[key]) {
+            this.selectBuilder.singleAssociationFilter({
+              whereBuilder: this,
+              filterValue: value,
+              foreignKey: this.metadata.belongsTo[key],
+            });
+          }
 
-      if (this.metadata.hasOne[key]) {
-        this.selectBuilder.singleAssociationFilter({
-          whereBuilder: this,
-          filterValue: value,
-          foreignKey: this.metadata.hasOne[key],
-        });
-      }
+          if (this.metadata.hasOne[key]) {
+            this.selectBuilder.singleAssociationFilter({
+              whereBuilder: this,
+              filterValue: value,
+              foreignKey: this.metadata.hasOne[key],
+            });
+          }
 
-      if (this.metadata.hasMany[key]) {
-        this.selectBuilder.manyAssociationFilter({
-          whereBuilder: this,
-          filterValue: value,
-          foreignKey: this.metadata.hasMany[key],
-        });
+          if (this.metadata.hasMany[key]) {
+            this.selectBuilder.manyAssociationFilter({
+              whereBuilder: this,
+              filterValue: value,
+              foreignKey: this.metadata.hasMany[key],
+            });
+          }
+          break;
       }
     }
     return this.knexBuilder;
@@ -374,5 +384,17 @@ export class WhereBuilder {
 
   getKnexBuilder() {
     return this.knexBuilder;
+  }
+
+  private rawBuilder({
+    knexBuilder,
+    filterValue,
+  }: {
+    knexBuilder: Knex.QueryBuilder;
+    filterValue: any;
+  }) {
+    const { bindings } = filterValue;
+    const expression = filterValue.expression.replace('#alias', this.alias);
+    knexBuilder.andWhereRaw(expression, bindings);
   }
 }

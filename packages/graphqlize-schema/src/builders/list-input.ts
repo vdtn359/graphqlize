@@ -43,6 +43,19 @@ export class ListInputBuilder {
   }
 
   buildFilter() {
+    const rawExpression = this.composer.getOrCreateITC(
+      this.translator.typeName('RawExpression'),
+      (tc) => {
+        tc.addFields({
+          expression: {
+            type: 'String',
+          },
+          bindings: {
+            type: '[JSON]',
+          },
+        });
+      }
+    );
     return this.composer.getOrCreateITC(
       this.translator.listFilterName(),
       (tc) => {
@@ -52,6 +65,9 @@ export class ListInputBuilder {
           },
           _not: {
             type: tc.getType(),
+          },
+          _raw: {
+            type: rawExpression.getType(),
           },
           _and: {
             type: new GraphQLList(new GraphQLNonNull(tc.getType())),
