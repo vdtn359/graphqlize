@@ -28,6 +28,16 @@ export async function buildSchema() {
       referenceTable: 'users',
     },
   });
+  mapper.defineForeignKey({
+    table: 'stats',
+    type: 'hasOne',
+    name: 'user',
+    foreignKey: {
+      columns: ['id'],
+      referenceColumns: ['stats_id'],
+      referenceTable: 'users',
+    },
+  });
   mapper.defineCandidateKeys('users', 'email__provider', ['email', 'provider']);
 
   const builder = await SchemaBuilder.init(mapper);
