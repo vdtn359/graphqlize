@@ -59,6 +59,18 @@ export interface DatabaseMapper {
   mapColumn(table: string, column: string): Promise<GraphQLType> | GraphQLType;
 
   getTableMapper<T>(table: string): TableMapper<T>;
+
+  defineForeignKey({
+    table,
+    type,
+    name,
+    foreignKey,
+  }: {
+    table: string;
+    type: 'hasOne' | 'belongsTo' | 'hasMany';
+    name: 'string';
+    foreignKey: Omit<ForeignKeyMetadata, 'table'>;
+  }): void;
 }
 
 export interface Pagination {
