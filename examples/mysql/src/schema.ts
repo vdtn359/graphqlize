@@ -18,6 +18,16 @@ export async function buildSchema() {
       version: '1.0.0',
     }
   );
+  mapper.defineForeignKey({
+    table: 'users',
+    type: 'hasMany',
+    name: 'students',
+    foreignKey: {
+      columns: ['id'],
+      referenceColumns: ['mentor_id'],
+      referenceTable: 'users',
+    },
+  });
   const builder = await SchemaBuilder.init(mapper);
   return builder.toSchema();
 }

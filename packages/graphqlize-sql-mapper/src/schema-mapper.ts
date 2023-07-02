@@ -369,7 +369,7 @@ export class SchemaMapper implements DatabaseMapper {
   }: {
     table: string;
     type: 'hasOne' | 'belongsTo' | 'hasMany';
-    name: 'string';
+    name: string;
     foreignKey: Omit<ForeignKeyMetadata, 'table'>;
   }) {
     this.tables[table][type][name] = {

@@ -139,7 +139,9 @@ export class TableTranslator {
       if (this.associationLookup[key]) {
         const translator = this.associationMap[key];
         // eslint-disable-next-line no-param-reassign
-        ret[this.associationLookup[key]] = translator.reverseToDB(value);
+        ret[this.associationLookup[key]] = value
+          ? translator.reverseToDB(value)
+          : null;
         return;
       }
       // eslint-disable-next-line no-param-reassign

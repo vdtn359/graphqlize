@@ -143,7 +143,10 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    if (!Object.values(filterValue).filter((val) => val !== undefined).length) {
+    if (
+      filterValue &&
+      !Object.values(filterValue).filter((val) => val !== undefined).length
+    ) {
       return;
     }
     const { referenceTable } = foreignKey;
@@ -151,9 +154,20 @@ export class SelectBuilder {
       this.schemaMapper.getTableMetadata(referenceTable);
 
     const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+    let usedFilter = filterValue;
+
+    if (usedFilter === null) {
+      usedFilter = {};
+      const { referenceColumns } = foreignKey;
+      for (const referenceColumn of referenceColumns) {
+        usedFilter[referenceColumn] = {
+          _eq: null,
+        };
+      }
+    }
 
     const targetWhereBuilder = new WhereBuilder({
-      filter: filterValue,
+      filter: usedFilter,
       knexBuilder: whereBuilder.getKnexBuilder(),
       selectBuilder: this,
       metadata: referenceTableMetadata,
@@ -179,7 +193,10 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    if (!Object.values(filterValue).filter((val) => val !== undefined).length) {
+    if (
+      filterValue &&
+      !Object.values(filterValue).filter((val) => val !== undefined).length
+    ) {
       return;
     }
     const knexBuilder = whereBuilder.getKnexBuilder();
@@ -187,7 +204,9 @@ export class SelectBuilder {
     const referenceTableMetadata =
       this.schemaMapper.getTableMetadata(referenceTable);
 
-    knexBuilder.whereExists((subQueryBuilder) => {
+    const usedMethod = filterValue ? 'whereExists' : 'whereNotExists';
+
+    knexBuilder[usedMethod]((subQueryBuilder) => {
       const selectBuilder = new SelectBuilder({
         filter: filterValue,
         knexBuilder: subQueryBuilder,
