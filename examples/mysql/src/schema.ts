@@ -28,6 +28,8 @@ export async function buildSchema() {
       referenceTable: 'users',
     },
   });
+  mapper.defineCandidateKeys('users', 'email__provider', ['email', 'provider']);
+
   const builder = await SchemaBuilder.init(mapper);
   return builder.toSchema();
 }

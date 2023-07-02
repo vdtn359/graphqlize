@@ -26,6 +26,22 @@ export const listUsersQuery = async (
     variables: params,
   });
 
+export const getUserQuery = async (
+  server: Server,
+  params: Record<string, any>
+) =>
+  sendQuery(server, {
+    query: gql`
+      query Query($by: GetUserInput!) {
+        getUser(by: $by) {
+          ...UserFragment
+        }
+      }
+      ${userFragment}
+    `,
+    variables: params,
+  });
+
 export const listStatsQuery = async (
   server: Server,
   params: Record<string, any>

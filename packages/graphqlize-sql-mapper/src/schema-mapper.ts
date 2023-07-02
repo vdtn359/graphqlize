@@ -377,4 +377,11 @@ export class SchemaMapper implements DatabaseMapper {
       table,
     };
   }
+
+  defineCandidateKeys(table: string, name: string, columns: string[]) {
+    this.tables[table].candidateKeys[name] = columns;
+    if (columns.length > 1) {
+      this.tables[table].compositeKeys[name] = columns;
+    }
+  }
 }
