@@ -82,7 +82,11 @@ export class ListInputBuilder {
         )) {
           tc.addFields({
             [this.translator.columnName(columnName)]: {
-              type: getFilterType(columnMetadata.type as any, this.composer),
+              type: getFilterType(
+                columnMetadata,
+                this.translator,
+                this.composer
+              ),
             },
           });
         }

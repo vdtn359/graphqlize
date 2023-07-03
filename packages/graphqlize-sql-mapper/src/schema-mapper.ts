@@ -4,7 +4,7 @@ import type {
   TableMapper,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
-import schemaInspector from 'knex-schema-inspector';
+import schemaInspector from '@vdtn359/knex-schema-inspector';
 import { knex, Knex } from 'knex';
 import { GraphQLDateTime, GraphQLJSONObject } from 'graphql-scalars';
 import fsPromise from 'fs/promises';
@@ -12,14 +12,15 @@ import fsPromise from 'fs/promises';
 import fs from 'fs';
 import {
   GraphQLBoolean,
+  GraphQLEnumType,
   GraphQLFloat,
   GraphQLInt,
   GraphQLList,
   GraphQLString,
 } from 'graphql';
-import { Column } from 'knex-schema-inspector/dist/types/column';
+import { Column } from '@vdtn359/knex-schema-inspector/dist/types/column';
 import { plural as pluralize } from 'pluralize';
-import { ForeignKey } from 'knex-schema-inspector/dist/types/foreign-key';
+import { ForeignKey } from '@vdtn359/knex-schema-inspector/dist/types/foreign-key';
 import jsonStringify from 'json-stringify-deterministic';
 import { SqlTableMapper } from './table-mapper';
 import { SchemaOptions, TableOptions } from './options';
@@ -231,7 +232,7 @@ export class SchemaMapper implements DatabaseMapper {
         name: column.name,
         nullable: column.is_nullable,
         isPrimaryKey: column.is_primary_key,
-        type: SchemaMapper.mapType(column.data_type),
+        type: this.mapType(column),
         defaultValue: column.default_value,
         rawType: column.data_type,
       };
@@ -301,15 +302,9 @@ export class SchemaMapper implements DatabaseMapper {
     return this.tables[table];
   }
 
-  mapColumn(table: string, column: string) {
-    const columnMetadata = this.tables[table].columns[column];
-    if (!columnMetadata) {
-      throw new Error(`Column ${column} not found in table ${table}`);
-    }
-    return SchemaMapper.mapType(columnMetadata.type.toString());
-  }
-
-  static mapType(dataType: string) {
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  private mapType(column: Column) {
+    const { data_type: dataType, enum_values: enumValues } = column;
     const transformedType = dataType.toLowerCase();
     if (
       transformedType.includes('char') ||
@@ -345,7 +340,21 @@ export class SchemaMapper implements DatabaseMapper {
     if (transformedType === 'set') {
       return new GraphQLList(GraphQLString);
     }
-    if (transformedType === 'enum') {
+    if (transformedType.includes('enum')) {
+      if (enumValues?.length) {
+        return new GraphQLEnumType({
+          name: 'EnumValues',
+          values: enumValues.reduce(
+            (agg, value) => ({
+              ...agg,
+              [value]: {
+                value,
+              },
+            }),
+            {}
+          ),
+        });
+      }
       return GraphQLString;
     }
     if (transformedType.includes('json')) {

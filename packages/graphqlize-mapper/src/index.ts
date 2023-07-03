@@ -56,8 +56,6 @@ export interface DatabaseMapper {
     column: string
   ): Promise<ColumnMetadata> | ColumnMetadata;
 
-  mapColumn(table: string, column: string): Promise<GraphQLType> | GraphQLType;
-
   getTableMapper<T>(table: string): TableMapper<T>;
 
   defineForeignKey({

@@ -69,6 +69,14 @@ export class TableTranslator {
     return this.casing === 'camelCase' ? ('pascalCase' as const) : this.casing;
   }
 
+  enumTypeName(name: string) {
+    return this.typeName(`${this.tableMetadata.name} ${name} Enum`);
+  }
+
+  enumTypeFilterName(name: string) {
+    return this.typeName(`${this.tableMetadata.name} ${name} Enum Filter`);
+  }
+
   typeName(name: string, plural = false) {
     const casing = this.getTypeNameCasing();
     const singularName = transform(singular(name), casing);

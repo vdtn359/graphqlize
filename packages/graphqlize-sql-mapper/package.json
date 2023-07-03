@@ -16,7 +16,7 @@
     "change-case": "^4.1.2",
     "json-stringify-deterministic": "^1.0.8",
     "knex": "^2.4.2",
-    "knex-schema-inspector": "^3.0.1",
+    "@vdtn359/knex-schema-inspector": "^3.0.1",
     "pluralize": "^8.0.0"
   },
   "devDependencies": {

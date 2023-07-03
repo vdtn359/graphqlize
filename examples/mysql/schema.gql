@@ -36,7 +36,7 @@ type User {
   mentorId: Int
   id: Int!
   username: String!
-  provider: String!
+  provider: UsersProviderEnum!
   email: String!
   details: JSONObject
   verified: Boolean
@@ -46,6 +46,13 @@ type User {
   mentor: User
   instruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
   userSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
+  students(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
+}
+
+enum UsersProviderEnum {
+  google
+  facebook
+  local
 }
 
 """
@@ -61,6 +68,7 @@ type Stat {
   createdAt: DateTime!
   updatedAt: DateTime!
   users(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
+  user: User
 }
 
 type Users {
@@ -73,13 +81,14 @@ type Users {
 input ListUsersInput {
   _nested: Boolean
   _not: ListUsersInput
+  _raw: RawExpression
   _and: [ListUsersInput!]
   _or: [ListUsersInput!]
   statsId: NumberFilter
   mentorId: NumberFilter
   id: NumberFilter
   username: StringFilter
-  provider: StringFilter
+  provider: UsersProviderEnumFilter
   email: StringFilter
   details: JsonFilter
   verified: BooleanFilter
@@ -89,12 +98,23 @@ input ListUsersInput {
   mentor: ListUsersInput
   instruments: ListInstrumentsInput
   userSessions: ListUserSessionsInput
+  students: ListUsersInput
 }
+
+input RawExpression {
+  expression: String
+  bindings: [JSON]
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 input NumberFilter {
   _eq: Float
   _neq: Float
-  : Float
+  _lt: Float
   _lte: Float
   _gt: Float
   _gte: Float
@@ -122,6 +142,13 @@ input StringFilter {
   _contains: String
   _startsWith: String
   _endsWith: String
+}
+
+input UsersProviderEnumFilter {
+  _eq: UsersProviderEnum
+  _neq: UsersProviderEnum
+  _in: [UsersProviderEnum]
+  _notIn: [UsersProviderEnum]
 }
 
 input JsonFilter {
@@ -187,6 +214,7 @@ scalar Date
 input ListStatsInput {
   _nested: Boolean
   _not: ListStatsInput
+  _raw: RawExpression
   _and: [ListStatsInput!]
   _or: [ListStatsInput!]
   id: NumberFilter
@@ -195,12 +223,14 @@ input ListStatsInput {
   views: NumberFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  user: ListUsersInput
   users: ListUsersInput
 }
 
 input ListInstrumentsInput {
   _nested: Boolean
   _not: ListInstrumentsInput
+  _raw: RawExpression
   _and: [ListInstrumentsInput!]
   _or: [ListInstrumentsInput!]
   userId: NumberFilter
@@ -218,6 +248,7 @@ input ListInstrumentsInput {
 input ListOrchestrasInput {
   _nested: Boolean
   _not: ListOrchestrasInput
+  _raw: RawExpression
   _and: [ListOrchestrasInput!]
   _or: [ListOrchestrasInput!]
   id: NumberFilter
@@ -230,6 +261,7 @@ input ListOrchestrasInput {
 input ListUserSessionsInput {
   _nested: Boolean
   _not: ListUserSessionsInput
+  _raw: RawExpression
   _and: [ListUserSessionsInput!]
   _or: [ListUserSessionsInput!]
   userId: NumberFilter
@@ -245,6 +277,7 @@ input ListUserSessionsInput {
 input ListSessionsInput {
   _nested: Boolean
   _not: ListSessionsInput
+  _raw: RawExpression
   _and: [ListSessionsInput!]
   _or: [ListSessionsInput!]
   id: NumberFilter
@@ -280,11 +313,12 @@ input SortUser {
   mentor: SortUser
   instruments: SortInstrument
   userSessions: SortUserSession
+  students: SortUser
 }
 
 input SortOption {
-  sort: SortDirection!
-  nulls: NullsDirection = LAST
+  direction: SortDirection!
+  nulls: NullsDirection
 }
 
 enum SortDirection {
@@ -304,6 +338,7 @@ input SortStat {
   views: SortOption
   createdAt: SortOption
   updatedAt: SortOption
+  user: SortUser
   users: SortUser
 }
 
@@ -441,4 +476,16 @@ input GetUserInput {
   id: Int
   statsId: Int
   username: String
+  email__provider: UsersEmailProviderKey
+}
+
+input UsersEmailProviderKey {
+  email: String!
+  provider: EnumValues!
+}
+
+enum EnumValues {
+  google
+  facebook
+  local
 }

@@ -172,6 +172,9 @@ importers:
 
   packages/graphqlize-sql-mapper:
     dependencies:
+      '@vdtn359/knex-schema-inspector':
+        specifier: ^3.0.1
+        version: 3.0.1
       change-case:
         specifier: ^4.1.2
         version: 4.1.2
@@ -181,9 +184,6 @@ importers:
       knex:
         specifier: ^2.4.2
         version: 2.4.2
-      knex-schema-inspector:
-        specifier: ^3.0.1
-        version: 3.0.1
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
@@ -2756,6 +2756,13 @@ packages:
       - supports-color
       - typescript
     dev: true
+
+  /@vdtn359/knex-schema-inspector@3.0.1:
+    resolution: {integrity: sha512-7fZSoUSR2KrCx8e0rGY6BgIvq/f0Os8LjGrEDTYvrziBwQlZIPWLJq0DYQGVKykBZUSxR8GUWM6mmSNHwy7VoQ==}
+    dependencies:
+      lodash.flatten: 4.4.0
+      lodash.isnil: 4.0.0
+    dev: false
 
   /@whatwg-node/events@0.1.1:
     resolution: {integrity: sha512-AyQEn5hIPV7Ze+xFoXVU3QTHXVbWPrzaOkxtENMPMuNL6VVHrp4hHfDt9nrQpjO7BgvuM95dMtkycX5M/DZR3w==}
@@ -5653,13 +5660,6 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
     dev: true
-
-  /knex-schema-inspector@3.0.1:
-    resolution: {integrity: sha512-ofglN/HoHYhNxQJbuuKEj0vtVsBpEVlbvfoFd9lPn1ABzJHdwZmKLquCYbVLTXZIN0O6y6DDEuN4EqBKMhH+xQ==}
-    dependencies:
-      lodash.flatten: 4.4.0
-      lodash.isnil: 4.0.0
-    dev: false
 
   /knex@2.4.2:
     resolution: {integrity: sha512-tMI1M7a+xwHhPxjbl/H9K1kHX+VncEYcvCx5K00M16bWvpYPKAZd6QrCu68PtHAdIZNQPWZn0GVhqVBEthGWCg==}

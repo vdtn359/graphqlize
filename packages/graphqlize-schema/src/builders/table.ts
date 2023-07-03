@@ -3,7 +3,7 @@ import type {
   Pagination,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
-import { GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLEnumType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
 import { SchemaOptionType } from './options';
 import { hasColumns, mergeTransform } from '../utils';
@@ -18,6 +18,7 @@ import { HasResolver } from '../resolvers/has';
 import { ListResolver } from '../resolvers/list';
 import { TableTranslator } from './translator';
 import { CountResolver } from '../resolvers/count';
+import { buildEnumType } from '../types/enum';
 
 export class TableBuilder {
   private readonly metadata: TableMetadata;
@@ -95,10 +96,19 @@ export class TableBuilder {
         for (const [columnName, columnMetadata] of Object.entries(
           this.metadata.columns
         )) {
-          const type = columnMetadata.type as any;
+          let graphqlType: any = columnMetadata.type;
+          if (graphqlType instanceof GraphQLEnumType) {
+            graphqlType = buildEnumType(
+              this.translator,
+              columnMetadata,
+              this.composer
+            ).getType();
+          }
           tc.addFields({
             [this.translator.columnName(columnName)]: {
-              type: columnMetadata.nullable ? type : new GraphQLNonNull(type),
+              type: columnMetadata.nullable
+                ? graphqlType
+                : new GraphQLNonNull(graphqlType),
             },
           });
         }
