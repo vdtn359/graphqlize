@@ -1,16 +1,22 @@
 type Query {
   getInstrument(by: GetInstrumentInput!): Instrument
   listInstruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
+  aggregateInstruments(filter: ListInstrumentsInput, groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstruments
   getOrchestra(by: GetOrchestraInput!): Orchestra
   listOrchestras(filter: ListOrchestrasInput, pagination: Pagination = {limit: 20}, sort: [SortOrchestra!]): Orchestras!
+  aggregateOrchestras(filter: ListOrchestrasInput, groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestras
   getSession(by: GetSessionInput!): Session
   listSessions(filter: ListSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortSession!]): Sessions!
+  aggregateSessions(filter: ListSessionsInput, groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessions
   getStat(by: GetStatInput!): Stat
   listStats(filter: ListStatsInput, pagination: Pagination = {limit: 20}, sort: [SortStat!]): Stats!
+  aggregateStats(filter: ListStatsInput, groupBy: StatsGroupBy, having: StatsHaving): AggregateStats
   getUserSession(by: GetUserSessionInput!): UserSession
   listUserSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
+  aggregateUserSessions(filter: ListUserSessionsInput, groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessions
   getUser(by: GetUserInput!): User
   listUsers(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
+  aggregateUsers(filter: ListUsersInput, groupBy: UsersGroupBy, having: UsersHaving): AggregateUsers
 }
 
 type Instrument {
@@ -435,6 +441,73 @@ input GetInstrumentInput {
   id: Int
 }
 
+type AggregateInstruments {
+  count: CountInstruments
+  avg: CountInstruments
+  sum: SumInstruments
+  min: MinInstruments
+  max: MaxInstruments
+}
+
+type CountInstruments {
+  user_id: Int
+  orchestra_id: Int
+  id: Int
+  type: Int
+  description: Int
+  purchase_date: Int
+  created_at: Int
+  updated_at: Int
+}
+
+type SumInstruments {
+  user_id: Int
+  orchestra_id: Int
+  id: Int
+}
+
+type MinInstruments {
+  user_id: Int
+  orchestra_id: Int
+  id: Int
+}
+
+type MaxInstruments {
+  user_id: Int
+  orchestra_id: Int
+  id: Int
+}
+
+input InstrumentsGroupBy {
+  userId: Boolean
+  orchestraId: Boolean
+  id: Boolean
+  type: Boolean
+  description: Boolean
+  purchaseDate: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input InstrumentsHaving {
+  _nested: Boolean
+  _not: ListInstrumentsInput
+  _raw: RawExpression
+  _and: [ListInstrumentsInput!]
+  _or: [ListInstrumentsInput!]
+  userId: NumberFilter
+  orchestraId: NumberFilter
+  id: NumberFilter
+  type: StringFilter
+  description: StringFilter
+  purchaseDate: DateFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  user: ListUsersInput
+  orchestra: ListOrchestrasInput
+}
+
 input GetOrchestraInput {
   id: Int
 }
@@ -444,6 +517,54 @@ type Orchestras {
   limit: Int!
   offset: Int!
   count: Int
+}
+
+type AggregateOrchestras {
+  count: CountOrchestras
+  avg: CountOrchestras
+  sum: SumOrchestras
+  min: MinOrchestras
+  max: MaxOrchestras
+}
+
+type CountOrchestras {
+  id: Int
+  name: Int
+  created_at: Int
+  updated_at: Int
+}
+
+type SumOrchestras {
+  id: Int
+}
+
+type MinOrchestras {
+  id: Int
+}
+
+type MaxOrchestras {
+  id: Int
+}
+
+input OrchestrasGroupBy {
+  id: Boolean
+  name: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input OrchestrasHaving {
+  _nested: Boolean
+  _not: ListOrchestrasInput
+  _raw: RawExpression
+  _and: [ListOrchestrasInput!]
+  _or: [ListOrchestrasInput!]
+  id: NumberFilter
+  name: StringFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  instruments: ListInstrumentsInput
 }
 
 input GetSessionInput {
@@ -457,6 +578,66 @@ type Sessions {
   count: Int
 }
 
+type AggregateSessions {
+  count: CountSessions
+  avg: CountSessions
+  sum: SumSessions
+  min: MinSessions
+  max: MaxSessions
+}
+
+type CountSessions {
+  id: Int
+  name: Int
+  start: Int
+  end: Int
+  time: Int
+  location: Int
+  created_at: Int
+  updated_at: Int
+}
+
+type SumSessions {
+  id: Int
+}
+
+type MinSessions {
+  id: Int
+}
+
+type MaxSessions {
+  id: Int
+}
+
+input SessionsGroupBy {
+  id: Boolean
+  name: Boolean
+  start: Boolean
+  end: Boolean
+  time: Boolean
+  location: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input SessionsHaving {
+  _nested: Boolean
+  _not: ListSessionsInput
+  _raw: RawExpression
+  _and: [ListSessionsInput!]
+  _or: [ListSessionsInput!]
+  id: NumberFilter
+  name: StringFilter
+  start: DateFilter
+  end: DateFilter
+  time: StringFilter
+  location: StringFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  userSessions: ListUserSessionsInput
+}
+
 input GetStatInput {
   id: Int
 }
@@ -468,8 +649,133 @@ type Stats {
   count: Int
 }
 
+type AggregateStats {
+  count: CountStats
+  avg: CountStats
+  sum: SumStats
+  min: MinStats
+  max: MaxStats
+}
+
+type CountStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  created_at: Int
+  updated_at: Int
+}
+
+type SumStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+type MinStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+type MaxStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+input StatsGroupBy {
+  id: Boolean
+  exp: Boolean
+  likes: Boolean
+  views: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input StatsHaving {
+  _nested: Boolean
+  _not: ListStatsInput
+  _raw: RawExpression
+  _and: [ListStatsInput!]
+  _or: [ListStatsInput!]
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  user: ListUsersInput
+  users: ListUsersInput
+}
+
 input GetUserSessionInput {
   id: Int
+}
+
+type AggregateUserSessions {
+  count: CountUserSessions
+  avg: CountUserSessions
+  sum: SumUserSessions
+  min: MinUserSessions
+  max: MaxUserSessions
+}
+
+type CountUserSessions {
+  user_id: Int
+  session_id: Int
+  id: Int
+  time: Int
+  created_at: Int
+  updated_at: Int
+}
+
+type SumUserSessions {
+  user_id: Int
+  session_id: Int
+  id: Int
+}
+
+type MinUserSessions {
+  user_id: Int
+  session_id: Int
+  id: Int
+}
+
+type MaxUserSessions {
+  user_id: Int
+  session_id: Int
+  id: Int
+}
+
+input UserSessionsGroupBy {
+  userId: Boolean
+  sessionId: Boolean
+  id: Boolean
+  time: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input UserSessionsHaving {
+  _nested: Boolean
+  _not: ListUserSessionsInput
+  _raw: RawExpression
+  _and: [ListUserSessionsInput!]
+  _or: [ListUserSessionsInput!]
+  userId: NumberFilter
+  sessionId: NumberFilter
+  id: NumberFilter
+  time: DateFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  user: ListUsersInput
+  session: ListSessionsInput
 }
 
 input GetUserInput {
@@ -488,4 +794,80 @@ enum EnumValues {
   google
   facebook
   local
+}
+
+type AggregateUsers {
+  count: CountUsers
+  avg: CountUsers
+  sum: SumUsers
+  min: MinUsers
+  max: MaxUsers
+}
+
+type CountUsers {
+  stats_id: Int
+  mentor_id: Int
+  id: Int
+  username: Int
+  provider: Int
+  email: Int
+  details: Int
+  verified: Int
+  created_at: Int
+  updated_at: Int
+}
+
+type SumUsers {
+  stats_id: Int
+  mentor_id: Int
+  id: Int
+}
+
+type MinUsers {
+  stats_id: Int
+  mentor_id: Int
+  id: Int
+}
+
+type MaxUsers {
+  stats_id: Int
+  mentor_id: Int
+  id: Int
+}
+
+input UsersGroupBy {
+  statsId: Boolean
+  mentorId: Boolean
+  id: Boolean
+  username: Boolean
+  provider: Boolean
+  email: Boolean
+  details: Boolean
+  verified: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input UsersHaving {
+  _nested: Boolean
+  _not: ListUsersInput
+  _raw: RawExpression
+  _and: [ListUsersInput!]
+  _or: [ListUsersInput!]
+  statsId: NumberFilter
+  mentorId: NumberFilter
+  id: NumberFilter
+  username: StringFilter
+  provider: UsersProviderEnumFilter
+  email: StringFilter
+  details: JsonFilter
+  verified: BooleanFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  stats: ListStatsInput
+  mentor: ListUsersInput
+  instruments: ListInstrumentsInput
+  userSessions: ListUserSessionsInput
+  students: ListUsersInput
 }

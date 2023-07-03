@@ -3,7 +3,13 @@ import type {
   Pagination,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
-import { GraphQLEnumType, GraphQLList, GraphQLNonNull } from 'graphql';
+import {
+  GraphQLEnumType,
+  GraphQLFloat,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+} from 'graphql';
 import { ObjectTypeComposer, SchemaComposer } from 'graphql-compose';
 import { SchemaOptionType } from './options';
 import { hasColumns, mergeTransform } from '../utils';
@@ -19,6 +25,7 @@ import { ListResolver } from '../resolvers/list';
 import { TableTranslator } from './translator';
 import { CountResolver } from '../resolvers/count';
 import { buildEnumType } from '../types/enum';
+import { AggregateInputBuilder } from './aggregate-input';
 
 export class TableBuilder {
   private readonly metadata: TableMetadata;
@@ -285,23 +292,105 @@ export class TableBuilder {
     );
   }
 
-  private getMethodName(objectType: ObjectTypeComposer) {
-    return mergeTransform(['get', objectType.getTypeName()], this.options.case);
+  buildAggregateObjectTC() {
+    return this.composer.getOrCreateOTC(
+      this.translator.aggregateRootTypeName(),
+      (tc) => {
+        tc.addFields({
+          count: this.buildCountAggregateObjectTC(),
+          avg: this.buildCountAggregateObjectTC(),
+          sum: this.buildOtherAggregateObjectTC('sum'),
+          min: this.buildOtherAggregateObjectTC('min'),
+          max: this.buildOtherAggregateObjectTC('max'),
+        });
+      }
+    );
   }
 
-  private listMethodName(objectType: ObjectTypeComposer) {
-    return mergeTransform(
-      ['list', objectType.getTypeName()],
-      this.options.case
+  buildCountAggregateObjectTC() {
+    return this.composer.getOrCreateOTC(
+      this.translator.aggregateTypeName('count'),
+      (tc) => {
+        for (const column of Object.keys(this.metadata.columns)) {
+          tc.addFields({
+            [column]: {
+              type: 'Int',
+            },
+          });
+        }
+      }
     );
+  }
+
+  buildAvgAggregateObjectTC() {
+    return this.composer.getOrCreateOTC(
+      this.translator.aggregateTypeName('avg'),
+      (tc) => {
+        for (const [column, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          if (
+            columnMetadata.type !== GraphQLInt &&
+            columnMetadata.type !== GraphQLFloat
+          ) {
+            continue;
+          }
+          tc.addFields({
+            [column]: {
+              type: 'Float',
+            },
+          });
+        }
+      }
+    );
+  }
+
+  buildOtherAggregateObjectTC(type: string) {
+    return this.composer.getOrCreateOTC(
+      this.translator.aggregateTypeName(type),
+      (tc) => {
+        for (const [column, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          if (
+            columnMetadata.type !== GraphQLInt &&
+            columnMetadata.type !== GraphQLFloat
+          ) {
+            continue;
+          }
+          tc.addFields({
+            [column]: {
+              type: columnMetadata.type,
+            },
+          });
+        }
+      }
+    );
+  }
+
+  private getMethodName(objectTypeName: string) {
+    return mergeTransform(['get', objectTypeName], this.options.case);
+  }
+
+  private listMethodName(objectTypeName: string) {
+    return mergeTransform(['list', objectTypeName], this.options.case);
+  }
+
+  private aggregateMethodName(objectTypeName: string) {
+    return mergeTransform(['aggregate', objectTypeName], this.options.case);
   }
 
   buildSchema() {
     const objectType = this.buildObjectTC();
     const multiObjectType = this.buildMultiObjectTC();
+    const aggregateObjectType = this.buildAggregateObjectTC();
 
     this.buildGetMethod(objectType);
     this.buildListMethod(multiObjectType);
+    this.buildAggregateMethod(
+      multiObjectType.getTypeName(),
+      aggregateObjectType
+    );
   }
 
   buildGetMethod(objectType: ObjectTypeComposer) {
@@ -311,7 +400,7 @@ export class TableBuilder {
       metadata: this.metadata,
       tableBuilder: this,
     });
-    const methodName = this.getMethodName(objectType);
+    const methodName = this.getMethodName(objectType.getTypeName());
     this.composer.Query.addFields({
       [methodName]: {
         type: objectType,
@@ -329,7 +418,7 @@ export class TableBuilder {
     const listInputBuilder = this.getListInputBuilder();
 
     this.composer.Query.addFields({
-      [this.listMethodName(multiObjectType)]: {
+      [this.listMethodName(multiObjectType.getTypeName())]: {
         type: new GraphQLNonNull(multiObjectType.getType()),
         resolve: (parent, args) => {
           const pagination = this.normalisePagination(args.pagination);
@@ -341,6 +430,21 @@ export class TableBuilder {
           };
         },
         args: listInputBuilder.buildSchema(),
+      },
+    });
+  }
+
+  buildAggregateMethod(
+    objectTypesName: string,
+    aggregateObjectType: ObjectTypeComposer
+  ) {
+    const aggregateInputBuilder = this.getAggregateInputBuilder();
+
+    this.composer.Query.addFields({
+      [this.aggregateMethodName(objectTypesName)]: {
+        type: aggregateObjectType,
+        resolve: () => null,
+        args: aggregateInputBuilder.buildSchema(),
       },
     });
   }
@@ -375,6 +479,14 @@ export class TableBuilder {
 
   getListInputBuilder() {
     return new ListInputBuilder({
+      composer: this.composer,
+      metadata: this.metadata,
+      tableBuilder: this,
+    });
+  }
+
+  getAggregateInputBuilder() {
+    return new AggregateInputBuilder({
       composer: this.composer,
       metadata: this.metadata,
       tableBuilder: this,

@@ -9,6 +9,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
     'no-restricted-syntax': 'off',
+    'no-continue': 'off',
     'import/no-extraneous-dependencies': [
       'error',
       {

@@ -77,6 +77,22 @@ export class TableTranslator {
     return this.typeName(`${this.tableMetadata.name} ${name} Enum Filter`);
   }
 
+  groupByName() {
+    return this.typeName(`${this.tableMetadata.name} Group By`);
+  }
+
+  having() {
+    return this.typeName(`${this.tableMetadata.name} Having`);
+  }
+
+  aggregateRootTypeName() {
+    return this.typeName(`aggregate ${this.tableMetadata.name}`, true);
+  }
+
+  aggregateTypeName(aggregateType: string) {
+    return this.typeName(`${aggregateType} ${this.tableMetadata.name}`, true);
+  }
+
   typeName(name: string, plural = false) {
     const casing = this.getTypeNameCasing();
     const singularName = transform(singular(name), casing);
