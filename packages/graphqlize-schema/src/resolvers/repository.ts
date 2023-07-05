@@ -146,17 +146,23 @@ export class Repository<T = any> {
     fields,
     groupBy,
     having,
+    pagination,
+    sort,
   }: {
     filter?: Record<string, any>;
     groupBy?: Record<string, any>;
     having?: Record<string, any>;
     fields: Record<string, any>;
+    pagination?: Pagination;
+    sort?: Record<string, any>[];
   }) {
     return this.tableMapper.aggregateByFilter({
       filter,
       fields,
       groupBy,
       having,
+      pagination,
+      sort,
     });
   }
 }

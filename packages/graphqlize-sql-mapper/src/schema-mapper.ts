@@ -341,7 +341,10 @@ export class SchemaMapper implements DatabaseMapper {
       return new GraphQLList(GraphQLString);
     }
     if (transformedType.includes('enum')) {
-      if (enumValues?.length) {
+      const isValidEnum =
+        enumValues?.length &&
+        enumValues.every((value) => /^(A-Z|a-z)\w+$/.test(value));
+      if (isValidEnum) {
         return new GraphQLEnumType({
           name: 'EnumValues',
           values: enumValues.reduce(

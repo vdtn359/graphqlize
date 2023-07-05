@@ -1,22 +1,22 @@
 type Query {
   getInstrument(by: GetInstrumentInput!): Instrument
   listInstruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
-  aggregateInstruments(filter: ListInstrumentsInput, groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstruments
+  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: SortInstrument, groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResults
   getOrchestra(by: GetOrchestraInput!): Orchestra
   listOrchestras(filter: ListOrchestrasInput, pagination: Pagination = {limit: 20}, sort: [SortOrchestra!]): Orchestras!
-  aggregateOrchestras(filter: ListOrchestrasInput, groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestras
+  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: SortOrchestra, groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResults
   getSession(by: GetSessionInput!): Session
   listSessions(filter: ListSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortSession!]): Sessions!
-  aggregateSessions(filter: ListSessionsInput, groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessions
+  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: SortSession, groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResults
   getStat(by: GetStatInput!): Stat
   listStats(filter: ListStatsInput, pagination: Pagination = {limit: 20}, sort: [SortStat!]): Stats!
-  aggregateStats(filter: ListStatsInput, groupBy: StatsGroupBy, having: StatsHaving): AggregateStats
+  aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: SortStat, groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResults
   getUserSession(by: GetUserSessionInput!): UserSession
   listUserSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
-  aggregateUserSessions(filter: ListUserSessionsInput, groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessions
+  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: SortUserSession, groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResults
   getUser(by: GetUserInput!): User
   listUsers(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
-  aggregateUsers(filter: ListUsersInput, groupBy: UsersGroupBy, having: UsersHaving): AggregateUsers
+  aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: SortUser, groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResults
 }
 
 type Instrument {
@@ -42,7 +42,7 @@ type User {
   mentorId: Int
   id: Int!
   username: String!
-  provider: UsersProviderEnum!
+  provider: String!
   email: String!
   details: JSONObject
   verified: Boolean
@@ -53,12 +53,6 @@ type User {
   instruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
   userSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
   students(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
-}
-
-enum UsersProviderEnum {
-  google
-  facebook
-  local
 }
 
 """
@@ -94,7 +88,7 @@ input ListUsersInput {
   mentorId: NumberFilter
   id: NumberFilter
   username: StringFilter
-  provider: UsersProviderEnumFilter
+  provider: StringFilter
   email: StringFilter
   details: JsonFilter
   verified: BooleanFilter
@@ -148,13 +142,6 @@ input StringFilter {
   _contains: String
   _startsWith: String
   _endsWith: String
-}
-
-input UsersProviderEnumFilter {
-  _eq: UsersProviderEnum
-  _neq: UsersProviderEnum
-  _in: [UsersProviderEnum]
-  _notIn: [UsersProviderEnum]
 }
 
 input JsonFilter {
@@ -441,6 +428,13 @@ input GetInstrumentInput {
   id: Int
 }
 
+type AggregateInstrumentsResults {
+  records: [AggregateInstruments!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
 type AggregateInstruments {
   group: JSON
   count: CountInstruments
@@ -526,6 +520,13 @@ type Orchestras {
   count: Int
 }
 
+type AggregateOrchestrasResults {
+  records: [AggregateOrchestras!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
 type AggregateOrchestras {
   group: JSON
   count: CountOrchestras
@@ -587,6 +588,13 @@ type Sessions {
   records: [Session!]!
   limit: Int!
   offset: Int!
+  count: Int
+}
+
+type AggregateSessionsResults {
+  records: [AggregateSessions!]!
+  limit: Int
+  offset: Int
   count: Int
 }
 
@@ -666,6 +674,13 @@ type Stats {
   count: Int
 }
 
+type AggregateStatsResults {
+  records: [AggregateStats!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
 type AggregateStats {
   group: JSON
   count: CountStats
@@ -740,6 +755,13 @@ input StatsHaving {
 
 input GetUserSessionInput {
   id: Int
+}
+
+type AggregateUserSessionsResults {
+  records: [AggregateUserSessions!]!
+  limit: Int
+  offset: Int
+  count: Int
 }
 
 type AggregateUserSessions {
@@ -819,13 +841,14 @@ input GetUserInput {
 
 input UsersEmailProviderKey {
   email: String!
-  provider: EnumValues!
+  provider: String!
 }
 
-enum EnumValues {
-  google
-  facebook
-  local
+type AggregateUsersResults {
+  records: [AggregateUsers!]!
+  limit: Int
+  offset: Int
+  count: Int
 }
 
 type AggregateUsers {
@@ -898,7 +921,7 @@ input UsersHaving {
   mentorId: NumberFilter
   id: NumberFilter
   username: StringFilter
-  provider: UsersProviderEnumFilter
+  provider: StringFilter
   email: StringFilter
   details: JsonFilter
   verified: BooleanFilter

@@ -82,7 +82,11 @@ export class TableTranslator {
   }
 
   having() {
-    return this.typeName(`${this.tableMetadata.name} Having`);
+    return this.typeName(`${this.tableMetadata.name} having`);
+  }
+
+  aggregateResultsName() {
+    return this.typeName(`aggregate ${this.tableMetadata.name} results`, true);
   }
 
   aggregateRootTypeName() {
@@ -173,9 +177,9 @@ export class TableTranslator {
     });
   }
 
-  convertFromDB(record: Record<string, any>) {
+  convertFromDB(record: Record<string, any>, includesRaw = true) {
     const result = mapKeys(record, (value, key) => this.columnName(key) ?? key);
-    if (result) {
+    if (result && includesRaw) {
       result.$raw = record;
     }
     return result;

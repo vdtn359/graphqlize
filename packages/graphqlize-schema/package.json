@@ -13,12 +13,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "change-case": "^4.1.2",
     "dataloader": "^2.2.2",
     "lodash": "^4.17.21",
     "graphql-compose": "^9.0.10",
     "graphql-parse-resolve-info": "^4.13.0",
     "pluralize": "^8.0.0",
-    "change-case": "^4.1.2"
+    "traverse": "^0.6.7"
   },
   "peerDependencies": {
     "graphql": "^16",
@@ -28,6 +29,7 @@
     "@vdtn359/graphqlize-mapper": "^1.0.0",
     "@types/pluralize": "^0.0.29",
     "@types/lodash": "^4.14.195",
+    "@types/traverse": "^0.6.32",
     "graphql": "^16",
     "graphql-scalars": "^1.22.2"
   },

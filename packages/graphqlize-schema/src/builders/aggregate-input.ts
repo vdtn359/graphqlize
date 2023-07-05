@@ -31,6 +31,8 @@ export class AggregateInputBuilder {
     const listInputBuilder = this.tableBuilder.getListInputBuilder();
     return {
       filter: listInputBuilder.buildFilter(),
+      pagination: listInputBuilder.buildPagination(),
+      sort: listInputBuilder.buildSort(),
       groupBy: this.buildGroupBy(),
       having: this.buildHaving(),
     };

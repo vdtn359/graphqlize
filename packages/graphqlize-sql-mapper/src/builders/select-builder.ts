@@ -352,14 +352,27 @@ export class SelectBuilder {
   async aggregate() {
     if (this.fields) {
       const knexBuilder = this.build();
-      const { select: aggregateFields } = this.convertFieldsToAlias(
-        this.fields
-      );
+      const { select: aggregateFields, mapping: aggregateMapping } =
+        this.convertFieldsToAlias(this.fields);
+      const { select: groupFields, mapping: groupMapping } =
+        this.convertFieldsToAlias({ group: this.groupBy });
       this.knexBuilder.select({
         ...aggregateFields,
+        ...groupFields,
       });
+      for (const groupField of Object.values(groupFields ?? {})) {
+        this.knexBuilder.groupByRaw(groupField);
+      }
 
-      return knexBuilder;
+      const results = await knexBuilder;
+      return results.map((result: any) =>
+        map({ ...aggregateMapping, ...groupMapping }, (value) => {
+          if (typeof value !== 'object') {
+            return result[value];
+          }
+          return undefined;
+        })
+      );
     }
     return null;
   }
@@ -376,9 +389,11 @@ export class SelectBuilder {
         callback: (context, { alias }, value) => {
           if (value === true) {
             const fieldAlias = [operation, alias, context.key].join('_');
-            select[fieldAlias] = this.knex.raw(
-              `${operation}(${alias}.${context.key})`
-            );
+            const columnPath = this.knex.raw('??', `${alias}.${context.key}`);
+            select[fieldAlias] =
+              operation !== 'group'
+                ? this.knex.raw(`${operation}(${columnPath.toQuery()})`)
+                : columnPath;
             return {
               value: fieldAlias,
               stop: true,
@@ -390,7 +405,7 @@ export class SelectBuilder {
     }
     return {
       select,
-      fields: mapping,
+      mapping,
     };
   }
 

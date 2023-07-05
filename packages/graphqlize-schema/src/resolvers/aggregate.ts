@@ -1,6 +1,7 @@
 import type { DatabaseMapper } from '@vdtn359/graphqlize-mapper';
 import { parseResolveInfo, ResolveTree } from 'graphql-parse-resolve-info';
 import { flatten, isEmpty } from 'lodash';
+import { map } from 'traverse';
 import { GraphQLResolveInfo } from 'graphql/type';
 import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
@@ -26,8 +27,8 @@ export class AggregateResolver extends DefaultResolver {
   }
 
   async resolve(
-    parent: any,
-    { filter, groupBy, having }: Record<string, any>,
+    { filter, groupBy, having, pagination, sort }: Record<string, any>,
+    args: any,
     context: any,
     info: GraphQLResolveInfo
   ) {
@@ -40,12 +41,26 @@ export class AggregateResolver extends DefaultResolver {
       ? translator.reverseToDB(groupBy)
       : undefined;
 
-    return this.repository.aggregate({
+    const results = await this.repository.aggregate({
       fields,
       filter: transformedFilter,
       groupBy: transformedGroupBy,
       having,
+      pagination,
+      sort,
     });
+    const convertFromDB = translator.convertFromDB.bind(translator);
+    return results.map((item: any) =>
+      map(item, function traverse() {
+        if (
+          this.key &&
+          this.parent &&
+          !['count', 'sum', 'avg', 'max', 'group', 'min'].includes(this.key)
+        ) {
+          this.parent.update(convertFromDB(this.parent.node, false), true);
+        }
+      })
+    );
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

@@ -308,7 +308,7 @@ export class TableBuilder {
   }
 
   buildAggregateObjectTC() {
-    return this.composer.getOrCreateOTC(
+    const aggregateRecord = this.composer.getOrCreateOTC(
       this.translator.aggregateRootTypeName(),
       (tc) => {
         tc.addFields({
@@ -318,6 +318,26 @@ export class TableBuilder {
           sum: this.buildOtherAggregateObjectTC('sum'),
           min: this.buildOtherAggregateObjectTC('min'),
           max: this.buildOtherAggregateObjectTC('max'),
+        });
+      }
+    );
+    return this.composer.getOrCreateOTC(
+      this.translator.aggregateResultsName(),
+      (tc) => {
+        tc.addFields({
+          records: {
+            type: new GraphQLNonNull(
+              new GraphQLList(new GraphQLNonNull(aggregateRecord.getType()))
+            ),
+            resolve: (parent, args, context, info) =>
+              this.aggregateResolver.resolve(parent, args, context, info),
+          },
+          limit: 'Int',
+          offset: 'Int',
+          count: {
+            type: 'Int',
+            resolve: () => null,
+          },
         });
       }
     );
@@ -459,8 +479,18 @@ export class TableBuilder {
     this.composer.Query.addFields({
       [this.aggregateMethodName(objectTypesName)]: {
         type: aggregateObjectType,
-        resolve: (parent, args, context, info) => {
-          this.aggregateResolver.resolve(parent, args, context, info);
+        resolve: (parent, args) => {
+          const pagination = args.pagination
+            ? this.normalisePagination(args.pagination)
+            : undefined;
+          return {
+            groupBy: args.groupBy,
+            having: args.having,
+            ...pagination,
+            filter: args.filter,
+            sort: args.sort,
+            pagination,
+          };
         },
         args: aggregateInputBuilder.buildSchema(),
       },

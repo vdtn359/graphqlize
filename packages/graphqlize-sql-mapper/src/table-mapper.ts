@@ -78,10 +78,14 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     fields,
     groupBy,
     having,
+    pagination,
+    sort,
   }: {
     filter?: Record<string, any>;
     having?: Record<string, any>;
     groupBy?: Record<string, any>;
+    pagination?: Pagination;
+    sort?: Record<string, any>[];
     fields: Record<string, any>;
   }): Promise<any> {
     const queryBuilder = new SelectBuilder({
@@ -89,6 +93,8 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       fields,
       groupBy,
       having,
+      pagination,
+      sort,
       knex: this.knex,
       metadata: this.tableMetadata,
       schemaMapper: this.schemaMapper,

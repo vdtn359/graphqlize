@@ -46,6 +46,8 @@ export interface TableMapper<T> {
     having?: Record<string, any>;
     groupBy?: Record<string, any>;
     fields: Record<string, any>;
+    pagination?: Pagination;
+    sort?: Record<string, any>[];
   }): Promise<any>;
 }
 
