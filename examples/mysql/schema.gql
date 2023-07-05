@@ -442,39 +442,46 @@ input GetInstrumentInput {
 }
 
 type AggregateInstruments {
+  group: JSON
   count: CountInstruments
-  avg: CountInstruments
+  avg: AvgInstruments
   sum: SumInstruments
   min: MinInstruments
   max: MaxInstruments
 }
 
 type CountInstruments {
-  user_id: Int
-  orchestra_id: Int
+  userId: Int
+  orchestraId: Int
   id: Int
   type: Int
   description: Int
-  purchase_date: Int
-  created_at: Int
-  updated_at: Int
+  purchaseDate: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+type AvgInstruments {
+  userId: Float
+  orchestraId: Float
+  id: Float
 }
 
 type SumInstruments {
-  user_id: Int
-  orchestra_id: Int
+  userId: Int
+  orchestraId: Int
   id: Int
 }
 
 type MinInstruments {
-  user_id: Int
-  orchestra_id: Int
+  userId: Int
+  orchestraId: Int
   id: Int
 }
 
 type MaxInstruments {
-  user_id: Int
-  orchestra_id: Int
+  userId: Int
+  orchestraId: Int
   id: Int
 }
 
@@ -520,8 +527,9 @@ type Orchestras {
 }
 
 type AggregateOrchestras {
+  group: JSON
   count: CountOrchestras
-  avg: CountOrchestras
+  avg: AvgOrchestras
   sum: SumOrchestras
   min: MinOrchestras
   max: MaxOrchestras
@@ -530,8 +538,12 @@ type AggregateOrchestras {
 type CountOrchestras {
   id: Int
   name: Int
-  created_at: Int
-  updated_at: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+type AvgOrchestras {
+  id: Float
 }
 
 type SumOrchestras {
@@ -579,8 +591,9 @@ type Sessions {
 }
 
 type AggregateSessions {
+  group: JSON
   count: CountSessions
-  avg: CountSessions
+  avg: AvgSessions
   sum: SumSessions
   min: MinSessions
   max: MaxSessions
@@ -593,8 +606,12 @@ type CountSessions {
   end: Int
   time: Int
   location: Int
-  created_at: Int
-  updated_at: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+type AvgSessions {
+  id: Float
 }
 
 type SumSessions {
@@ -650,8 +667,9 @@ type Stats {
 }
 
 type AggregateStats {
+  group: JSON
   count: CountStats
-  avg: CountStats
+  avg: AvgStats
   sum: SumStats
   min: MinStats
   max: MaxStats
@@ -662,8 +680,15 @@ type CountStats {
   exp: Int
   likes: Int
   views: Int
-  created_at: Int
-  updated_at: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+type AvgStats {
+  id: Float
+  exp: Float
+  likes: Float
+  views: Float
 }
 
 type SumStats {
@@ -718,37 +743,44 @@ input GetUserSessionInput {
 }
 
 type AggregateUserSessions {
+  group: JSON
   count: CountUserSessions
-  avg: CountUserSessions
+  avg: AvgUserSessions
   sum: SumUserSessions
   min: MinUserSessions
   max: MaxUserSessions
 }
 
 type CountUserSessions {
-  user_id: Int
-  session_id: Int
+  userId: Int
+  sessionId: Int
   id: Int
   time: Int
-  created_at: Int
-  updated_at: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+type AvgUserSessions {
+  userId: Float
+  sessionId: Float
+  id: Float
 }
 
 type SumUserSessions {
-  user_id: Int
-  session_id: Int
+  userId: Int
+  sessionId: Int
   id: Int
 }
 
 type MinUserSessions {
-  user_id: Int
-  session_id: Int
+  userId: Int
+  sessionId: Int
   id: Int
 }
 
 type MaxUserSessions {
-  user_id: Int
-  session_id: Int
+  userId: Int
+  sessionId: Int
   id: Int
 }
 
@@ -797,41 +829,48 @@ enum EnumValues {
 }
 
 type AggregateUsers {
+  group: JSON
   count: CountUsers
-  avg: CountUsers
+  avg: AvgUsers
   sum: SumUsers
   min: MinUsers
   max: MaxUsers
 }
 
 type CountUsers {
-  stats_id: Int
-  mentor_id: Int
+  statsId: Int
+  mentorId: Int
   id: Int
   username: Int
   provider: Int
   email: Int
   details: Int
   verified: Int
-  created_at: Int
-  updated_at: Int
+  createdAt: Int
+  updatedAt: Int
+}
+
+type AvgUsers {
+  statsId: Float
+  mentorId: Float
+  id: Float
 }
 
 type SumUsers {
-  stats_id: Int
-  mentor_id: Int
+  statsId: Int
+  mentorId: Int
   id: Int
 }
 
 type MinUsers {
-  stats_id: Int
-  mentor_id: Int
+  statsId: Int
+  mentorId: Int
   id: Int
 }
 
 type MaxUsers {
-  stats_id: Int
-  mentor_id: Int
+  statsId: Int
+  mentorId: Int
   id: Int
 }
 

@@ -40,6 +40,13 @@ export interface TableMapper<T> {
   }): Promise<T[]>;
 
   countByFilter(params: { filter?: Record<string, any> }): Promise<number>;
+
+  aggregateByFilter(param: {
+    filter?: Record<string, any>;
+    having?: Record<string, any>;
+    groupBy?: Record<string, any>;
+    fields: Record<string, any>;
+  }): Promise<any>;
 }
 
 export interface DatabaseMapper {

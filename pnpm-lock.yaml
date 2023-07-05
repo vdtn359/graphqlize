@@ -147,6 +147,9 @@ importers:
       graphql-compose:
         specifier: ^9.0.10
         version: 9.0.10(graphql@16.7.1)
+      graphql-parse-resolve-info:
+        specifier: ^4.13.0
+        version: 4.13.0(graphql@16.7.1)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -187,10 +190,16 @@ importers:
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
+      traverse:
+        specifier: ^0.6.7
+        version: 0.6.7
     devDependencies:
       '@types/pluralize':
         specifier: ^0.0.29
         version: 0.0.29
+      '@types/traverse':
+        specifier: ^0.6.32
+        version: 0.6.32
       '@vdtn359/graphqlize-mapper':
         specifier: workspace:*
         version: link:../graphqlize-mapper
@@ -2560,6 +2569,10 @@ packages:
       '@types/superagent': 4.1.18
     dev: true
 
+  /@types/traverse@0.6.32:
+    resolution: {integrity: sha512-RBz2uRZVCXuMg93WD//aTS5B120QlT4lR/gL+935QtGsKHLS6sCtZBaKfWjIfk7ZXv/r8mtGbwjVIee6/3XTow==}
+    dev: true
+
   /@types/uuid@9.0.2:
     resolution: {integrity: sha512-kNnC1GFBLuhImSnV7w4njQkUiJi0ZXUycu1rUaouPqiKlXkh77JKgdRnTAp1x5eBwcIwbtI+3otwzuIDEuDoxQ==}
     dev: true
@@ -4735,6 +4748,19 @@ packages:
     dependencies:
       graphql: 16.7.1
       graphql-type-json: 0.3.2(graphql@16.7.1)
+    dev: false
+
+  /graphql-parse-resolve-info@4.13.0(graphql@16.7.1):
+    resolution: {integrity: sha512-VVJ1DdHYcR7hwOGQKNH+QTzuNgsLA8l/y436HtP9YHoX6nmwXRWq3xWthU3autMysXdm0fQUbhTZCx0W9ICozw==}
+    engines: {node: '>=8.6'}
+    peerDependencies:
+      graphql: '>=0.9 <0.14 || ^14.0.2 || ^15.4.0 || ^16.3.0'
+    dependencies:
+      debug: 4.3.4
+      graphql: 16.7.1
+      tslib: 2.5.3
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /graphql-scalars@1.22.2(graphql@16.7.1):
@@ -7235,6 +7261,10 @@ packages:
 
   /toposort-class@1.0.1:
     resolution: {integrity: sha512-OsLcGGbYF3rMjPUf8oKktyvCiUxSbqMMS39m33MAjLTC1DVIH6x3WSt63/M77ihI09+Sdfk1AXvfhCEeUmC7mg==}
+    dev: false
+
+  /traverse@0.6.7:
+    resolution: {integrity: sha512-/y956gpUo9ZNCb99YjxG7OaslxZWHfCHAUUfshwqOXmxUIvqLjVO581BT+gM59+QV9tFe6/CGG53tsA1Y7RSdg==}
     dev: false
 
   /tree-kill@1.2.2:

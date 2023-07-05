@@ -63,7 +63,7 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     return queryBuilder.list();
   }
 
-  countByFilter({ filter }: { filter: Record<string, any> }) {
+  countByFilter({ filter }: { filter?: Record<string, any> }) {
     const queryBuilder = new SelectBuilder({
       filter,
       knex: this.knex,
@@ -71,5 +71,28 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       schemaMapper: this.schemaMapper,
     });
     return queryBuilder.count();
+  }
+
+  aggregateByFilter({
+    filter,
+    fields,
+    groupBy,
+    having,
+  }: {
+    filter?: Record<string, any>;
+    having?: Record<string, any>;
+    groupBy?: Record<string, any>;
+    fields: Record<string, any>;
+  }): Promise<any> {
+    const queryBuilder = new SelectBuilder({
+      filter,
+      fields,
+      groupBy,
+      having,
+      knex: this.knex,
+      metadata: this.tableMetadata,
+      schemaMapper: this.schemaMapper,
+    });
+    return queryBuilder.aggregate();
   }
 }

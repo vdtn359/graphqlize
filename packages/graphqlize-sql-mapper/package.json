@@ -17,10 +17,12 @@
     "json-stringify-deterministic": "^1.0.8",
     "knex": "^2.4.2",
     "@vdtn359/knex-schema-inspector": "^3.0.1",
-    "pluralize": "^8.0.0"
+    "pluralize": "^8.0.0",
+    "traverse": "^0.6.7"
   },
   "devDependencies": {
     "@types/pluralize": "^0.0.29",
+    "@types/traverse": "^0.6.32",
     "@vdtn359/graphqlize-mapper": "workspace:*",
     "graphql": "^16",
     "graphql-scalars": "^1.22.2"

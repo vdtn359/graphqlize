@@ -33,8 +33,8 @@ describe('Nested ordering', () => {
         exp: 2,
       },
       {
-        views: 10,
-        likes: 5,
+        views: 100,
+        likes: 30,
         exp: 1,
       },
       {
@@ -47,15 +47,19 @@ describe('Nested ordering', () => {
     usersList = await Promise.all(
       [
         {
+          username: 'john-doe',
           statsId: statsList[0].id,
         },
         {
+          username: 'black-beard',
           statsId: statsList[1].id,
         },
         {
+          username: 'white-beard',
           statsId: statsList[2].id,
         },
         {
+          username: 'brown-beard',
           statsId: statsList[3].id,
         },
       ].map(userFactory)
@@ -64,15 +68,25 @@ describe('Nested ordering', () => {
 
   it('should order by nested columns correctly', async () => {
     const { body: response } = await listUsersQuery(server, {
-      sort: [{ stats: { views: { direction: 'ASC' } } }],
+      sort: [
+        {
+          stats: { views: { direction: 'ASC' } },
+        },
+        {
+          stats: { likes: { direction: 'DESC' } },
+        },
+        {
+          username: { direction: 'DESC' },
+        },
+      ],
     });
     expect(response.data.listUsers.count).toEqual(4);
     expectUserMatchesUserResponse(
-      usersList[2],
+      usersList[0],
       response.data.listUsers.records[0]
     );
     expectUserMatchesUserResponse(
-      usersList[0],
+      usersList[2],
       response.data.listUsers.records[1]
     );
     expectUserMatchesUserResponse(

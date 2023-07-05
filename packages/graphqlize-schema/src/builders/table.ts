@@ -26,6 +26,7 @@ import { TableTranslator } from './translator';
 import { CountResolver } from '../resolvers/count';
 import { buildEnumType } from '../types/enum';
 import { AggregateInputBuilder } from './aggregate-input';
+import { AggregateResolver } from '../resolvers/aggregate';
 
 export class TableBuilder {
   private readonly metadata: TableMetadata;
@@ -37,6 +38,8 @@ export class TableBuilder {
   private readonly translator: TableTranslator;
 
   private readonly listResolver: DefaultResolver;
+
+  private readonly aggregateResolver: DefaultResolver;
 
   private readonly countResolver: DefaultResolver;
 
@@ -75,6 +78,12 @@ export class TableBuilder {
     });
 
     this.listResolver = new ListResolver({
+      mapper: this.mapper,
+      tableBuilder: this,
+      repository: this.repository,
+    });
+
+    this.aggregateResolver = new AggregateResolver({
       mapper: this.mapper,
       tableBuilder: this,
       repository: this.repository,
@@ -150,13 +159,13 @@ export class TableBuilder {
           type: isNullable
             ? referencedType
             : new GraphQLNonNull(referencedType.getType()),
-          resolve: async (parent, args, context) => {
+          resolve: async (parent, args, context, info) => {
             const belongToResolver: DefaultResolver = new BelongToResolver({
               mapper: this.mapper,
               tableBuilder: this,
               foreignKey,
             });
-            return belongToResolver.resolve(parent, args, context);
+            return belongToResolver.resolve(parent, args, context, info);
           },
         },
       });
@@ -180,7 +189,7 @@ export class TableBuilder {
       tc.addFields({
         [this.translator.associationName(constraintName)]: {
           type: new GraphQLNonNull(referencedType.getType()),
-          resolve: async (parent, args, context) => {
+          resolve: async (parent, args, context, info) => {
             const pagination = this.normalisePagination(args.pagination);
             const { columns, referenceColumns } = foreignKey;
 
@@ -201,7 +210,8 @@ export class TableBuilder {
               const records = await hasManyResolver.resolve(
                 parent,
                 args,
-                context
+                context,
+                info
               );
               return {
                 ...pagination,
@@ -250,13 +260,18 @@ export class TableBuilder {
       tc.addFields({
         [this.translator.associationName(constraintName)]: {
           type: referencedType.getType(),
-          resolve: async (parent, args, context) => {
+          resolve: async (parent, args, context, info) => {
             const hasResolver: DefaultResolver = new HasResolver({
               mapper: this.mapper,
               tableBuilder: this,
               foreignKey,
             });
-            const result = await hasResolver.resolve(parent, args, context);
+            const result = await hasResolver.resolve(
+              parent,
+              args,
+              context,
+              info
+            );
             return result[0] ?? null;
           },
         },
@@ -275,17 +290,17 @@ export class TableBuilder {
             type: new GraphQLNonNull(
               new GraphQLList(new GraphQLNonNull(objectType.getType()))
             ),
-            resolve: (parent, args, context) =>
+            resolve: (parent, args, context, info) =>
               parent.records ??
-              this.listResolver.resolve(parent, args ?? {}, context),
+              this.listResolver.resolve(parent, args ?? {}, context, info),
           },
           limit: 'Int!',
           offset: 'Int!',
           count: {
             type: 'Int',
-            resolve: (parent, args, context) =>
+            resolve: (parent, args, context, info) =>
               parent.count ??
-              this.countResolver.resolve(parent, args ?? {}, context),
+              this.countResolver.resolve(parent, args ?? {}, context, info),
           },
         });
       }
@@ -297,8 +312,9 @@ export class TableBuilder {
       this.translator.aggregateRootTypeName(),
       (tc) => {
         tc.addFields({
+          group: 'JSON',
           count: this.buildCountAggregateObjectTC(),
-          avg: this.buildCountAggregateObjectTC(),
+          avg: this.buildAvgAggregateObjectTC(),
           sum: this.buildOtherAggregateObjectTC('sum'),
           min: this.buildOtherAggregateObjectTC('min'),
           max: this.buildOtherAggregateObjectTC('max'),
@@ -313,7 +329,7 @@ export class TableBuilder {
       (tc) => {
         for (const column of Object.keys(this.metadata.columns)) {
           tc.addFields({
-            [column]: {
+            [this.translator.columnName(column)]: {
               type: 'Int',
             },
           });
@@ -336,7 +352,7 @@ export class TableBuilder {
             continue;
           }
           tc.addFields({
-            [column]: {
+            [this.translator.columnName(column)]: {
               type: 'Float',
             },
           });
@@ -359,7 +375,7 @@ export class TableBuilder {
             continue;
           }
           tc.addFields({
-            [column]: {
+            [this.translator.columnName(column)]: {
               type: columnMetadata.type,
             },
           });
@@ -404,8 +420,8 @@ export class TableBuilder {
     this.composer.Query.addFields({
       [methodName]: {
         type: objectType,
-        resolve: (parent, args, context) =>
-          this.getResolver.resolve(parent, args ?? {}, context),
+        resolve: (parent, args, context, info) =>
+          this.getResolver.resolve(parent, args ?? {}, context, info),
       },
     });
     const getInputSchema = getInputBuilder.buildSchema();
@@ -443,7 +459,9 @@ export class TableBuilder {
     this.composer.Query.addFields({
       [this.aggregateMethodName(objectTypesName)]: {
         type: aggregateObjectType,
-        resolve: () => null,
+        resolve: (parent, args, context, info) => {
+          this.aggregateResolver.resolve(parent, args, context, info);
+        },
         args: aggregateInputBuilder.buildSchema(),
       },
     });

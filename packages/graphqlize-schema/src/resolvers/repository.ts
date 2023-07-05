@@ -130,14 +130,33 @@ export class Repository<T = any> {
     pagination,
     sort,
   }: {
-    filter?: any;
+    filter?: Record<string, any>;
     pagination?: Pagination;
     sort?: Record<string, SortDirection>[];
   }) {
     return this.tableMapper.findByFilter({ filter, pagination, sort });
   }
 
-  count({ filter }: { filter?: any }) {
+  count({ filter }: { filter?: Record<string, any> }) {
     return this.tableMapper.countByFilter({ filter });
+  }
+
+  aggregate({
+    filter,
+    fields,
+    groupBy,
+    having,
+  }: {
+    filter?: Record<string, any>;
+    groupBy?: Record<string, any>;
+    having?: Record<string, any>;
+    fields: Record<string, any>;
+  }) {
+    return this.tableMapper.aggregateByFilter({
+      filter,
+      fields,
+      groupBy,
+      having,
+    });
   }
 }
