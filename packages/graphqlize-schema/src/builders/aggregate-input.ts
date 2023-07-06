@@ -1,5 +1,6 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { SchemaComposer } from 'graphql-compose';
+import { GraphQLList, GraphQLNonNull } from 'graphql/index';
 import type { TableBuilder } from './table';
 import { TableTranslator } from './translator';
 
@@ -32,7 +33,9 @@ export class AggregateInputBuilder {
     return {
       filter: listInputBuilder.buildFilter(),
       pagination: listInputBuilder.buildPagination(),
-      sort: listInputBuilder.buildSort(),
+      sort: new GraphQLList(
+        new GraphQLNonNull(listInputBuilder.buildSort().getType())
+      ),
       groupBy: this.buildGroupBy(),
       having: this.buildHaving(),
     };

@@ -284,6 +284,15 @@ export class SelectBuilder {
     // build where statements
     this.topWhereBuilder.build();
 
+    if (this.pagination && !this.pagination.disabled) {
+      this.knexBuilder.limit(this.pagination.limit);
+      this.knexBuilder.offset(this.pagination.offset);
+    }
+
+    if (this.sort) {
+      this.applySort(this.sort);
+    }
+
     return this.knexBuilder;
   }
 
@@ -292,15 +301,6 @@ export class SelectBuilder {
       this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
     } else {
       this.knexBuilder.select(fields);
-    }
-
-    if (this.pagination && !this.pagination.disabled) {
-      this.knexBuilder.limit(this.pagination.limit);
-      this.knexBuilder.offset(this.pagination.offset);
-    }
-
-    if (this.sort) {
-      this.applySort(this.sort);
     }
     return this.build();
   }
