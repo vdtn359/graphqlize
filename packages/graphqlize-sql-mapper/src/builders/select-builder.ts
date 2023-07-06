@@ -28,6 +28,8 @@ export class SelectBuilder {
 
   private readonly topWhereBuilder: WhereBuilder;
 
+  private readonly partitions?: Record<string, any>[];
+
   private readonly knexBuilder: Knex.QueryBuilder;
 
   private readonly isTopLevel: boolean;
@@ -45,6 +47,7 @@ export class SelectBuilder {
     pagination,
     sort,
     fields,
+    partitions,
     groupBy,
     having,
     metadata,
@@ -59,6 +62,7 @@ export class SelectBuilder {
     groupBy?: Record<string, any>;
     having?: Record<string, any>;
     sort?: Record<string, any>[];
+    partitions?: Record<string, any>[];
     metadata: TableMetadata;
     schemaMapper: SchemaMapper;
     knexBuilder?: Knex.QueryBuilder;
@@ -73,6 +77,7 @@ export class SelectBuilder {
     this.knex = knex;
     this.filter = filter ?? {};
     this.fields = fields;
+    this.partitions = partitions;
     this.groupBy = groupBy;
     this.having = having;
     this.sort = sort;
@@ -87,6 +92,7 @@ export class SelectBuilder {
       knexBuilder: this.knexBuilder,
       selectBuilder: this,
       alias: this.claimAlias(this.metadata.name),
+      partitions: this.partitions,
     });
   }
 

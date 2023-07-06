@@ -28,21 +28,18 @@ export interface ColumnMetadata {
 }
 
 export interface TableMapper<T> {
-  findByColumns(
-    keys: readonly Record<string, any>[],
-    unique?: boolean
-  ): Promise<T[]>;
-
   findByFilter(params: {
     filter?: Record<string, any>;
     sort?: Record<string, any>[];
     pagination?: Pagination;
+    partitions?: readonly Record<string, any>[];
   }): Promise<T[]>;
 
   countByFilter(params: { filter?: Record<string, any> }): Promise<number>;
 
   aggregateByFilter(param: {
     filter?: Record<string, any>;
+    partitions?: readonly Record<string, any>[];
     having?: Record<string, any>;
     groupBy?: Record<string, any>;
     fields: Record<string, any>;

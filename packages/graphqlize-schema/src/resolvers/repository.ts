@@ -55,7 +55,9 @@ export class Repository<T = any> {
     }
     dataLoaders[dataLoaderName] = new DataLoader<Record<string, any>, any>(
       async (keys) => {
-        const result = await this.tableMapper.findByColumns(keys, unique);
+        const result = await this.tableMapper.findByFilter({
+          partitions: keys,
+        });
         const resultMap: Record<string, T[]> = {};
         for (const item of result) {
           const key = this.getByColumns(columns, item);

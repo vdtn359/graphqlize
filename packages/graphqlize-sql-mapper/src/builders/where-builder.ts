@@ -22,12 +22,15 @@ export class WhereBuilder {
 
   private readonly knex: Knex;
 
+  private readonly partitions?: Record<string, any>[];
+
   constructor({
     filter,
     metadata,
     knexBuilder,
     selectBuilder,
     knex,
+    partitions,
     alias,
   }: {
     filter: Record<string, any>;
@@ -35,6 +38,7 @@ export class WhereBuilder {
     knex: Knex;
     selectBuilder: SelectBuilder;
     knexBuilder: Knex.QueryBuilder;
+    partitions?: Record<string, any>[];
     alias: string;
   }) {
     this.knex = knex;
@@ -44,6 +48,7 @@ export class WhereBuilder {
     this.metadata = metadata;
     this.knexBuilder = knexBuilder;
     this.alias = alias;
+    this.partitions = partitions;
   }
 
   getAlias() {
@@ -379,7 +384,28 @@ export class WhereBuilder {
           break;
       }
     }
+    this.applyPartitions();
     return this.knexBuilder;
+  }
+
+  applyPartitions() {
+    if (this.partitions?.length) {
+      const columns = Object.keys(this.partitions[0]);
+      if (columns.length === 1) {
+        this.knexBuilder.whereIn(
+          columns[0],
+          this.partitions.map((partition) => partition[columns[0]])
+        );
+      } else {
+        for (const key of this.partitions) {
+          this.knexBuilder.orWhere((qb) => {
+            for (const column of columns) {
+              qb.where(column, key[column]);
+            }
+          });
+        }
+      }
+    }
   }
 
   getKnexBuilder() {
