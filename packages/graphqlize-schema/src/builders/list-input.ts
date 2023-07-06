@@ -60,6 +60,9 @@ export class ListInputBuilder {
       this.translator.listFilterName(),
       (tc) => {
         tc.addFields({
+          _required: {
+            type: 'Boolean',
+          },
           _nested: {
             type: 'Boolean',
           },

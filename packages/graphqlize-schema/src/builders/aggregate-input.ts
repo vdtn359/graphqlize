@@ -47,6 +47,22 @@ export class AggregateInputBuilder {
           },
         });
       }
+      const schemaBuilder = this.tableBuilder.getSchemaBuilder();
+      for (const [column, foreignKey] of Object.entries({
+        ...this.metadata.belongsTo,
+        ...this.metadata.hasOne,
+      })) {
+        const { referenceTable } = foreignKey;
+        const aggregateInputBuilder = schemaBuilder
+          .getTableBuilder(referenceTable)
+          .getAggregateInputBuilder();
+
+        tc.addFields({
+          [this.translator.associationName(column)]: {
+            type: aggregateInputBuilder.buildGroupBy(),
+          },
+        });
+      }
     });
   }
 

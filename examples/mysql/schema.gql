@@ -79,6 +79,7 @@ type Users {
 }
 
 input ListUsersInput {
+  _required: Boolean
   _nested: Boolean
   _not: ListUsersInput
   _raw: RawExpression
@@ -205,6 +206,7 @@ input DateFilter {
 scalar Date
 
 input ListStatsInput {
+  _required: Boolean
   _nested: Boolean
   _not: ListStatsInput
   _raw: RawExpression
@@ -221,6 +223,7 @@ input ListStatsInput {
 }
 
 input ListInstrumentsInput {
+  _required: Boolean
   _nested: Boolean
   _not: ListInstrumentsInput
   _raw: RawExpression
@@ -239,6 +242,7 @@ input ListInstrumentsInput {
 }
 
 input ListOrchestrasInput {
+  _required: Boolean
   _nested: Boolean
   _not: ListOrchestrasInput
   _raw: RawExpression
@@ -252,6 +256,7 @@ input ListOrchestrasInput {
 }
 
 input ListUserSessionsInput {
+  _required: Boolean
   _nested: Boolean
   _not: ListUserSessionsInput
   _raw: RawExpression
@@ -268,6 +273,7 @@ input ListUserSessionsInput {
 }
 
 input ListSessionsInput {
+  _required: Boolean
   _nested: Boolean
   _not: ListSessionsInput
   _raw: RawExpression
@@ -453,11 +459,67 @@ type CountInstruments {
   purchaseDate: Int
   createdAt: Int
   updatedAt: Int
+  user: CountUsers
+  orchestra: CountOrchestras
+}
+
+type CountUsers {
+  statsId: Int
+  mentorId: Int
+  id: Int
+  username: Int
+  provider: Int
+  email: Int
+  details: Int
+  verified: Int
+  createdAt: Int
+  updatedAt: Int
+  stats: CountStats
+  mentor: CountUsers
+}
+
+type CountStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  createdAt: Int
+  updatedAt: Int
+  user: CountUsers
+}
+
+type CountOrchestras {
+  id: Int
+  name: Int
+  createdAt: Int
+  updatedAt: Int
 }
 
 type AvgInstruments {
   userId: Float
   orchestraId: Float
+  id: Float
+  user: AvgUsers
+  orchestra: AvgOrchestras
+}
+
+type AvgUsers {
+  statsId: Float
+  mentorId: Float
+  id: Float
+  stats: AvgStats
+  mentor: AvgUsers
+}
+
+type AvgStats {
+  id: Float
+  exp: Float
+  likes: Float
+  views: Float
+  user: AvgUsers
+}
+
+type AvgOrchestras {
   id: Float
 }
 
@@ -465,17 +527,83 @@ type SumInstruments {
   userId: Int
   orchestraId: Int
   id: Int
+  user: SumUsers
+  orchestra: SumOrchestras
+}
+
+type SumUsers {
+  statsId: Int
+  mentorId: Int
+  id: Int
+  stats: SumStats
+  mentor: SumUsers
+}
+
+type SumStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: SumUsers
+}
+
+type SumOrchestras {
+  id: Int
 }
 
 type MinInstruments {
   userId: Int
   orchestraId: Int
   id: Int
+  user: MinUsers
+  orchestra: MinOrchestras
+}
+
+type MinUsers {
+  statsId: Int
+  mentorId: Int
+  id: Int
+  stats: MinStats
+  mentor: MinUsers
+}
+
+type MinStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: MinUsers
+}
+
+type MinOrchestras {
+  id: Int
 }
 
 type MaxInstruments {
   userId: Int
   orchestraId: Int
+  id: Int
+  user: MaxUsers
+  orchestra: MaxOrchestras
+}
+
+type MaxUsers {
+  statsId: Int
+  mentorId: Int
+  id: Int
+  stats: MaxStats
+  mentor: MaxUsers
+}
+
+type MaxStats {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: MaxUsers
+}
+
+type MaxOrchestras {
   id: Int
 }
 
@@ -488,10 +616,45 @@ input InstrumentsGroupBy {
   purchaseDate: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  user: UsersGroupBy
+  orchestra: OrchestrasGroupBy
+}
+
+input UsersGroupBy {
+  statsId: Boolean
+  mentorId: Boolean
+  id: Boolean
+  username: Boolean
+  provider: Boolean
+  email: Boolean
+  details: Boolean
+  verified: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  stats: StatsGroupBy
+  mentor: UsersGroupBy
+}
+
+input StatsGroupBy {
+  id: Boolean
+  exp: Boolean
+  likes: Boolean
+  views: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  user: UsersGroupBy
+}
+
+input OrchestrasGroupBy {
+  id: Boolean
+  name: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 """"""
 input InstrumentsHaving {
+  _required: Boolean
   _nested: Boolean
   _not: ListInstrumentsInput
   _raw: RawExpression
@@ -536,38 +699,9 @@ type AggregateOrchestras {
   max: MaxOrchestras
 }
 
-type CountOrchestras {
-  id: Int
-  name: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-type AvgOrchestras {
-  id: Float
-}
-
-type SumOrchestras {
-  id: Int
-}
-
-type MinOrchestras {
-  id: Int
-}
-
-type MaxOrchestras {
-  id: Int
-}
-
-input OrchestrasGroupBy {
-  id: Boolean
-  name: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-}
-
 """"""
 input OrchestrasHaving {
+  _required: Boolean
   _nested: Boolean
   _not: ListOrchestrasInput
   _raw: RawExpression
@@ -647,6 +781,7 @@ input SessionsGroupBy {
 
 """"""
 input SessionsHaving {
+  _required: Boolean
   _nested: Boolean
   _not: ListSessionsInput
   _raw: RawExpression
@@ -690,54 +825,9 @@ type AggregateStats {
   max: MaxStats
 }
 
-type CountStats {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-type AvgStats {
-  id: Float
-  exp: Float
-  likes: Float
-  views: Float
-}
-
-type SumStats {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
-}
-
-type MinStats {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
-}
-
-type MaxStats {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
-}
-
-input StatsGroupBy {
-  id: Boolean
-  exp: Boolean
-  likes: Boolean
-  views: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-}
-
 """"""
 input StatsHaving {
+  _required: Boolean
   _nested: Boolean
   _not: ListStatsInput
   _raw: RawExpression
@@ -780,30 +870,40 @@ type CountUserSessions {
   time: Int
   createdAt: Int
   updatedAt: Int
+  user: CountUsers
+  session: CountSessions
 }
 
 type AvgUserSessions {
   userId: Float
   sessionId: Float
   id: Float
+  user: AvgUsers
+  session: AvgSessions
 }
 
 type SumUserSessions {
   userId: Int
   sessionId: Int
   id: Int
+  user: SumUsers
+  session: SumSessions
 }
 
 type MinUserSessions {
   userId: Int
   sessionId: Int
   id: Int
+  user: MinUsers
+  session: MinSessions
 }
 
 type MaxUserSessions {
   userId: Int
   sessionId: Int
   id: Int
+  user: MaxUsers
+  session: MaxSessions
 }
 
 input UserSessionsGroupBy {
@@ -813,10 +913,13 @@ input UserSessionsGroupBy {
   time: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  user: UsersGroupBy
+  session: SessionsGroupBy
 }
 
 """"""
 input UserSessionsHaving {
+  _required: Boolean
   _nested: Boolean
   _not: ListUserSessionsInput
   _raw: RawExpression
@@ -860,58 +963,9 @@ type AggregateUsers {
   max: MaxUsers
 }
 
-type CountUsers {
-  statsId: Int
-  mentorId: Int
-  id: Int
-  username: Int
-  provider: Int
-  email: Int
-  details: Int
-  verified: Int
-  createdAt: Int
-  updatedAt: Int
-}
-
-type AvgUsers {
-  statsId: Float
-  mentorId: Float
-  id: Float
-}
-
-type SumUsers {
-  statsId: Int
-  mentorId: Int
-  id: Int
-}
-
-type MinUsers {
-  statsId: Int
-  mentorId: Int
-  id: Int
-}
-
-type MaxUsers {
-  statsId: Int
-  mentorId: Int
-  id: Int
-}
-
-input UsersGroupBy {
-  statsId: Boolean
-  mentorId: Boolean
-  id: Boolean
-  username: Boolean
-  provider: Boolean
-  email: Boolean
-  details: Boolean
-  verified: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-}
-
 """"""
 input UsersHaving {
+  _required: Boolean
   _nested: Boolean
   _not: ListUsersInput
   _raw: RawExpression

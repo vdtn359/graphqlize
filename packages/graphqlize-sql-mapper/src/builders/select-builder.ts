@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import type {
   TableMetadata,
   ForeignKeyMetadata,
@@ -106,7 +107,6 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    // eslint-disable-next-line no-underscore-dangle
     if (filterValue?._nested !== true) {
       this.joinFilter({
         whereBuilder,
@@ -131,7 +131,6 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    // eslint-disable-next-line no-underscore-dangle
     if (this.isTopLevel || filterValue?._nested !== false) {
       // perform an exists filter to ensure pagination is not affected
       this.subQueryFilter({
@@ -192,7 +191,8 @@ export class SelectBuilder {
       this.join(
         foreignKey,
         whereBuilder.getAlias(),
-        targetWhereBuilder.getAlias()
+        targetWhereBuilder.getAlias(),
+        filterValue._required
       );
     }
     targetWhereBuilder.build();
@@ -241,7 +241,8 @@ export class SelectBuilder {
   private join(
     foreignKey: ForeignKeyMetadata,
     alias: string,
-    targetAlias: string
+    targetAlias: string,
+    required = false
   ) {
     const joinKey = this.getJoinKey(foreignKey);
     if (this.joinMap[joinKey]) {
@@ -253,7 +254,8 @@ export class SelectBuilder {
       [referenceTable]: targetAlias,
     };
 
-    this.knexBuilder.leftJoin(
+    const joinType = required ? 'join' : 'leftJoin';
+    this.knexBuilder[joinType](
       {
         [targetAlias]: referenceTable,
       },

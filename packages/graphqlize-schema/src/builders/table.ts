@@ -354,6 +354,21 @@ export class TableBuilder {
             },
           });
         }
+
+        for (const [column, foreignKey] of Object.entries({
+          ...this.metadata.belongsTo,
+          ...this.metadata.hasOne,
+        })) {
+          const { referenceTable } = foreignKey;
+          const referencedTypeBuilder =
+            this.schemaBuilder.getTableBuilder(referenceTable);
+
+          tc.addFields({
+            [this.translator.associationName(column)]: {
+              type: referencedTypeBuilder.buildCountAggregateObjectTC(),
+            },
+          });
+        }
       }
     );
   }
@@ -377,6 +392,21 @@ export class TableBuilder {
             },
           });
         }
+
+        for (const [column, foreignKey] of Object.entries({
+          ...this.metadata.belongsTo,
+          ...this.metadata.hasOne,
+        })) {
+          const { referenceTable } = foreignKey;
+          const referencedTypeBuilder =
+            this.schemaBuilder.getTableBuilder(referenceTable);
+
+          tc.addFields({
+            [this.translator.associationName(column)]: {
+              type: referencedTypeBuilder.buildAvgAggregateObjectTC(),
+            },
+          });
+        }
       }
     );
   }
@@ -397,6 +427,21 @@ export class TableBuilder {
           tc.addFields({
             [this.translator.columnName(column)]: {
               type: columnMetadata.type,
+            },
+          });
+        }
+
+        for (const [column, foreignKey] of Object.entries({
+          ...this.metadata.belongsTo,
+          ...this.metadata.hasOne,
+        })) {
+          const { referenceTable } = foreignKey;
+          const referencedTypeBuilder =
+            this.schemaBuilder.getTableBuilder(referenceTable);
+
+          tc.addFields({
+            [this.translator.associationName(column)]: {
+              type: referencedTypeBuilder.buildOtherAggregateObjectTC(type),
             },
           });
         }
