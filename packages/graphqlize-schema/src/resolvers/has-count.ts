@@ -6,10 +6,10 @@ import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
 import { hasColumns } from '../utils';
 
-export class HasResolver extends DefaultResolver {
+export class HasCountResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
-  private foreignKey: ForeignKeyMetadata;
+  private readonly foreignKey: ForeignKeyMetadata;
 
   constructor({
     mapper,
@@ -25,12 +25,7 @@ export class HasResolver extends DefaultResolver {
     this.foreignKey = foreignKey;
   }
 
-  async resolve(
-    parent: any,
-    { pagination, filter, sort }: any,
-    context: any,
-    info: any
-  ) {
+  async resolve(parent: any, { filter }: any, context: any, info: any) {
     const { referenceTable, columns, referenceColumns } = this.foreignKey;
 
     if (!hasColumns(parent?.$raw ?? {}, columns)) {
@@ -40,25 +35,23 @@ export class HasResolver extends DefaultResolver {
     const referencedTableBuilder =
       schemaBuilder.getTableBuilder(referenceTable);
     const referencedTableRepository = referencedTableBuilder.getRepository();
-    const translator = this.tableBuilder.getTranslator();
     const dataLoader = this.getOrCreateDataLoader(context, info, () =>
-      referencedTableRepository.createDataLoader({
+      referencedTableRepository.createCountDataLoader({
         columns: referenceColumns,
-        pagination,
         filter,
-        sort,
       })
     );
 
-    const result = await dataLoader.load(
-      referenceColumns.reduce(
-        (agg, referenceColumn, currentIndex) => ({
-          ...agg,
-          [referenceColumn]: parent.$raw[columns[currentIndex]],
-        }),
-        {}
-      )
+    return (
+      dataLoader.load(
+        referenceColumns.reduce(
+          (agg, referenceColumn, currentIndex) => ({
+            ...agg,
+            [referenceColumn]: parent.$raw[columns[currentIndex]],
+          }),
+          {}
+        )
+      ) ?? 0
     );
-    return result.map((item: any) => translator.convertFromDB(item));
   }
 }

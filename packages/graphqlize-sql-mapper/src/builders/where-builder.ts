@@ -393,14 +393,17 @@ export class WhereBuilder {
       const columns = Object.keys(this.partitions[0]);
       if (columns.length === 1) {
         this.knexBuilder.whereIn(
-          columns[0],
+          this.knex.raw('??', `${this.alias}.${columns[0]}`) as any,
           this.partitions.map((partition) => partition[columns[0]])
         );
       } else {
         for (const key of this.partitions) {
           this.knexBuilder.orWhere((qb) => {
             for (const column of columns) {
-              qb.where(column, key[column]);
+              qb.where(
+                this.knex.raw('??', `${this.alias}.${column}`) as any,
+                key[column]
+              );
             }
           });
         }

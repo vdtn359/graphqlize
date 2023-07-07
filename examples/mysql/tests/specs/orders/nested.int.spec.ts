@@ -28,12 +28,12 @@ describe('Nested ordering', () => {
         exp: 3,
       },
       {
-        views: 100,
+        views: 10,
         likes: 30,
         exp: 2,
       },
       {
-        views: 100,
+        views: 20,
         likes: 30,
         exp: 1,
       },
@@ -118,15 +118,15 @@ describe('Nested ordering', () => {
     });
     expect(response.data.listUsers.count).toEqual(4);
     expectUserMatchesUserResponse(
-      usersList[2],
+      usersList[1],
       response.data.listUsers.records[0]
     );
     expectUserMatchesUserResponse(
-      usersList[0],
+      usersList[2],
       response.data.listUsers.records[1]
     );
     expectUserMatchesUserResponse(
-      usersList[1],
+      usersList[0],
       response.data.listUsers.records[2]
     );
     expectUserMatchesUserResponse(

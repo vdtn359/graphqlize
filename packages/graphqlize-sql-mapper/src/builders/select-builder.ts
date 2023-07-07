@@ -3,10 +3,13 @@ import type {
   TableMetadata,
   ForeignKeyMetadata,
   Pagination,
+  SortDirection,
+  NullsDirection,
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import jsonStringify from 'json-stringify-deterministic';
 import { map, TraverseContext } from 'traverse';
+import { omit } from 'lodash';
 import { WhereBuilder } from './where-builder';
 import type { SchemaMapper } from '../schema-mapper';
 import { generateAlias } from '../utils';
@@ -42,6 +45,8 @@ export class SelectBuilder {
 
   private readonly having?: Record<string, any>;
 
+  private readonly useWindowFunctions?: boolean;
+
   constructor({
     filter,
     pagination,
@@ -56,6 +61,7 @@ export class SelectBuilder {
     knexBuilder,
     aliasMap = {},
     isTopLevel = true,
+    useWindowFunctions = false,
   }: {
     filter?: Record<string, any>;
     fields?: Record<string, any>;
@@ -70,10 +76,12 @@ export class SelectBuilder {
     pagination?: Pagination;
     isTopLevel?: boolean;
     aliasMap?: Record<string, number>;
+    useWindowFunctions?: boolean;
   }) {
     this.schemaMapper = schemaMapper;
     this.pagination = pagination;
     this.metadata = metadata;
+    this.useWindowFunctions = useWindowFunctions;
     this.knex = knex;
     this.filter = filter ?? {};
     this.fields = fields;
@@ -96,6 +104,30 @@ export class SelectBuilder {
     });
   }
 
+  list(fields: any = '*'): Knex.QueryBuilder | Knex.QueryBuilder[] {
+    if (
+      this.partitions?.length &&
+      this.pagination?.perPartition &&
+      this.isTopLevel
+    ) {
+      return this.applyPartitionSelect(fields);
+    }
+    if (fields === '*') {
+      this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
+    } else {
+      this.knexBuilder.select(fields);
+    }
+    return this.build();
+  }
+
+  async count() {
+    const queryBuilder = this.build();
+
+    const [result = {}] = await queryBuilder.count();
+
+    return result['count(*)'] ?? 0;
+  }
+
   private claimAlias(table: string) {
     const tableAlias = generateAlias(table);
     this.aliasMap[tableAlias] = (this.aliasMap[tableAlias] ?? 0) + 1;
@@ -104,7 +136,7 @@ export class SelectBuilder {
     return `${tableAlias}_${this.aliasMap[tableAlias]}`;
   }
 
-  singleAssociationFilter({
+  private singleAssociationFilter({
     whereBuilder,
     filterValue,
     foreignKey,
@@ -128,7 +160,7 @@ export class SelectBuilder {
     }
   }
 
-  manyAssociationFilter({
+  private manyAssociationFilter({
     whereBuilder,
     filterValue,
     foreignKey,
@@ -302,28 +334,69 @@ export class SelectBuilder {
     return this.knexBuilder;
   }
 
-  list(fields: any = '*') {
-    if (fields === '*') {
-      this.knexBuilder.select(`${this.topWhereBuilder.getAlias()}.*`);
-    } else {
-      this.knexBuilder.select(fields);
+  private applyPartitionSelect(fields: any) {
+    if (!this.partitions?.length) {
+      throw new Error('Partitions not defined');
     }
-    return this.build();
+    if (!this.pagination?.limit) {
+      throw new Error('Pagination not defined');
+    }
+    if (this.useWindowFunctions) {
+      const selectBuilder = new SelectBuilder({
+        filter: this.filter,
+        partitions: this.partitions,
+        knex: this.knex,
+        metadata: this.metadata,
+        schemaMapper: this.schemaMapper,
+      });
+      const subQuery = selectBuilder.list(fields) as Knex.QueryBuilder;
+
+      const partitionOrderBy: any = this.sort
+        ? this.applySort(this.sort, false)
+        : this.knex.raw('select 1');
+      const partitionBy = Object.keys(this.partitions[0]).map(
+        (key) => `${this.topWhereBuilder.getAlias()}.${key}`
+      );
+      subQuery.rowNumber('partition_row_number', (qb) => {
+        qb.orderBy(partitionOrderBy).partitionBy(partitionBy);
+      });
+      const offset = (this.pagination.offset ?? 0) + 1;
+      return this.knexBuilder
+        .select()
+        .from({
+          main: subQuery as any,
+        })
+        .whereBetween('partition_row_number', [
+          offset,
+          offset + this.pagination.limit - 1,
+        ]);
+    }
+    // create a new select statement per partition and join the results
+    return this.partitions.map((partition) => {
+      const selectBuilder = new SelectBuilder({
+        filter: this.filter,
+        pagination: omit(this.pagination, 'perPartition'),
+        partitions: [partition],
+        sort: this.sort,
+        knex: this.knex,
+        metadata: this.metadata,
+        schemaMapper: this.schemaMapper,
+      });
+
+      return selectBuilder.list(fields) as Knex.QueryBuilder;
+    });
   }
 
   private getWhereBuilder() {
     return this.topWhereBuilder;
   }
 
-  async count() {
-    const queryBuilder = this.build();
-
-    const [result = {}] = await queryBuilder.count();
-
-    return result['count(*)'] ?? 0;
-  }
-
-  private applySort(sorts: Record<string, any>[]) {
+  private applySort(sorts: Record<string, any>[], orderBy = true) {
+    const fields: {
+      column: string;
+      order?: SortDirection;
+      nulls?: NullsDirection;
+    }[] = [];
     for (const sortItem of sorts) {
       this.resolveAndJoinAlias({
         fields: sortItem,
@@ -334,11 +407,15 @@ export class SelectBuilder {
             tableMetadata.columns[context.key!] &&
             typeof value.direction === 'string'
           ) {
-            this.knexBuilder.orderBy(
-              `${alias}.${context.key}`,
-              value.direction,
-              value.nulls
-            );
+            const fieldName = `${alias}.${context.key}`;
+            if (orderBy) {
+              this.knexBuilder.orderBy(fieldName, value.direction, value.nulls);
+            }
+            fields.push({
+              column: fieldName,
+              order: value.direction,
+              nulls: value.nulls,
+            });
             return {
               value,
               stop: true,
@@ -348,6 +425,7 @@ export class SelectBuilder {
         },
       });
     }
+    return fields;
   }
 
   private getJoinKey(foreignKey: ForeignKeyMetadata) {
@@ -385,7 +463,7 @@ export class SelectBuilder {
     return null;
   }
 
-  convertFieldsToAlias(fields: Record<string, any>) {
+  private convertFieldsToAlias(fields: Record<string, any>) {
     const select: Record<string, any> = {};
     const mapping: Record<string, any> = {};
 
@@ -397,7 +475,10 @@ export class SelectBuilder {
         callback: (context, { alias }, value) => {
           if (value === true) {
             const fieldAlias = [operation, alias, context.key].join('_');
-            const columnPath = this.knex.raw('??', `${alias}.${context.key}`);
+            const columnPath =
+              context.key === '_all'
+                ? this.knex.raw('*')
+                : this.knex.raw('??', `${alias}.${context.key}`);
             select[fieldAlias] =
               operation !== 'group'
                 ? this.knex.raw(`${operation}(${columnPath.toQuery()})`)
@@ -417,7 +498,7 @@ export class SelectBuilder {
     };
   }
 
-  resolveAndJoinAlias({
+  private resolveAndJoinAlias({
     alias: initialAlias,
     tableMetadata: initialTableMetadata,
     callback,

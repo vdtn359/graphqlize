@@ -6,6 +6,7 @@ export interface TableOptions {
 }
 
 export interface SchemaOptions {
+  allowWindowFunctions?: boolean;
   version?: string;
   versionFile?: string;
   includeTables?: string[];

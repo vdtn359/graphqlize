@@ -26,19 +26,19 @@ export class Repository<T = any> {
   ) {
     this.tableMapper = this.mapper.getTableMapper<T>(this.tableMetadata.name);
     for (const candidateKeys of Object.values(tableMetadata.candidateKeys)) {
-      this.createDataLoader(candidateKeys, true);
+      this.initDataLoader(candidateKeys, true);
     }
 
     for (const { referenceColumns } of Object.values(tableMetadata.hasMany)) {
-      this.createDataLoader(referenceColumns, true);
+      this.initDataLoader(referenceColumns, true);
     }
 
     for (const { referenceColumns } of Object.values(tableMetadata.hasOne)) {
-      this.createDataLoader(referenceColumns, true);
+      this.initDataLoader(referenceColumns, true);
     }
 
     for (const { columns } of Object.values(tableMetadata.belongsTo)) {
-      this.createDataLoader(columns);
+      this.initDataLoader(columns);
     }
   }
 
@@ -46,40 +46,100 @@ export class Repository<T = any> {
     return columns.sort().join(',');
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  createDataLoader(columns: string[], unique = false) {
+  private initDataLoader(columns: string[], unique?: boolean) {
     const dataLoaders = unique ? this.uniqueDataLoaders : this.multiDataLoaders;
     const dataLoaderName = this.getDataLoaderName(columns);
     if (dataLoaders[dataLoaderName]) {
       return;
     }
-    dataLoaders[dataLoaderName] = new DataLoader<Record<string, any>, any>(
-      async (keys) => {
-        const result = await this.tableMapper.findByFilter({
-          partitions: keys,
-        });
-        const resultMap: Record<string, T[]> = {};
-        for (const item of result) {
-          const key = this.getByColumns(columns, item);
-          if (!resultMap[key]) {
-            resultMap[key] = [];
-          }
-          resultMap[key].push(item);
-        }
+    dataLoaders[dataLoaderName] = this.createDataLoader({
+      columns,
+      unique,
+    });
+  }
 
-        return keys.map((key) => {
-          const currentValue = this.getByColumns(columns, key);
-          const values = resultMap[currentValue] ?? [];
-          for (const value of values) {
-            this.preload(value);
-          }
-          if (unique) {
-            return (resultMap[currentValue] ?? [])[0] ?? null;
-          }
-          return values;
-        });
+  createDataLoader({
+    columns,
+    unique = false,
+    filter,
+    pagination,
+    sort,
+  }: {
+    columns: string[];
+    unique?: boolean;
+    pagination?: Pagination;
+    filter?: Record<string, any>;
+    sort?: Record<string, any>[];
+  }) {
+    return new DataLoader<Record<string, any>, any>(async (keys) => {
+      const result = await this.tableMapper.findByFilter({
+        partitions: keys,
+        filter,
+        pagination: unique
+          ? { limit: keys.length, offset: 0, ...pagination }
+          : pagination,
+        sort,
+      });
+      const resultMap: Record<string, T[]> = {};
+      for (const item of result) {
+        const key = this.getByColumns(columns, item);
+        if (!resultMap[key]) {
+          resultMap[key] = [];
+        }
+        resultMap[key].push(item);
       }
-    );
+
+      return keys.map((key) => {
+        const currentValue = this.getByColumns(columns, key);
+        const values = resultMap[currentValue] ?? [];
+        for (const value of values) {
+          this.preload(value);
+        }
+        if (unique) {
+          return (resultMap[currentValue] ?? [])[0] ?? null;
+        }
+        return values;
+      });
+    });
+  }
+
+  createCountDataLoader({
+    columns,
+    filter,
+  }: {
+    columns: string[];
+    filter?: Record<string, any>;
+  }) {
+    return new DataLoader<Record<string, any>, any>(async (keys) => {
+      const result = await this.tableMapper.aggregateByFilter({
+        partitions: keys,
+        filter,
+        groupBy: columns.reduce(
+          (agg, column) => ({
+            ...agg,
+            [column]: true,
+          }),
+          {}
+        ),
+        fields: {
+          count: {
+            _all: true,
+          },
+          group: true,
+        },
+      });
+      const resultMap: Record<string, number> = {};
+      for (const item of result) {
+        const key = this.getByColumns(columns, item.group);
+        // eslint-disable-next-line no-underscore-dangle
+        resultMap[key] = item.count?._all ?? 0;
+      }
+
+      return keys.map((key) => {
+        const currentValue = this.getByColumns(columns, key);
+        return resultMap[currentValue] ?? 0;
+      });
+    });
   }
 
   async loadOne(columns: string[], key: Record<string, any>) {

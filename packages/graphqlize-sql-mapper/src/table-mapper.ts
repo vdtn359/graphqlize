@@ -5,6 +5,7 @@ import type {
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
+import { flatten } from 'lodash';
 import { SelectBuilder } from './builders/select-builder';
 import type { SchemaMapper } from './schema-mapper';
 
@@ -12,10 +13,11 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
   constructor(
     private readonly knex: Knex,
     private readonly tableMetadata: TableMetadata,
-    private readonly schemaMapper: SchemaMapper
+    private readonly schemaMapper: SchemaMapper,
+    private readonly allowWindowFunctions?: boolean
   ) {}
 
-  findByFilter({
+  async findByFilter({
     filter,
     pagination,
     sort,
@@ -33,9 +35,14 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       sort,
       knex: this.knex,
       metadata: this.tableMetadata,
+      useWindowFunctions: true,
       schemaMapper: this.schemaMapper,
     });
-    return queryBuilder.list();
+    const queries = queryBuilder.list();
+    if (Array.isArray(queries)) {
+      return flatten(await Promise.all(queries));
+    }
+    return queries;
   }
 
   countByFilter({ filter }: { filter?: Record<string, any> }) {
@@ -54,11 +61,13 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     groupBy,
     having,
     pagination,
+    partitions,
     sort,
   }: {
     filter?: Record<string, any>;
     having?: Record<string, any>;
     groupBy?: Record<string, any>;
+    partitions?: Record<string, any>[];
     pagination?: Pagination;
     sort?: Record<string, any>[];
     fields: Record<string, any>;
@@ -69,6 +78,7 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       groupBy,
       having,
       pagination,
+      partitions,
       sort,
       knex: this.knex,
       metadata: this.tableMetadata,

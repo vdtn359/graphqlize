@@ -6,7 +6,7 @@ import gql from 'graphql-tag';
 import { userFragment } from '#tests/fragment';
 
 describe('Has many nested associations', () => {
-  let mentor: any;
+  const mentors: any[] = [];
   const students: any[] = [];
   let server: Server;
 
@@ -20,23 +20,32 @@ describe('Has many nested associations', () => {
   beforeEach(async () => clearDB());
 
   beforeEach(async () => {
-    mentor = await userFactory({
+    mentors[0] = await userFactory({
       username: 'brown-beard',
+    });
+
+    mentors[1] = await userFactory({
+      username: 'john-doe',
     });
 
     students[0] = await userFactory({
       username: 'jack-sparrow',
-      mentorId: mentor.id,
+      mentorId: mentors[0].id,
     });
 
     students[1] = await userFactory({
       username: 'white-beard',
-      mentorId: mentor.id,
+      mentorId: mentors[0].id,
     });
 
     students[2] = await userFactory({
+      username: 'jack-ripper',
+      mentorId: mentors[1].id,
+    });
+
+    students[3] = await userFactory({
       username: 'black-beard',
-      mentorId: mentor.id,
+      mentorId: mentors[1].id,
     });
   });
 
@@ -59,6 +68,7 @@ describe('Has many nested associations', () => {
         ${userFragment}
       `,
     });
+    expect(response.data.listUsers.count).toEqual(2);
     expectUserMatchesUserResponse(
       students[0],
       response.data.listUsers.records[0].students.records[0]
@@ -69,10 +79,14 @@ describe('Has many nested associations', () => {
     );
     expectUserMatchesUserResponse(
       students[2],
-      response.data.listUsers.records[0].students.records[2]
+      response.data.listUsers.records[1].students.records[0]
     );
-    expect(response.data.listUsers.records[0].students.count).toEqual(3);
-    expect(response.data.listUsers.count).toEqual(1);
+    expectUserMatchesUserResponse(
+      students[3],
+      response.data.listUsers.records[1].students.records[1]
+    );
+    expect(response.data.listUsers.records[0].students.count).toEqual(2);
+    expect(response.data.listUsers.records[1].students.count).toEqual(2);
   });
 
   it('should allow ordering, filtering and pagination', async () => {
@@ -82,7 +96,7 @@ describe('Has many nested associations', () => {
           listUsers(filter: { students: { username: { _like: "jack%" } } }) {
             records {
               students(
-                filter: { username: { _like: "%beard" } }
+                filter: { mentor: { username: { _contains: "e" } } }
                 pagination: { limit: 1, offset: 1 }
                 sort: [{ username: { direction: DESC } }]
               ) {
@@ -98,15 +112,22 @@ describe('Has many nested associations', () => {
         ${userFragment}
       `,
     });
-
+    expect(response.data.listUsers.count).toEqual(2);
+    expect(response.data.listUsers.records[0].students.count).toEqual(2);
     expectUserMatchesUserResponse(
-      students[2],
+      students[0],
       response.data.listUsers.records[0].students.records[0]
     );
-    expect(response.data.listUsers.records[0].students.count).toEqual(2);
     expect(response.data.listUsers.records[0].students.records.length).toEqual(
       1
     );
-    expect(response.data.listUsers.count).toEqual(1);
+    expect(response.data.listUsers.records[1].students.count).toEqual(2);
+    expectUserMatchesUserResponse(
+      students[3],
+      response.data.listUsers.records[1].students.records[0]
+    );
+    expect(response.data.listUsers.records[1].students.records.length).toEqual(
+      1
+    );
   });
 });

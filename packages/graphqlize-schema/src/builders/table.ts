@@ -27,6 +27,7 @@ import { CountResolver } from '../resolvers/count';
 import { buildEnumType } from '../types/enum';
 import { AggregateInputBuilder } from './aggregate-input';
 import { AggregateResolver } from '../resolvers/aggregate';
+import { HasCountResolver } from '../resolvers/has-count';
 
 export class TableBuilder {
   private readonly metadata: TableMetadata;
@@ -189,9 +190,9 @@ export class TableBuilder {
       tc.addFields({
         [this.translator.associationName(constraintName)]: {
           type: new GraphQLNonNull(referencedType.getType()),
-          resolve: async (parent, args, context, info) => {
+          resolve: async (parent, args) => {
             const pagination = this.normalisePagination(args.pagination);
-            const { columns, referenceColumns } = foreignKey;
+            const { columns } = foreignKey;
 
             if (!hasColumns(parent?.$raw ?? {}, columns)) {
               return {
@@ -200,46 +201,22 @@ export class TableBuilder {
                 count: 0,
               };
             }
-            if (!args.filter && !args.sort && pagination.disabled) {
-              // use dataloader to load all records when no filter or pagination required
-              const hasManyResolver: DefaultResolver = new HasResolver({
-                mapper: this.mapper,
-                tableBuilder: this,
-                foreignKey,
-              });
-              const records = await hasManyResolver.resolve(
-                parent,
-                args,
-                context,
-                info
-              );
-              return {
-                ...pagination,
-                records,
-                count: records.length,
-              };
-            }
 
-            // load via list resolver
             return {
               ...pagination,
-              sort: args.sort,
-              filter: {
-                ...args.filter,
-                ...referenceColumns.reduce(
-                  (agg, referenceColumn, currentIndex) => ({
-                    ...agg,
-                    [this.translator.columnName(referenceColumn)]: {
-                      _eq: parent.$raw[columns[currentIndex]],
-                    },
-                  }),
-                  {}
-                ),
+              parent,
+              foreignKey,
+              args: {
+                sort: args.sort,
+                filter: args.filter,
+                pagination: pagination && {
+                  ...pagination,
+                  perPartition: true,
+                },
               },
-              pagination,
             };
           },
-          args: referencedListInputBuilder.buildSchema(),
+          args: referencedListInputBuilder.buildSchema(false),
         },
       });
     }
@@ -290,17 +267,67 @@ export class TableBuilder {
             type: new GraphQLNonNull(
               new GraphQLList(new GraphQLNonNull(objectType.getType()))
             ),
-            resolve: (parent, args, context, info) =>
-              parent.records ??
-              this.listResolver.resolve(parent, args ?? {}, context, info),
+            resolve: (parent, args, context, info) => {
+              if (parent.records) {
+                return parent.records;
+              }
+              if (parent.foreignKey) {
+                const hasManyResolver: DefaultResolver = new HasResolver({
+                  mapper: this.mapper,
+                  tableBuilder: this,
+                  foreignKey: parent.foreignKey,
+                });
+                return hasManyResolver.resolve(
+                  parent.parent,
+                  {
+                    ...args,
+                    ...parent.args,
+                  },
+                  context,
+                  info
+                );
+              }
+              return this.listResolver.resolve(
+                parent,
+                args ?? {},
+                context,
+                info
+              );
+            },
           },
           limit: 'Int!',
           offset: 'Int!',
           count: {
             type: 'Int',
-            resolve: (parent, args, context, info) =>
-              parent.count ??
-              this.countResolver.resolve(parent, args ?? {}, context, info),
+            resolve: (parent, args, context, info) => {
+              if (parent.count) {
+                return parent.count;
+              }
+
+              if (parent.foreignKey) {
+                const hasCountResolver: DefaultResolver = new HasCountResolver({
+                  mapper: this.mapper,
+                  tableBuilder: this,
+                  foreignKey: parent.foreignKey,
+                });
+
+                return hasCountResolver.resolve(
+                  parent.parent,
+                  {
+                    ...args,
+                    ...parent.args,
+                  },
+                  context,
+                  info
+                );
+              }
+              return this.countResolver.resolve(
+                parent,
+                args ?? {},
+                context,
+                info
+              );
+            },
           },
         });
       }
@@ -354,6 +381,12 @@ export class TableBuilder {
             },
           });
         }
+
+        tc.addFields({
+          _all: {
+            type: 'Int',
+          },
+        });
 
         for (const [column, foreignKey] of Object.entries({
           ...this.metadata.belongsTo,
@@ -542,7 +575,10 @@ export class TableBuilder {
     });
   }
 
-  private normalisePagination(pagination: Pagination & { page?: number }) {
+  private normalisePagination(pagination?: Pagination & { page?: number }) {
+    if (!pagination) {
+      return null;
+    }
     if (pagination.disabled) {
       return {
         page: 0,

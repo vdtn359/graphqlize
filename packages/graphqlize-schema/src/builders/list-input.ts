@@ -29,14 +29,16 @@ export class ListInputBuilder {
     this.translator = this.tableBuilder.getTranslator();
   }
 
-  buildSchema() {
+  buildSchema(defaultPagination = true) {
     return {
       filter: this.buildFilter(),
       pagination: {
         type: this.buildPagination(),
-        defaultValue: {
-          limit: 20,
-        },
+        defaultValue: defaultPagination
+          ? {
+              limit: 20,
+            }
+          : undefined,
       },
       sort: new GraphQLList(new GraphQLNonNull(this.buildSort().getType())),
     };

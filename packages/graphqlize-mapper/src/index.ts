@@ -79,8 +79,10 @@ export interface DatabaseMapper {
 
 export interface Pagination {
   disabled?: boolean;
+  perPartition?: boolean;
   offset: number;
   limit: number;
 }
 
 export type SortDirection = 'asc' | 'desc';
+export type NullsDirection = 'first' | 'last';
