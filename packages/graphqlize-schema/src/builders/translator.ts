@@ -97,6 +97,13 @@ export class TableTranslator {
     return this.typeName(`${aggregateType} ${this.tableMetadata.name}`, true);
   }
 
+  aggregateTypeInputName(aggregateType: string) {
+    return this.typeName(
+      `${aggregateType} ${this.tableMetadata.name} input`,
+      true
+    );
+  }
+
   typeName(name: string, plural = false) {
     const casing = this.getTypeNameCasing();
     const singularName = transform(singular(name), casing);

@@ -1,6 +1,7 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
-import { SchemaComposer } from 'graphql-compose';
+import { InputTypeComposer, SchemaComposer } from 'graphql-compose';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLFloat, GraphQLInt } from 'graphql/index';
 import type { TableBuilder } from './table';
 import { getFilterType } from '../types';
 import { TableTranslator } from './translator';
@@ -82,38 +83,42 @@ export class ListInputBuilder {
           },
         });
 
-        for (const [columnName, columnMetadata] of Object.entries(
-          this.metadata.columns
-        )) {
-          tc.addFields({
-            [this.translator.columnName(columnName)]: {
-              type: getFilterType(
-                columnMetadata,
-                this.translator,
-                this.composer
-              ),
-            },
-          });
-        }
-
-        for (const [constraintName, foreignKey] of Object.entries({
-          ...this.metadata.belongsTo,
-          ...this.metadata.hasOne,
-          ...this.metadata.hasMany,
-        })) {
-          const { referenceTable } = foreignKey;
-          const schemaBuilder = this.tableBuilder.getSchemaBuilder();
-          const referencedTableBuilder =
-            schemaBuilder.getTableBuilder(referenceTable);
-
-          tc.addFields({
-            [this.translator.associationName(constraintName)]: {
-              type: referencedTableBuilder.getListInputBuilder().buildFilter(),
-            },
-          });
-        }
+        this.buildTypes(tc);
+        this.buildAssociations(tc);
+        this.buildAggregateInputTC(tc);
       }
     );
+  }
+
+  private buildTypes(tc: InputTypeComposer<any>) {
+    for (const [columnName, columnMetadata] of Object.entries(
+      this.metadata.columns
+    )) {
+      tc.addFields({
+        [this.translator.columnName(columnName)]: {
+          type: getFilterType(columnMetadata, this.translator, this.composer),
+        },
+      });
+    }
+  }
+
+  private buildAssociations(tc: InputTypeComposer<any>) {
+    for (const [constraintName, foreignKey] of Object.entries({
+      ...this.metadata.belongsTo,
+      ...this.metadata.hasOne,
+      ...this.metadata.hasMany,
+    })) {
+      const { referenceTable } = foreignKey;
+      const schemaBuilder = this.tableBuilder.getSchemaBuilder();
+      const referencedTableBuilder =
+        schemaBuilder.getTableBuilder(referenceTable);
+
+      tc.addFields({
+        [this.translator.associationName(constraintName)]: {
+          type: referencedTableBuilder.getListInputBuilder().buildFilter(),
+        },
+      });
+    }
   }
 
   buildSort() {
@@ -184,6 +189,83 @@ export class ListInputBuilder {
         });
       }
     });
+  }
+
+  buildAggregateInputTC(tc: InputTypeComposer) {
+    tc.addFields({
+      _count: this.buildCountAggregateITC(),
+      _avg: this.buildAvgAggregateITC(),
+      _sum: this.buildOtherAggregateITC('sum'),
+      _min: this.buildOtherAggregateITC('min'),
+      _max: this.buildOtherAggregateITC('max'),
+    });
+  }
+
+  buildCountAggregateITC() {
+    return this.composer.getOrCreateITC(
+      this.translator.aggregateTypeInputName('count'),
+      (tc) => {
+        for (const column of Object.keys(this.metadata.columns)) {
+          tc.addFields({
+            [this.translator.columnName(column)]: {
+              type: 'NumberFilter',
+            },
+          });
+        }
+
+        tc.addFields({
+          _all: {
+            type: 'NumberFilter',
+          },
+        });
+      }
+    );
+  }
+
+  buildAvgAggregateITC() {
+    return this.composer.getOrCreateITC(
+      this.translator.aggregateTypeInputName('avg'),
+      (tc) => {
+        for (const [column, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          if (
+            columnMetadata.type !== GraphQLInt &&
+            columnMetadata.type !== GraphQLFloat
+          ) {
+            continue;
+          }
+          tc.addFields({
+            [this.translator.columnName(column)]: {
+              type: 'NumberFilter',
+            },
+          });
+        }
+      }
+    );
+  }
+
+  buildOtherAggregateITC(type: string) {
+    return this.composer.getOrCreateITC(
+      this.translator.aggregateTypeInputName(type),
+      (tc) => {
+        for (const [column, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          if (
+            columnMetadata.type !== GraphQLInt &&
+            columnMetadata.type !== GraphQLFloat
+          ) {
+            continue;
+          }
+          tc.addFields({
+            [this.translator.columnName(column)]: {
+              type: columnMetadata.type,
+            },
+          });
+        }
+      }
+    );
   }
 
   buildPagination() {

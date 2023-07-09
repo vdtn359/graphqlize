@@ -66,7 +66,7 @@ export class WhereBuilder {
     column: any;
     operator: string;
     value: any;
-    type: string;
+    type?: string;
   }) {
     const dialectHandler = getDialectHandler(knexBuilder.client.dialect);
     switch (operator) {
@@ -198,7 +198,7 @@ export class WhereBuilder {
     knexBuilder: Knex.QueryBuilder;
     column: any;
     filterValue: Record<string, any>;
-    type: string;
+    type?: string;
   }) {
     for (const [expression, value] of Object.entries(filterValue)) {
       this.basicFilter({
@@ -301,6 +301,46 @@ export class WhereBuilder {
     knexBuilder.andWhereNot(notCallback);
   }
 
+  private aggregateBuilder({
+    filters,
+    knexBuilder,
+    operation,
+  }: {
+    filters: Record<string, any>;
+    knexBuilder: Knex.QueryBuilder;
+    operation: string;
+  }) {
+    const havingKnexBuilder = this.knex.select();
+    const whereBuilder = new WhereBuilder({
+      filter: filters,
+      knexBuilder: havingKnexBuilder,
+      selectBuilder: this.selectBuilder,
+      metadata: this.metadata,
+      knex: this.knex,
+      alias: this.alias,
+    });
+    for (const [key, filter] of Object.entries(filters)) {
+      const column =
+        key === '_all'
+          ? this.knex.raw('*')
+          : this.knex.raw(`??`, `${this.alias}.${key}`);
+      const aggregateField = this.knex.raw(
+        `${operation}(??)`,
+        column.toQuery()
+      );
+      whereBuilder.columnFilter({
+        knexBuilder: havingKnexBuilder,
+        column: aggregateField,
+        filterValue: filter,
+      });
+    }
+    const { where, bindings } = whereBuilder.toQuery() ?? {};
+    if (where) {
+      // construct having queries using the generated where sql query
+      knexBuilder.havingRaw(where, bindings);
+    }
+  }
+
   private callbackBuilder(
     callback: (knexBuilder: Knex.QueryBuilder) => void
   ): Knex.QueryCallback | null {
@@ -345,6 +385,16 @@ export class WhereBuilder {
           this.notBuilder({
             knexBuilder: this.knexBuilder,
             filter: value,
+          });
+          break;
+        case '_count':
+        case '_min':
+        case '_max':
+        case '_sum':
+          this.aggregateBuilder({
+            knexBuilder: this.knexBuilder,
+            filters: value,
+            operation: key.replace('_', ''),
           });
           break;
         default:

@@ -100,6 +100,11 @@ input ListUsersInput {
   instruments: ListInstrumentsInput
   userSessions: ListUserSessionsInput
   students: ListUsersInput
+  _count: CountUsersInputs
+  _avg: AvgUsersInputs
+  _sum: SumUsersInputs
+  _min: MinUsersInputs
+  _max: MaxUsersInputs
 }
 
 input RawExpression {
@@ -220,6 +225,49 @@ input ListStatsInput {
   updatedAt: DateFilter
   user: ListUsersInput
   users: ListUsersInput
+  _count: CountStatsInputs
+  _avg: AvgStatsInputs
+  _sum: SumStatsInputs
+  _min: MinStatsInputs
+  _max: MaxStatsInputs
+}
+
+input CountStatsInputs {
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgStatsInputs {
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+}
+
+input SumStatsInputs {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+input MinStatsInputs {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+input MaxStatsInputs {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
 }
 
 input ListInstrumentsInput {
@@ -239,6 +287,11 @@ input ListInstrumentsInput {
   updatedAt: DateFilter
   user: ListUsersInput
   orchestra: ListOrchestrasInput
+  _count: CountInstrumentsInputs
+  _avg: AvgInstrumentsInputs
+  _sum: SumInstrumentsInputs
+  _min: MinInstrumentsInputs
+  _max: MaxInstrumentsInputs
 }
 
 input ListOrchestrasInput {
@@ -253,6 +306,71 @@ input ListOrchestrasInput {
   createdAt: DateFilter
   updatedAt: DateFilter
   instruments: ListInstrumentsInput
+  _count: CountOrchestrasInputs
+  _avg: AvgOrchestrasInputs
+  _sum: SumOrchestrasInputs
+  _min: MinOrchestrasInputs
+  _max: MaxOrchestrasInputs
+}
+
+input CountOrchestrasInputs {
+  id: NumberFilter
+  name: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgOrchestrasInputs {
+  id: NumberFilter
+}
+
+input SumOrchestrasInputs {
+  id: Int
+}
+
+input MinOrchestrasInputs {
+  id: Int
+}
+
+input MaxOrchestrasInputs {
+  id: Int
+}
+
+input CountInstrumentsInputs {
+  userId: NumberFilter
+  orchestraId: NumberFilter
+  id: NumberFilter
+  type: NumberFilter
+  description: NumberFilter
+  purchaseDate: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgInstrumentsInputs {
+  userId: NumberFilter
+  orchestraId: NumberFilter
+  id: NumberFilter
+}
+
+input SumInstrumentsInputs {
+  userId: Int
+  orchestraId: Int
+  id: Int
+}
+
+input MinInstrumentsInputs {
+  userId: Int
+  orchestraId: Int
+  id: Int
+}
+
+input MaxInstrumentsInputs {
+  userId: Int
+  orchestraId: Int
+  id: Int
 }
 
 input ListUserSessionsInput {
@@ -270,6 +388,11 @@ input ListUserSessionsInput {
   updatedAt: DateFilter
   user: ListUsersInput
   session: ListSessionsInput
+  _count: CountUserSessionsInputs
+  _avg: AvgUserSessionsInputs
+  _sum: SumUserSessionsInputs
+  _min: MinUserSessionsInputs
+  _max: MaxUserSessionsInputs
 }
 
 input ListSessionsInput {
@@ -288,6 +411,111 @@ input ListSessionsInput {
   createdAt: DateFilter
   updatedAt: DateFilter
   userSessions: ListUserSessionsInput
+  _count: CountSessionsInputs
+  _avg: AvgSessionsInputs
+  _sum: SumSessionsInputs
+  _min: MinSessionsInputs
+  _max: MaxSessionsInputs
+}
+
+input CountSessionsInputs {
+  id: NumberFilter
+  name: NumberFilter
+  start: NumberFilter
+  end: NumberFilter
+  time: NumberFilter
+  location: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgSessionsInputs {
+  id: NumberFilter
+}
+
+input SumSessionsInputs {
+  id: Int
+}
+
+input MinSessionsInputs {
+  id: Int
+}
+
+input MaxSessionsInputs {
+  id: Int
+}
+
+input CountUserSessionsInputs {
+  userId: NumberFilter
+  sessionId: NumberFilter
+  id: NumberFilter
+  time: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgUserSessionsInputs {
+  userId: NumberFilter
+  sessionId: NumberFilter
+  id: NumberFilter
+}
+
+input SumUserSessionsInputs {
+  userId: Int
+  sessionId: Int
+  id: Int
+}
+
+input MinUserSessionsInputs {
+  userId: Int
+  sessionId: Int
+  id: Int
+}
+
+input MaxUserSessionsInputs {
+  userId: Int
+  sessionId: Int
+  id: Int
+}
+
+input CountUsersInputs {
+  statsId: NumberFilter
+  mentorId: NumberFilter
+  id: NumberFilter
+  username: NumberFilter
+  provider: NumberFilter
+  email: NumberFilter
+  details: NumberFilter
+  verified: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgUsersInputs {
+  statsId: NumberFilter
+  mentorId: NumberFilter
+  id: NumberFilter
+}
+
+input SumUsersInputs {
+  statsId: Int
+  mentorId: Int
+  id: Int
+}
+
+input MinUsersInputs {
+  statsId: Int
+  mentorId: Int
+  id: Int
+}
+
+input MaxUsersInputs {
+  statsId: Int
+  mentorId: Int
+  id: Int
 }
 
 input Pagination {
@@ -674,6 +902,11 @@ input InstrumentsHaving {
   updatedAt: DateFilter
   user: ListUsersInput
   orchestra: ListOrchestrasInput
+  _count: CountInstrumentsInputs
+  _avg: AvgInstrumentsInputs
+  _sum: SumInstrumentsInputs
+  _min: MinInstrumentsInputs
+  _max: MaxInstrumentsInputs
 }
 
 input GetOrchestraInput {
@@ -716,6 +949,11 @@ input OrchestrasHaving {
   createdAt: DateFilter
   updatedAt: DateFilter
   instruments: ListInstrumentsInput
+  _count: CountOrchestrasInputs
+  _avg: AvgOrchestrasInputs
+  _sum: SumOrchestrasInputs
+  _min: MinOrchestrasInputs
+  _max: MaxOrchestrasInputs
 }
 
 input GetSessionInput {
@@ -801,6 +1039,11 @@ input SessionsHaving {
   createdAt: DateFilter
   updatedAt: DateFilter
   userSessions: ListUserSessionsInput
+  _count: CountSessionsInputs
+  _avg: AvgSessionsInputs
+  _sum: SumSessionsInputs
+  _min: MinSessionsInputs
+  _max: MaxSessionsInputs
 }
 
 input GetStatInput {
@@ -846,6 +1089,11 @@ input StatsHaving {
   updatedAt: DateFilter
   user: ListUsersInput
   users: ListUsersInput
+  _count: CountStatsInputs
+  _avg: AvgStatsInputs
+  _sum: SumStatsInputs
+  _min: MinStatsInputs
+  _max: MaxStatsInputs
 }
 
 input GetUserSessionInput {
@@ -939,6 +1187,11 @@ input UserSessionsHaving {
   updatedAt: DateFilter
   user: ListUsersInput
   session: ListSessionsInput
+  _count: CountUserSessionsInputs
+  _avg: AvgUserSessionsInputs
+  _sum: SumUserSessionsInputs
+  _min: MinUserSessionsInputs
+  _max: MaxUserSessionsInputs
 }
 
 input GetUserInput {
@@ -992,4 +1245,9 @@ input UsersHaving {
   instruments: ListInstrumentsInput
   userSessions: ListUserSessionsInput
   students: ListUsersInput
+  _count: CountUsersInputs
+  _avg: AvgUsersInputs
+  _sum: SumUsersInputs
+  _min: MinUsersInputs
+  _max: MaxUsersInputs
 }
