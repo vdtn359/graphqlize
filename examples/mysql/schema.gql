@@ -50,9 +50,9 @@ type User {
   updatedAt: DateTime!
   stats: Stat
   mentor: User
-  instruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
-  userSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
-  students(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
+  instruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!]): Instruments!
+  userSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!]): UserSessions!
+  students(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
 }
 
 """
@@ -67,7 +67,7 @@ type Stat {
   views: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
-  users(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
+  users(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
   user: User
 }
 
@@ -419,7 +419,7 @@ type Session {
   location: String!
   createdAt: DateTime!
   updatedAt: DateTime!
-  userSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
+  userSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!]): UserSessions!
 }
 
 type Orchestra {
@@ -427,7 +427,7 @@ type Orchestra {
   name: String!
   createdAt: DateTime!
   updatedAt: DateTime!
-  instruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
+  instruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!]): Instruments!
 }
 
 input GetInstrumentInput {
@@ -459,6 +459,7 @@ type CountInstruments {
   purchaseDate: Int
   createdAt: Int
   updatedAt: Int
+  _all: Int
   user: CountUsers
   orchestra: CountOrchestras
 }
@@ -474,6 +475,7 @@ type CountUsers {
   verified: Int
   createdAt: Int
   updatedAt: Int
+  _all: Int
   stats: CountStats
   mentor: CountUsers
 }
@@ -485,6 +487,7 @@ type CountStats {
   views: Int
   createdAt: Int
   updatedAt: Int
+  _all: Int
   user: CountUsers
 }
 
@@ -493,6 +496,7 @@ type CountOrchestras {
   name: Int
   createdAt: Int
   updatedAt: Int
+  _all: Int
 }
 
 type AvgInstruments {
@@ -750,6 +754,7 @@ type CountSessions {
   location: Int
   createdAt: Int
   updatedAt: Int
+  _all: Int
 }
 
 type AvgSessions {
@@ -870,6 +875,7 @@ type CountUserSessions {
   time: Int
   createdAt: Int
   updatedAt: Int
+  _all: Int
   user: CountUsers
   session: CountSessions
 }

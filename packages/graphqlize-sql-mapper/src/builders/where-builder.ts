@@ -388,7 +388,7 @@ export class WhereBuilder {
     return this.knexBuilder;
   }
 
-  applyPartitions() {
+  private applyPartitions() {
     if (this.partitions?.length) {
       const columns = Object.keys(this.partitions[0]);
       if (columns.length === 1) {
@@ -409,6 +409,23 @@ export class WhereBuilder {
         }
       }
     }
+  }
+
+  toQuery() {
+    const compiledQuery = this.knexBuilder.client.queryCompiler(
+      this.knexBuilder
+    );
+    const { bindings } = this.knexBuilder.toSQL();
+    const where = (compiledQuery.where() ?? '').substring(6);
+
+    if (!where.trim()) {
+      return null;
+    }
+
+    return {
+      where,
+      bindings,
+    };
   }
 
   getKnexBuilder() {

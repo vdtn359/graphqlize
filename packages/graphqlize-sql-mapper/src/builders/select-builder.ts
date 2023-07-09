@@ -136,7 +136,7 @@ export class SelectBuilder {
     return `${tableAlias}_${this.aliasMap[tableAlias]}`;
   }
 
-  private singleAssociationFilter({
+  singleAssociationFilter({
     whereBuilder,
     filterValue,
     foreignKey,
@@ -145,7 +145,8 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    if (filterValue?._nested !== true) {
+    const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+    if (filterValue?._nested !== true || !!existingJoin) {
       this.joinFilter({
         whereBuilder,
         filterValue,
@@ -160,7 +161,7 @@ export class SelectBuilder {
     }
   }
 
-  private manyAssociationFilter({
+  manyAssociationFilter({
     whereBuilder,
     filterValue,
     foreignKey,
@@ -169,7 +170,8 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    if (this.isTopLevel || filterValue?._nested !== false) {
+    const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+    if ((this.isTopLevel && !existingJoin) || filterValue?._nested !== false) {
       // perform an exists filter to ensure pagination is not affected
       this.subQueryFilter({
         whereBuilder,
@@ -442,6 +444,9 @@ export class SelectBuilder {
         this.convertFieldsToAlias(this.fields);
       const { select: groupFields, mapping: groupMapping } =
         this.convertFieldsToAlias({ group: this.groupBy });
+      if (this.having) {
+        this.applyHaving(this.having);
+      }
       this.knexBuilder.select({
         ...aggregateFields,
         ...groupFields,
@@ -461,6 +466,24 @@ export class SelectBuilder {
       );
     }
     return null;
+  }
+
+  private applyHaving(having: Record<string, any>) {
+    const whereBuilder = new WhereBuilder({
+      filter: having,
+      metadata: this.metadata,
+      alias: this.topWhereBuilder.getAlias(),
+      knex: this.knex,
+      knexBuilder: this.knex.select(),
+      selectBuilder: this,
+    });
+    whereBuilder.build();
+
+    const { where, bindings } = whereBuilder.toQuery() ?? {};
+
+    if (where) {
+      this.knexBuilder.havingRaw(where, bindings);
+    }
   }
 
   private convertFieldsToAlias(fields: Record<string, any>) {
