@@ -1,6 +1,6 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { SchemaComposer } from 'graphql-compose';
-import { GraphQLList, GraphQLNonNull } from 'graphql/index';
+import { GraphQLList, GraphQLNonNull } from 'graphql/type';
 import type { TableBuilder } from './table';
 import { TableTranslator } from './translator';
 

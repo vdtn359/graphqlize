@@ -20,14 +20,14 @@ type Query {
 }
 
 type Instrument {
-  userId: Int
-  orchestraId: Int
   id: Int!
   type: String!
   description: String
   purchaseDate: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
+  userId: Int
+  orchestraId: Int
   user: User
   orchestra: Orchestra
 }
@@ -38,16 +38,16 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTime
 
 type User {
-  statsId: Int
-  mentorId: Int
   id: Int!
   username: String!
   provider: String!
   email: String!
+  statsId: Int
   details: JSONObject
   verified: Boolean
   createdAt: DateTime!
   updatedAt: DateTime!
+  mentorId: Int
   stats: Stat
   mentor: User
   instruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!]): Instruments!
@@ -85,16 +85,16 @@ input ListUsersInput {
   _raw: RawExpression
   _and: [ListUsersInput!]
   _or: [ListUsersInput!]
-  statsId: NumberFilter
-  mentorId: NumberFilter
   id: NumberFilter
   username: StringFilter
   provider: StringFilter
   email: StringFilter
+  statsId: NumberFilter
   details: JsonFilter
   verified: BooleanFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  mentorId: NumberFilter
   stats: ListStatsInput
   mentor: ListUsersInput
   instruments: ListInstrumentsInput
@@ -277,14 +277,14 @@ input ListInstrumentsInput {
   _raw: RawExpression
   _and: [ListInstrumentsInput!]
   _or: [ListInstrumentsInput!]
-  userId: NumberFilter
-  orchestraId: NumberFilter
   id: NumberFilter
   type: StringFilter
   description: StringFilter
   purchaseDate: DateFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  userId: NumberFilter
+  orchestraId: NumberFilter
   user: ListUsersInput
   orchestra: ListOrchestrasInput
   _count: CountInstrumentsInputs
@@ -338,39 +338,39 @@ input MaxOrchestrasInputs {
 }
 
 input CountInstrumentsInputs {
-  userId: NumberFilter
-  orchestraId: NumberFilter
   id: NumberFilter
   type: NumberFilter
   description: NumberFilter
   purchaseDate: NumberFilter
   createdAt: NumberFilter
   updatedAt: NumberFilter
+  userId: NumberFilter
+  orchestraId: NumberFilter
   _all: NumberFilter
 }
 
 input AvgInstrumentsInputs {
+  id: NumberFilter
   userId: NumberFilter
   orchestraId: NumberFilter
-  id: NumberFilter
 }
 
 input SumInstrumentsInputs {
+  id: Int
   userId: Int
   orchestraId: Int
-  id: Int
 }
 
 input MinInstrumentsInputs {
+  id: Int
   userId: Int
   orchestraId: Int
-  id: Int
 }
 
 input MaxInstrumentsInputs {
+  id: Int
   userId: Int
   orchestraId: Int
-  id: Int
 }
 
 input ListUserSessionsInput {
@@ -380,12 +380,12 @@ input ListUserSessionsInput {
   _raw: RawExpression
   _and: [ListUserSessionsInput!]
   _or: [ListUserSessionsInput!]
-  userId: NumberFilter
-  sessionId: NumberFilter
   id: NumberFilter
   time: DateFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  userId: NumberFilter
+  sessionId: NumberFilter
   user: ListUsersInput
   session: ListSessionsInput
   _count: CountUserSessionsInputs
@@ -447,75 +447,75 @@ input MaxSessionsInputs {
 }
 
 input CountUserSessionsInputs {
-  userId: NumberFilter
-  sessionId: NumberFilter
   id: NumberFilter
   time: NumberFilter
   createdAt: NumberFilter
   updatedAt: NumberFilter
+  userId: NumberFilter
+  sessionId: NumberFilter
   _all: NumberFilter
 }
 
 input AvgUserSessionsInputs {
+  id: NumberFilter
   userId: NumberFilter
   sessionId: NumberFilter
-  id: NumberFilter
 }
 
 input SumUserSessionsInputs {
+  id: Int
   userId: Int
   sessionId: Int
-  id: Int
 }
 
 input MinUserSessionsInputs {
+  id: Int
   userId: Int
   sessionId: Int
-  id: Int
 }
 
 input MaxUserSessionsInputs {
+  id: Int
   userId: Int
   sessionId: Int
-  id: Int
 }
 
 input CountUsersInputs {
-  statsId: NumberFilter
-  mentorId: NumberFilter
   id: NumberFilter
   username: NumberFilter
   provider: NumberFilter
   email: NumberFilter
+  statsId: NumberFilter
   details: NumberFilter
   verified: NumberFilter
   createdAt: NumberFilter
   updatedAt: NumberFilter
+  mentorId: NumberFilter
   _all: NumberFilter
 }
 
 input AvgUsersInputs {
+  id: NumberFilter
   statsId: NumberFilter
   mentorId: NumberFilter
-  id: NumberFilter
 }
 
 input SumUsersInputs {
+  id: Int
   statsId: Int
   mentorId: Int
-  id: Int
 }
 
 input MinUsersInputs {
+  id: Int
   statsId: Int
   mentorId: Int
-  id: Int
 }
 
 input MaxUsersInputs {
+  id: Int
   statsId: Int
   mentorId: Int
-  id: Int
 }
 
 input Pagination {
@@ -526,16 +526,16 @@ input Pagination {
 }
 
 input SortUser {
-  statsId: SortOption
-  mentorId: SortOption
   id: SortOption
   username: SortOption
   provider: SortOption
   email: SortOption
+  statsId: SortOption
   details: SortOption
   verified: SortOption
   createdAt: SortOption
   updatedAt: SortOption
+  mentorId: SortOption
   stats: SortStat
   mentor: SortUser
   instruments: SortInstrument
@@ -570,14 +570,14 @@ input SortStat {
 }
 
 input SortInstrument {
-  userId: SortOption
-  orchestraId: SortOption
   id: SortOption
   type: SortOption
   description: SortOption
   purchaseDate: SortOption
   createdAt: SortOption
   updatedAt: SortOption
+  userId: SortOption
+  orchestraId: SortOption
   user: SortUser
   orchestra: SortOrchestra
 }
@@ -591,12 +591,12 @@ input SortOrchestra {
 }
 
 input SortUserSession {
-  userId: SortOption
-  sessionId: SortOption
   id: SortOption
   time: SortOption
   createdAt: SortOption
   updatedAt: SortOption
+  userId: SortOption
+  sessionId: SortOption
   user: SortUser
   session: SortSession
 }
@@ -628,12 +628,12 @@ type UserSessions {
 }
 
 type UserSession {
-  userId: Int
-  sessionId: Int
   id: Int!
   time: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
+  userId: Int
+  sessionId: Int
   user: User
   session: Session
 }
@@ -679,30 +679,30 @@ type AggregateInstruments {
 }
 
 type CountInstruments {
-  userId: Int
-  orchestraId: Int
   id: Int
   type: Int
   description: Int
   purchaseDate: Int
   createdAt: Int
   updatedAt: Int
+  userId: Int
+  orchestraId: Int
   _all: Int
   user: CountUsers
   orchestra: CountOrchestras
 }
 
 type CountUsers {
-  statsId: Int
-  mentorId: Int
   id: Int
   username: Int
   provider: Int
   email: Int
+  statsId: Int
   details: Int
   verified: Int
   createdAt: Int
   updatedAt: Int
+  mentorId: Int
   _all: Int
   stats: CountStats
   mentor: CountUsers
@@ -728,17 +728,17 @@ type CountOrchestras {
 }
 
 type AvgInstruments {
+  id: Float
   userId: Float
   orchestraId: Float
-  id: Float
   user: AvgUsers
   orchestra: AvgOrchestras
 }
 
 type AvgUsers {
+  id: Float
   statsId: Float
   mentorId: Float
-  id: Float
   stats: AvgStats
   mentor: AvgUsers
 }
@@ -756,17 +756,17 @@ type AvgOrchestras {
 }
 
 type SumInstruments {
+  id: Int
   userId: Int
   orchestraId: Int
-  id: Int
   user: SumUsers
   orchestra: SumOrchestras
 }
 
 type SumUsers {
+  id: Int
   statsId: Int
   mentorId: Int
-  id: Int
   stats: SumStats
   mentor: SumUsers
 }
@@ -784,17 +784,17 @@ type SumOrchestras {
 }
 
 type MinInstruments {
+  id: Int
   userId: Int
   orchestraId: Int
-  id: Int
   user: MinUsers
   orchestra: MinOrchestras
 }
 
 type MinUsers {
+  id: Int
   statsId: Int
   mentorId: Int
-  id: Int
   stats: MinStats
   mentor: MinUsers
 }
@@ -812,17 +812,17 @@ type MinOrchestras {
 }
 
 type MaxInstruments {
+  id: Int
   userId: Int
   orchestraId: Int
-  id: Int
   user: MaxUsers
   orchestra: MaxOrchestras
 }
 
 type MaxUsers {
+  id: Int
   statsId: Int
   mentorId: Int
-  id: Int
   stats: MaxStats
   mentor: MaxUsers
 }
@@ -840,29 +840,29 @@ type MaxOrchestras {
 }
 
 input InstrumentsGroupBy {
-  userId: Boolean
-  orchestraId: Boolean
   id: Boolean
   type: Boolean
   description: Boolean
   purchaseDate: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  userId: Boolean
+  orchestraId: Boolean
   user: UsersGroupBy
   orchestra: OrchestrasGroupBy
 }
 
 input UsersGroupBy {
-  statsId: Boolean
-  mentorId: Boolean
   id: Boolean
   username: Boolean
   provider: Boolean
   email: Boolean
+  statsId: Boolean
   details: Boolean
   verified: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  mentorId: Boolean
   stats: StatsGroupBy
   mentor: UsersGroupBy
 }
@@ -892,14 +892,14 @@ input InstrumentsHaving {
   _raw: RawExpression
   _and: [ListInstrumentsInput!]
   _or: [ListInstrumentsInput!]
-  userId: NumberFilter
-  orchestraId: NumberFilter
   id: NumberFilter
   type: StringFilter
   description: StringFilter
   purchaseDate: DateFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  userId: NumberFilter
+  orchestraId: NumberFilter
   user: ListUsersInput
   orchestra: ListOrchestrasInput
   _count: CountInstrumentsInputs
@@ -1117,56 +1117,56 @@ type AggregateUserSessions {
 }
 
 type CountUserSessions {
-  userId: Int
-  sessionId: Int
   id: Int
   time: Int
   createdAt: Int
   updatedAt: Int
+  userId: Int
+  sessionId: Int
   _all: Int
   user: CountUsers
   session: CountSessions
 }
 
 type AvgUserSessions {
+  id: Float
   userId: Float
   sessionId: Float
-  id: Float
   user: AvgUsers
   session: AvgSessions
 }
 
 type SumUserSessions {
+  id: Int
   userId: Int
   sessionId: Int
-  id: Int
   user: SumUsers
   session: SumSessions
 }
 
 type MinUserSessions {
+  id: Int
   userId: Int
   sessionId: Int
-  id: Int
   user: MinUsers
   session: MinSessions
 }
 
 type MaxUserSessions {
+  id: Int
   userId: Int
   sessionId: Int
-  id: Int
   user: MaxUsers
   session: MaxSessions
 }
 
 input UserSessionsGroupBy {
-  userId: Boolean
-  sessionId: Boolean
   id: Boolean
   time: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  userId: Boolean
+  sessionId: Boolean
   user: UsersGroupBy
   session: SessionsGroupBy
 }
@@ -1179,12 +1179,12 @@ input UserSessionsHaving {
   _raw: RawExpression
   _and: [ListUserSessionsInput!]
   _or: [ListUserSessionsInput!]
-  userId: NumberFilter
-  sessionId: NumberFilter
   id: NumberFilter
   time: DateFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  userId: NumberFilter
+  sessionId: NumberFilter
   user: ListUsersInput
   session: ListSessionsInput
   _count: CountUserSessionsInputs
@@ -1196,8 +1196,8 @@ input UserSessionsHaving {
 
 input GetUserInput {
   id: Int
-  statsId: Int
   username: String
+  statsId: Int
   email__provider: UsersEmailProviderKey
 }
 
@@ -1230,16 +1230,16 @@ input UsersHaving {
   _raw: RawExpression
   _and: [ListUsersInput!]
   _or: [ListUsersInput!]
-  statsId: NumberFilter
-  mentorId: NumberFilter
   id: NumberFilter
   username: StringFilter
   provider: StringFilter
   email: StringFilter
+  statsId: NumberFilter
   details: JsonFilter
   verified: BooleanFilter
   createdAt: DateFilter
   updatedAt: DateFilter
+  mentorId: NumberFilter
   stats: ListStatsInput
   mentor: ListUsersInput
   instruments: ListInstrumentsInput

@@ -1,6 +1,7 @@
 import type {
   DatabaseMapper,
   ForeignKeyMetadata,
+  ForeignKeyType,
   TableMapper,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
@@ -252,6 +253,7 @@ export class SchemaMapper implements DatabaseMapper {
         ...agg,
         [constraintName]: {
           columns: [current.column],
+          type: 'belongsTo',
           table,
           referenceTable: current.foreign_key_table,
           referenceColumns: [current.foreign_key_column],
@@ -268,6 +270,7 @@ export class SchemaMapper implements DatabaseMapper {
           table: foreignKey.foreign_key_table,
           referenceTable: table,
           referenceColumns: [foreignKey.column],
+          type: 'hasMany',
         };
       }
     }
@@ -370,7 +373,12 @@ export class SchemaMapper implements DatabaseMapper {
     if (!this.tables[table]) {
       throw new Error(`Table ${table} not found`);
     }
-    return new SqlTableMapper(this.instance, this.tables[table], this);
+    return new SqlTableMapper(
+      this.instance,
+      this.tables[table],
+      this,
+      this.options.allowWindowFunctions
+    );
   }
 
   defineForeignKey({
@@ -380,13 +388,14 @@ export class SchemaMapper implements DatabaseMapper {
     foreignKey,
   }: {
     table: string;
-    type: 'hasOne' | 'belongsTo' | 'hasMany';
+    type: ForeignKeyType;
     name: string;
-    foreignKey: Omit<ForeignKeyMetadata, 'table'>;
+    foreignKey: Omit<ForeignKeyMetadata, 'table' | 'type'>;
   }) {
     this.tables[table][type][name] = {
       ...foreignKey,
       table,
+      type,
     };
   }
 

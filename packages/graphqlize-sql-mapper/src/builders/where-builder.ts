@@ -334,7 +334,7 @@ export class WhereBuilder {
         filterValue: filter,
       });
     }
-    const { where, bindings } = whereBuilder.toQuery() ?? {};
+    const { where, bindings } = whereBuilder.toQuery();
     if (where) {
       // construct having queries using the generated where sql query
       knexBuilder.havingRaw(where, bindings);
@@ -466,17 +466,17 @@ export class WhereBuilder {
       this.knexBuilder
     );
     const { bindings } = this.knexBuilder.toSQL();
-    const where = (compiledQuery.where() ?? '').substring(6);
-
-    if (!where.trim()) {
-      return null;
-    }
+    const where = (compiledQuery.where() ?? '').substring(6).trim();
+    const having = (compiledQuery.having() ?? '').substring(6).trim();
 
     return {
       where,
+      having,
       bindings,
     };
   }
+
+  buildHaving() {}
 
   getKnexBuilder() {
     return this.knexBuilder;

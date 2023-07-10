@@ -37,7 +37,7 @@ export class SelectBuilder {
 
   private readonly isTopLevel: boolean;
 
-  private joinMap: Record<string, Record<string, string>> = {};
+  private joinMap: Record<string, [string, string]> = {};
 
   private readonly fields?: Record<string, any>;
 
@@ -145,8 +145,8 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
-    if (filterValue?._nested !== true || !!existingJoin) {
+    const existingJoin = this.getJoinAlias(foreignKey);
+    if (filterValue?._nested !== true && !!existingJoin) {
       this.joinFilter({
         whereBuilder,
         filterValue,
@@ -170,8 +170,8 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
-    if ((this.isTopLevel && !existingJoin) || filterValue?._nested !== false) {
+    const existingJoin = this.getJoinAlias(foreignKey);
+    if (this.isTopLevel && !existingJoin && filterValue?._nested !== false) {
       // perform an exists filter to ensure pagination is not affected
       this.subQueryFilter({
         whereBuilder,
@@ -206,7 +206,7 @@ export class SelectBuilder {
     const referenceTableMetadata =
       this.schemaMapper.getTableMetadata(referenceTable);
 
-    const existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+    const existingJoin = this.getJoinAlias(foreignKey);
     let usedFilter = filterValue;
 
     if (usedFilter === null) {
@@ -225,7 +225,7 @@ export class SelectBuilder {
       selectBuilder: this,
       metadata: referenceTableMetadata,
       knex: this.knex,
-      alias: existingJoin?.[referenceTable] ?? this.claimAlias(referenceTable),
+      alias: existingJoin ?? this.claimAlias(referenceTable),
     });
     if (!existingJoin) {
       this.join(
@@ -284,15 +284,16 @@ export class SelectBuilder {
     targetAlias: string,
     required = false
   ) {
-    const joinKey = this.getJoinKey(foreignKey);
-    if (this.joinMap[joinKey]) {
-      return this.joinMap[joinKey];
+    const existingJoin = this.getJoinAlias(foreignKey);
+    if (existingJoin) {
+      return existingJoin;
     }
-    const { table, referenceTable, columns, referenceColumns } = foreignKey;
-    this.joinMap[joinKey] = {
-      [table]: alias,
-      [referenceTable]: targetAlias,
-    };
+    const isBelongsTo = foreignKey.type === 'belongsTo';
+    const joinKey = this.getJoinKey(foreignKey);
+    const { referenceTable, columns, referenceColumns } = foreignKey;
+    this.joinMap[joinKey] = isBelongsTo
+      ? [alias, targetAlias]
+      : [targetAlias, alias];
 
     const joinType = required ? 'join' : 'leftJoin';
     this.knexBuilder[joinType](
@@ -310,7 +311,7 @@ export class SelectBuilder {
       }
     );
 
-    return this.joinMap[joinKey];
+    return isBelongsTo ? targetAlias : alias;
   }
 
   getSchemaMapper() {
@@ -430,11 +431,34 @@ export class SelectBuilder {
     return fields;
   }
 
+  private getJoinAlias(foreignKey: ForeignKeyMetadata) {
+    const joinKey = this.getJoinKey(foreignKey);
+    const existingJoin = this.joinMap[joinKey];
+
+    if (existingJoin) {
+      return foreignKey.type === 'belongsTo'
+        ? existingJoin[1]
+        : existingJoin[0];
+    }
+    return null;
+  }
+
   private getJoinKey(foreignKey: ForeignKeyMetadata) {
-    return jsonStringify({
-      [foreignKey.referenceTable]: [foreignKey.referenceColumns],
-      [foreignKey.table]: [foreignKey.columns],
-    });
+    return jsonStringify(
+      foreignKey.type === 'belongsTo'
+        ? [
+            foreignKey.table,
+            foreignKey.columns,
+            foreignKey.referenceTable,
+            foreignKey.referenceColumns,
+          ]
+        : [
+            foreignKey.referenceTable,
+            foreignKey.referenceColumns,
+            foreignKey.table,
+            foreignKey.columns,
+          ]
+    );
   }
 
   async aggregate() {
@@ -468,9 +492,25 @@ export class SelectBuilder {
     return null;
   }
 
-  private applyHaving(having: Record<string, any>) {
+  private applyHaving(havingFilter: Record<string, any>) {
+    const { metadata } = this;
+    const transformedHavingFilter = map(havingFilter, function traverse(value) {
+      // disable subquery for having queries
+      if (
+        this.key &&
+        metadata.hasMany[this.key] &&
+        typeof value === 'object' &&
+        value._nested !== undefined
+      ) {
+        return {
+          ...value,
+          _nested: false,
+        };
+      }
+      return undefined;
+    });
     const whereBuilder = new WhereBuilder({
-      filter: having,
+      filter: transformedHavingFilter,
       metadata: this.metadata,
       alias: this.topWhereBuilder.getAlias(),
       knex: this.knex,
@@ -479,10 +519,11 @@ export class SelectBuilder {
     });
     whereBuilder.build();
 
-    const { where, bindings } = whereBuilder.toQuery() ?? {};
+    const { having, where, bindings } = whereBuilder.toQuery();
 
-    if (where) {
-      this.knexBuilder.havingRaw(where, bindings);
+    if (having || where) {
+      const statement = [where, having].filter(Boolean).join(' AND ');
+      this.knexBuilder.havingRaw(statement, bindings);
     }
   }
 
@@ -566,7 +607,7 @@ export class SelectBuilder {
           const { referenceTable } = foreignKey;
           const referenceTableMetadata =
             this.schemaMapper.getTableMetadata(referenceTable);
-          let existingJoin = this.joinMap[this.getJoinKey(foreignKey)];
+          let existingJoin = this.getJoinAlias(foreignKey);
 
           if (!existingJoin) {
             // not already join
@@ -578,7 +619,7 @@ export class SelectBuilder {
           }
           const newPath = context.path.join('/');
           nodes[newPath] = {
-            alias: existingJoin[referenceTable],
+            alias: existingJoin,
             tableMetadata: referenceTableMetadata,
           };
         }

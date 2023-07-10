@@ -35,7 +35,7 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
       sort,
       knex: this.knex,
       metadata: this.tableMetadata,
-      useWindowFunctions: true,
+      useWindowFunctions: this.allowWindowFunctions,
       schemaMapper: this.schemaMapper,
     });
     const queries = queryBuilder.list();

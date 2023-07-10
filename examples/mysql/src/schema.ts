@@ -16,6 +16,7 @@ export async function buildSchema() {
     },
     {
       version: '1.0.0',
+      allowWindowFunctions: true,
     }
   );
   mapper.defineForeignKey({

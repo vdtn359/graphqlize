@@ -1,6 +1,9 @@
 import type { GraphQLType } from 'graphql';
 
+export type ForeignKeyType = 'hasOne' | 'belongsTo' | 'hasMany';
+
 export interface ForeignKeyMetadata {
+  type: ForeignKeyType;
   table: string;
   columns: string[];
   referenceTable: string;
