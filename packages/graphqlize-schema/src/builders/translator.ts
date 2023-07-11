@@ -86,21 +86,26 @@ export class TableTranslator {
   }
 
   aggregateResultsName() {
-    return this.typeName(`aggregate ${this.tableMetadata.name} results`, true);
+    return this.typeName(`aggregate ${this.tableMetadata.name} results`);
   }
 
   aggregateRootTypeName() {
-    return this.typeName(`aggregate ${this.tableMetadata.name}`, true);
+    return this.typeName(`aggregate ${this.tableMetadata.name}`);
   }
 
   aggregateTypeName(aggregateType: string) {
-    return this.typeName(`${aggregateType} ${this.tableMetadata.name}`, true);
+    return this.typeName(`${aggregateType} ${this.tableMetadata.name}`);
   }
 
-  aggregateTypeInputName(aggregateType: string) {
+  aggregateTypeFilterInputName(aggregateType: string) {
     return this.typeName(
-      `${aggregateType} ${this.tableMetadata.name} input`,
-      true
+      `${aggregateType} ${this.tableMetadata.name} filter input`
+    );
+  }
+
+  aggregateTypeSortInputName(aggregateType: string) {
+    return this.typeName(
+      `${aggregateType} ${this.tableMetadata.name} sort input`
     );
   }
 

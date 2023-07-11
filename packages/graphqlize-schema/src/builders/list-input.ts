@@ -1,10 +1,11 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
 import { InputTypeComposer, SchemaComposer } from 'graphql-compose';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
-import { GraphQLFloat, GraphQLInt } from 'graphql/index';
+import { GraphQLFloat, GraphQLInt } from 'graphql/type';
 import type { TableBuilder } from './table';
 import { getFilterType } from '../types';
 import { TableTranslator } from './translator';
+import { buildNumberFilter } from '../types/number';
 
 export class ListInputBuilder {
   private readonly metadata: TableMetadata;
@@ -83,14 +84,14 @@ export class ListInputBuilder {
           },
         });
 
-        this.buildTypes(tc);
-        this.buildAssociations(tc);
-        this.buildAggregateInputTC(tc);
+        this.buildTypesFilter(tc);
+        this.buildAssociationsFilter(tc);
+        this.buildAggregateFilter(tc);
       }
     );
   }
 
-  private buildTypes(tc: InputTypeComposer<any>) {
+  private buildTypesFilter(tc: InputTypeComposer<any>) {
     for (const [columnName, columnMetadata] of Object.entries(
       this.metadata.columns
     )) {
@@ -102,7 +103,7 @@ export class ListInputBuilder {
     }
   }
 
-  private buildAssociations(tc: InputTypeComposer<any>) {
+  private buildAssociationsFilter(tc: InputTypeComposer<any>) {
     for (const [constraintName, foreignKey] of Object.entries({
       ...this.metadata.belongsTo,
       ...this.metadata.hasOne,
@@ -119,6 +120,83 @@ export class ListInputBuilder {
         },
       });
     }
+  }
+
+  private buildAggregateFilter(tc: InputTypeComposer) {
+    tc.addFields({
+      _count: this.buildCountAggregateFilter(),
+      _avg: this.buildAvgAggregateFilter(),
+      _sum: this.buildOtherAggregateFilter('sum'),
+      _min: this.buildOtherAggregateFilter('min'),
+      _max: this.buildOtherAggregateFilter('max'),
+    });
+  }
+
+  private buildCountAggregateFilter() {
+    return this.composer.getOrCreateITC(
+      this.translator.aggregateTypeFilterInputName('count'),
+      (tc) => {
+        for (const column of Object.keys(this.metadata.columns)) {
+          tc.addFields({
+            [this.translator.columnName(column)]: {
+              type: buildNumberFilter(this.composer),
+            },
+          });
+        }
+
+        tc.addFields({
+          _all: {
+            type: buildNumberFilter(this.composer),
+          },
+        });
+      }
+    );
+  }
+
+  private buildAvgAggregateFilter() {
+    return this.composer.getOrCreateITC(
+      this.translator.aggregateTypeFilterInputName('avg'),
+      (tc) => {
+        for (const [column, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          if (
+            columnMetadata.type !== GraphQLInt &&
+            columnMetadata.type !== GraphQLFloat
+          ) {
+            continue;
+          }
+          tc.addFields({
+            [this.translator.columnName(column)]: {
+              type: buildNumberFilter(this.composer),
+            },
+          });
+        }
+      }
+    );
+  }
+
+  private buildOtherAggregateFilter(type: string) {
+    return this.composer.getOrCreateITC(
+      this.translator.aggregateTypeFilterInputName(type),
+      (tc) => {
+        for (const [column, columnMetadata] of Object.entries(
+          this.metadata.columns
+        )) {
+          if (
+            columnMetadata.type !== GraphQLInt &&
+            columnMetadata.type !== GraphQLFloat
+          ) {
+            continue;
+          }
+          tc.addFields({
+            [this.translator.columnName(column)]: {
+              type: columnMetadata.type,
+            },
+          });
+        }
+      }
+    );
   }
 
   buildSort() {
@@ -164,67 +242,81 @@ export class ListInputBuilder {
       }
     );
     return this.composer.getOrCreateITC(this.translator.sortName(), (tc) => {
-      for (const columnName of Object.keys(this.metadata.columns)) {
-        tc.addFields({
-          [this.translator.columnName(columnName)]: {
-            type: sortOption,
-          },
-        });
-      }
-
-      for (const [constraintName, foreignKey] of Object.entries({
-        ...this.metadata.belongsTo,
-        ...this.metadata.hasOne,
-        ...this.metadata.hasMany,
-      })) {
-        const { referenceTable } = foreignKey;
-        const schemaBuilder = this.tableBuilder.getSchemaBuilder();
-        const referencedTableBuilder =
-          schemaBuilder.getTableBuilder(referenceTable);
-
-        tc.addFields({
-          [this.translator.associationName(constraintName)]: {
-            type: referencedTableBuilder.getListInputBuilder().buildSort(),
-          },
-        });
-      }
+      this.buildTypeSort(tc, sortOption);
+      this.buildAssociationSort(tc);
+      this.buildAggregationSort(tc, sortOption);
     });
   }
 
-  buildAggregateInputTC(tc: InputTypeComposer) {
+  private buildTypeSort(tc: InputTypeComposer, sortOption: InputTypeComposer) {
+    for (const columnName of Object.keys(this.metadata.columns)) {
+      tc.addFields({
+        [this.translator.columnName(columnName)]: {
+          type: sortOption,
+        },
+      });
+    }
+  }
+
+  private buildAssociationSort(tc: InputTypeComposer<any>) {
+    for (const [constraintName, foreignKey] of Object.entries({
+      ...this.metadata.belongsTo,
+      ...this.metadata.hasOne,
+      ...this.metadata.hasMany,
+    })) {
+      const { referenceTable } = foreignKey;
+      const schemaBuilder = this.tableBuilder.getSchemaBuilder();
+      const referencedTableBuilder =
+        schemaBuilder.getTableBuilder(referenceTable);
+
+      tc.addFields({
+        [this.translator.associationName(constraintName)]: {
+          type: referencedTableBuilder.getListInputBuilder().buildSort(),
+        },
+      });
+    }
+  }
+
+  private buildAggregationSort(
+    tc: InputTypeComposer,
+    sortOption: InputTypeComposer
+  ) {
     tc.addFields({
-      _count: this.buildCountAggregateITC(),
-      _avg: this.buildAvgAggregateITC(),
-      _sum: this.buildOtherAggregateITC('sum'),
-      _min: this.buildOtherAggregateITC('min'),
-      _max: this.buildOtherAggregateITC('max'),
+      _count: this.buildCountAggregationSort(sortOption),
+      _avg: this.buildOtherAggregationSort('avg', sortOption),
+      _sum: this.buildOtherAggregationSort('sum', sortOption),
+      _min: this.buildOtherAggregationSort('min', sortOption),
+      _max: this.buildOtherAggregationSort('max', sortOption),
     });
   }
 
-  buildCountAggregateITC() {
+  private buildCountAggregationSort(sortOption: InputTypeComposer) {
     return this.composer.getOrCreateITC(
-      this.translator.aggregateTypeInputName('count'),
+      this.translator.aggregateTypeSortInputName('count'),
       (tc) => {
         for (const column of Object.keys(this.metadata.columns)) {
           tc.addFields({
             [this.translator.columnName(column)]: {
-              type: 'NumberFilter',
+              type: sortOption,
             },
           });
         }
 
         tc.addFields({
           _all: {
-            type: 'NumberFilter',
+            type: sortOption,
           },
         });
       }
     );
   }
 
-  buildAvgAggregateITC() {
+  private buildOtherAggregationSort(
+    type: string,
+    sortOption: InputTypeComposer
+  ) {
     return this.composer.getOrCreateITC(
-      this.translator.aggregateTypeInputName('avg'),
+      this.translator.aggregateTypeSortInputName(type),
       (tc) => {
         for (const [column, columnMetadata] of Object.entries(
           this.metadata.columns
@@ -237,30 +329,7 @@ export class ListInputBuilder {
           }
           tc.addFields({
             [this.translator.columnName(column)]: {
-              type: 'NumberFilter',
-            },
-          });
-        }
-      }
-    );
-  }
-
-  buildOtherAggregateITC(type: string) {
-    return this.composer.getOrCreateITC(
-      this.translator.aggregateTypeInputName(type),
-      (tc) => {
-        for (const [column, columnMetadata] of Object.entries(
-          this.metadata.columns
-        )) {
-          if (
-            columnMetadata.type !== GraphQLInt &&
-            columnMetadata.type !== GraphQLFloat
-          ) {
-            continue;
-          }
-          tc.addFields({
-            [this.translator.columnName(column)]: {
-              type: columnMetadata.type,
+              type: sortOption,
             },
           });
         }

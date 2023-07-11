@@ -25,7 +25,7 @@ export function buildStringNumberFilter(composer: SchemaComposer) {
     });
   });
 
-  composer.getOrCreateITC('StringNumberFilter', (tc) => {
+  return composer.getOrCreateITC('StringNumberFilter', (tc) => {
     tc.addFields({
       _eq: TYPE,
       _neq: TYPE,
