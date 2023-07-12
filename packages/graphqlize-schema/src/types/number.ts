@@ -1,7 +1,11 @@
 import { SchemaComposer } from 'graphql-compose';
+import { TableTranslator } from '../builders/translator';
 
-export function buildNumberFilter(composer: SchemaComposer) {
-  return composer.getOrCreateITC('NumberFilter', (tc) => {
+export function buildNumberFilter(
+  translator: TableTranslator,
+  composer: SchemaComposer
+) {
+  return composer.getOrCreateITC(translator.typeName('NumberFilter'), (tc) => {
     tc.addFields({
       _eq: 'Float',
       _neq: 'Float',

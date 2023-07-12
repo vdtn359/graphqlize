@@ -1,7 +1,11 @@
 import { SchemaComposer } from 'graphql-compose';
+import { TableTranslator } from '../builders/translator';
 
-export function buildStringFilter(composer: SchemaComposer) {
-  return composer.getOrCreateITC('StringFilter', (tc) => {
+export function buildStringFilter(
+  translator: TableTranslator,
+  composer: SchemaComposer
+) {
+  return composer.getOrCreateITC(translator.typeName('StringFilter'), (tc) => {
     tc.addFields({
       _eq: 'String',
       _neq: 'String',

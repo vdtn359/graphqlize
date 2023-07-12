@@ -139,14 +139,14 @@ export class ListInputBuilder {
         for (const column of Object.keys(this.metadata.columns)) {
           tc.addFields({
             [this.translator.columnName(column)]: {
-              type: buildNumberFilter(this.composer),
+              type: buildNumberFilter(this.translator, this.composer),
             },
           });
         }
 
         tc.addFields({
           _all: {
-            type: buildNumberFilter(this.composer),
+            type: buildNumberFilter(this.translator, this.composer),
           },
         });
       }
@@ -168,7 +168,7 @@ export class ListInputBuilder {
           }
           tc.addFields({
             [this.translator.columnName(column)]: {
-              type: buildNumberFilter(this.composer),
+              type: buildNumberFilter(this.translator, this.composer),
             },
           });
         }

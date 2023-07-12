@@ -20,17 +20,17 @@ export const getFilterType = (
     switch (type.name) {
       case 'Int':
       case 'Float':
-        return buildNumberFilter(composer);
+        return buildNumberFilter(translator, composer);
       case 'String':
-        return buildStringFilter(composer);
+        return buildStringFilter(translator, composer);
       case 'Date':
       case 'DateTime':
-        return buildDateFilter(composer);
+        return buildDateFilter(translator, composer);
       case 'JSON':
       case 'JSONObject':
-        return buildJsonFilter(composer);
+        return buildJsonFilter(translator, composer);
       case 'Boolean':
-        return buildBooleanFilter(composer);
+        return buildBooleanFilter(translator, composer);
       default:
         throw new Error(`Unknown filter type ${type.name}`);
     }
@@ -40,7 +40,7 @@ export const getFilterType = (
     return buildEnumFilter(translator, column, composer);
   }
   if (type instanceof GraphQLList) {
-    return buildListFilter(composer);
+    return buildListFilter(translator, composer);
   }
   throw new Error(`Unknown filter type ${type.toString()}`);
 };

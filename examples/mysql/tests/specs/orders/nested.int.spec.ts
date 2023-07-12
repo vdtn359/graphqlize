@@ -24,7 +24,7 @@ describe('Nested ordering', () => {
     const statsList: any[] = await sequelize.models.stats.bulkCreate([
       {
         views: 100,
-        likes: 50,
+        likes: 30,
         exp: 3,
       },
       {
@@ -35,7 +35,7 @@ describe('Nested ordering', () => {
       {
         views: 20,
         likes: 30,
-        exp: 1,
+        exp: 2,
       },
       {
         views: 1000,
@@ -70,10 +70,10 @@ describe('Nested ordering', () => {
     const { body: response } = await listUsersQuery(server, {
       sort: [
         {
-          stats: { views: { direction: 'ASC' } },
+          stats: { likes: { direction: 'DESC' } },
         },
         {
-          stats: { likes: { direction: 'DESC' } },
+          stats: { exp: { direction: 'ASC' } },
         },
         {
           username: { direction: 'DESC' },
@@ -82,7 +82,7 @@ describe('Nested ordering', () => {
     });
     expect(response.data.listUsers.count).toEqual(4);
     expectUserMatchesUserResponse(
-      usersList[0],
+      usersList[3],
       response.data.listUsers.records[0]
     );
     expectUserMatchesUserResponse(
@@ -94,7 +94,7 @@ describe('Nested ordering', () => {
       response.data.listUsers.records[2]
     );
     expectUserMatchesUserResponse(
-      usersList[3],
+      usersList[0],
       response.data.listUsers.records[3]
     );
   });

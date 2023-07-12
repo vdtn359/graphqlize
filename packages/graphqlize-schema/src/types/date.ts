@@ -1,7 +1,15 @@
 import { SchemaComposer } from 'graphql-compose';
+import { TableTranslator } from '../builders/translator';
+import { buildNumberFilter } from './number';
+import { buildStringFilter } from './string';
 
-export function buildDateFilter(composer: SchemaComposer) {
-  return composer.getOrCreateITC('DateFilter', (tc) => {
+export function buildDateFilter(
+  translator: TableTranslator,
+  composer: SchemaComposer
+) {
+  const numberFilter = buildNumberFilter(translator, composer);
+  const stringFilter = buildStringFilter(translator, composer);
+  return composer.getOrCreateITC(translator.typeName('DateFilter'), (tc) => {
     tc.addFields({
       _eq: 'Date',
       _neq: 'Date',
@@ -13,14 +21,14 @@ export function buildDateFilter(composer: SchemaComposer) {
       _notBetween: '[Date]',
       _in: '[Date]',
       _notIn: '[Date]',
-      _year: 'NumberFilter',
-      _month: 'NumberFilter',
-      _day: 'NumberFilter',
-      _hour: 'NumberFilter',
-      _minute: 'NumberFilter',
-      _second: 'NumberFilter',
-      _dayOfWeek: 'NumberFilter',
-      _date: 'StringFilter',
+      _year: numberFilter.getType(),
+      _month: numberFilter.getType(),
+      _day: numberFilter.getType(),
+      _hour: numberFilter.getType(),
+      _minute: numberFilter.getType(),
+      _second: numberFilter.getType(),
+      _dayOfWeek: numberFilter.getType(),
+      _date: stringFilter.getType(),
     });
   });
 }
