@@ -394,6 +394,7 @@ export class SelectBuilder {
     return this.topWhereBuilder;
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   private applySort(sorts: Record<string, any>[], orderBy = true) {
     const fields: {
       column: string;
@@ -406,6 +407,36 @@ export class SelectBuilder {
         alias: this.topWhereBuilder.getAlias(),
         tableMetadata: this.metadata,
         callback: (context, { alias, tableMetadata }, value) => {
+          if (
+            context.key &&
+            ['_count', '_max', '_min', '_sum', '_avg'].includes(context.key)
+          ) {
+            const [key, sortValue] = Object.entries(value)[0] as [string, any];
+            const column =
+              key === '_all'
+                ? '*'
+                : this.knex.raw('??', `${alias}.${key}`).toQuery();
+            const operation = context.key.replace('_', '');
+            const orderExpression = this.knex.raw(
+              `${operation}(${column})`
+            ) as any;
+            if (orderBy) {
+              this.knexBuilder.orderBy(
+                orderExpression,
+                sortValue.direction,
+                sortValue.nulls
+              );
+            }
+            fields.push({
+              column: orderExpression,
+              order: value.direction,
+              nulls: value.nulls,
+            });
+            return {
+              value: sortValue,
+              stop: true,
+            };
+          }
           if (
             tableMetadata.columns[context.key!] &&
             typeof value.direction === 'string'
