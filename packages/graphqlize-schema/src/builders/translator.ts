@@ -166,7 +166,7 @@ export class TableTranslator {
         ret[key] = value.map((element: any) => this.reverseToDB(element));
         return;
       }
-      if (['_not'].includes(key)) {
+      if (['_not', '_count', '_sum', '_avg', '_max', '_min'].includes(key)) {
         // eslint-disable-next-line no-param-reassign
         ret[key] = this.reverseToDB(value);
         return;

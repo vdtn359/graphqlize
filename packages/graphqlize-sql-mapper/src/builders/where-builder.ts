@@ -324,10 +324,7 @@ export class WhereBuilder {
         key === '_all'
           ? this.knex.raw('*')
           : this.knex.raw(`??`, `${this.alias}.${key}`);
-      const aggregateField = this.knex.raw(
-        `${operation}(??)`,
-        column.toQuery()
-      );
+      const aggregateField = this.knex.raw(`${operation}(${column.toQuery()})`);
       whereBuilder.columnFilter({
         knexBuilder: havingKnexBuilder,
         column: aggregateField,
@@ -388,6 +385,7 @@ export class WhereBuilder {
           });
           break;
         case '_count':
+        case '_avg':
         case '_min':
         case '_max':
         case '_sum':
