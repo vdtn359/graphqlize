@@ -169,7 +169,7 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    const existingJoin = this.getJoinAlias(foreignKey);
+    const existingJoin = this.getJoinAlias(whereBuilder.getAlias(), foreignKey);
     if (this.isTopLevel && !existingJoin && filterValue?._nested !== false) {
       // perform an exists filter to ensure pagination is not affected
       this.subQueryFilter({
@@ -205,7 +205,7 @@ export class SelectBuilder {
     const referenceTableMetadata =
       this.schemaMapper.getTableMetadata(referenceTable);
 
-    const existingJoin = this.getJoinAlias(foreignKey);
+    const existingJoin = this.getJoinAlias(whereBuilder.getAlias(), foreignKey);
     let usedFilter = filterValue;
 
     if (usedFilter === null) {
@@ -231,7 +231,7 @@ export class SelectBuilder {
         foreignKey,
         whereBuilder.getAlias(),
         targetWhereBuilder.getAlias(),
-        filterValue._required
+        filterValue?._required
       );
     }
     targetWhereBuilder.build();
@@ -283,16 +283,19 @@ export class SelectBuilder {
     targetAlias: string,
     required = false
   ) {
-    const existingJoin = this.getJoinAlias(foreignKey);
+    const existingJoin = this.getJoinAlias(alias, foreignKey);
     if (existingJoin) {
       return existingJoin;
     }
     const isBelongsTo = foreignKey.type === 'belongsTo';
-    const joinKey = this.getJoinKey(foreignKey);
+    const joinKey = this.getJoinKey(alias, foreignKey);
+    const inverseJoinKey = this.getJoinKey(targetAlias, foreignKey);
     const { referenceTable, columns, referenceColumns } = foreignKey;
-    this.joinMap[joinKey] = isBelongsTo
+    const joinValue: [string, string] = isBelongsTo
       ? [alias, targetAlias]
       : [targetAlias, alias];
+    this.joinMap[joinKey] = joinValue;
+    this.joinMap[inverseJoinKey] = joinValue;
 
     const joinType = required ? 'join' : 'leftJoin';
     this.knexBuilder[joinType](
@@ -461,8 +464,8 @@ export class SelectBuilder {
     return fields;
   }
 
-  private getJoinAlias(foreignKey: ForeignKeyMetadata) {
-    const joinKey = this.getJoinKey(foreignKey);
+  private getJoinAlias(alias: string, foreignKey: ForeignKeyMetadata) {
+    const joinKey = this.getJoinKey(alias, foreignKey);
     const existingJoin = this.joinMap[joinKey];
 
     if (existingJoin) {
@@ -473,16 +476,18 @@ export class SelectBuilder {
     return null;
   }
 
-  private getJoinKey(foreignKey: ForeignKeyMetadata) {
+  private getJoinKey(alias: string, foreignKey: ForeignKeyMetadata) {
     return jsonStringify(
       foreignKey.type === 'belongsTo'
         ? [
+            alias,
             foreignKey.table,
             foreignKey.columns,
             foreignKey.referenceTable,
             foreignKey.referenceColumns,
           ]
         : [
+            alias,
             foreignKey.referenceTable,
             foreignKey.referenceColumns,
             foreignKey.table,
@@ -637,7 +642,7 @@ export class SelectBuilder {
           const { referenceTable } = foreignKey;
           const referenceTableMetadata =
             this.schemaMapper.getTableMetadata(referenceTable);
-          let existingJoin = this.getJoinAlias(foreignKey);
+          let existingJoin = this.getJoinAlias(currentAlias, foreignKey);
 
           if (!existingJoin) {
             // not already join
