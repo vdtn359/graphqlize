@@ -145,8 +145,7 @@ export class SelectBuilder {
     filterValue: Record<string, any>;
     foreignKey: ForeignKeyMetadata;
   }) {
-    const existingJoin = this.getJoinAlias(foreignKey);
-    if (filterValue?._nested !== true && !!existingJoin) {
+    if (filterValue?._nested !== true) {
       this.joinFilter({
         whereBuilder,
         filterValue,
