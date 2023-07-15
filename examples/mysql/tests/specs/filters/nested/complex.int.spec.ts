@@ -1,7 +1,7 @@
 import { Server } from 'http';
 import { clearDB, getServer } from '#tests/utils';
 import { expectUserMatchesUserResponse } from '#tests/assert';
-import { statsFactory, userFactory } from '#tests/factories';
+import { instrumentFactory, statsFactory, userFactory } from '#tests/factories';
 import { sequelize } from '#tests/sequelize';
 import { listUsersQuery } from '#tests/queries';
 
@@ -52,17 +52,13 @@ describe('Complex filters', () => {
       name: 'Jalisco Philharmonic',
     });
 
-    await sequelize.models.instrument.create({
+    await instrumentFactory({
       type: 'violin',
-      purchaseDate: new Date('2021-03-01T00:00:00Z'),
-      description: `This is a violin`,
       orchestraId: orchestra.id,
       userId: user.id,
     });
-    await sequelize.models.instrument.create({
+    await instrumentFactory({
       type: 'piano',
-      purchaseDate: new Date('2021-03-05T00:00:00Z'),
-      description: `This is a piano`,
       orchestraId: orchestra.id,
       userId: mentor.id,
     });

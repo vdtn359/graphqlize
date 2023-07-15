@@ -24,3 +24,20 @@ export const userFactory = async (props: Record<string, any> = {}) =>
     createdAt: new Date('2021-01-01T00:00:00Z'),
     ...props,
   });
+
+export const instrumentFactory = async (props: Record<string, any> = {}) =>
+  sequelize.models.user.create({
+    type: chance.pickone([
+      'violin',
+      'trombone',
+      'flute',
+      'harp',
+      'trumpet',
+      'piano',
+      'guitar',
+      'pipe organ',
+    ]),
+    purchaseDate: chance.date(),
+    description: chance.sentence(),
+    ...props,
+  });
