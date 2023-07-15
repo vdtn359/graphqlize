@@ -20,9 +20,9 @@ export const getSequelizeOptions = (dialect: Dialect): Options => {
   if (dialect === Dialect.POSTGRES) {
     return {
       dialect: 'postgres',
-      username: 'root',
-      password: 'password',
-      port: 30306,
+      username: 'postgres',
+      password: 'postgres',
+      port: 50432,
       database: 'graphqlize',
       logQueryParameters: true,
       benchmark: true,
@@ -46,7 +46,17 @@ export const getSchemaOptions = (dialect: Dialect): any => {
     };
   }
   if (dialect === Dialect.POSTGRES) {
-    return {};
+    return {
+      client: 'pg',
+      connection: {
+        host: '127.0.0.1',
+        user: 'postgres',
+        port: 50432,
+        password: 'postgres',
+        database: 'graphqlize',
+        charset: 'utf8',
+      },
+    };
   }
   throw new Error(`Unsupported dialect ${dialect}`);
 };

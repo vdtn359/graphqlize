@@ -51,3 +51,4 @@ Thumbs.db
 .turbo
 *.wmv
 
+/examples/tests/schema.json

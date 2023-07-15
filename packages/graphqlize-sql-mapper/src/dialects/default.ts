@@ -3,7 +3,7 @@ import { BaseDialect } from './base';
 
 export class DefaultDialect implements BaseDialect {
   dayOfWeek(knex: Knex, name: string) {
-    return knex.raw(`DATE_PART('DAYOFWEEK', ${name})`);
+    return knex.raw(`EXTRACT(isodow FROM ${name}) + 1`);
   }
 
   hour(knex: Knex, name: string) {
@@ -35,6 +35,6 @@ export class DefaultDialect implements BaseDialect {
   }
 
   json(knex: Knex, column: string, field: string) {
-    return knex.raw(`JSON_UNQUOTE(JSON_EXTRACT(${column}, '$.${field}'))`);
+    return knex.raw(`${column}->>'${field}'`);
   }
 }

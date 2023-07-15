@@ -85,7 +85,10 @@ describe('Count', () => {
     const { body: response } = await sendQuery(server, {
       query: gql`
         query Query {
-          aggregateUsers(groupBy: { provider: true }) {
+          aggregateUsers(
+            groupBy: { provider: true }
+            sort: [{ provider: { direction: ASC } }]
+          ) {
             records {
               count {
                 details

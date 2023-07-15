@@ -125,7 +125,7 @@ export class SelectBuilder {
 
     const [result = {}] = await queryBuilder.count();
 
-    return result['count(*)'] ?? 0;
+    return result.count ?? result['count(*)'] ?? 0;
   }
 
   private claimAlias(table: string) {

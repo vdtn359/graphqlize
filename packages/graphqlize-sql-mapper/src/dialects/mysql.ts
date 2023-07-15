@@ -34,4 +34,8 @@ export class MysqlDialect extends DefaultDialect implements BaseDialect {
   day(knex: Knex, name: string): any {
     return knex.raw(`DAY(${name})`);
   }
+
+  json(knex: Knex, column: string, field: string) {
+    return knex.raw(`JSON_UNQUOTE(JSON_EXTRACT(${column}, '$.${field}'))`);
+  }
 }

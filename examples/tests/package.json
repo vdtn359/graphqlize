@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "graphql-tag": "^2.12.6",
-    "mysql2": "^3.4.0",
     "sequelize": "^6.32.1"
   },
   "devDependencies": {
