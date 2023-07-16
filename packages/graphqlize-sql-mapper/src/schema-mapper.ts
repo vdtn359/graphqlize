@@ -7,9 +7,9 @@ import type {
 } from '@vdtn359/graphqlize-mapper';
 import schemaInspector from '@vdtn359/knex-schema-inspector';
 import { knex, Knex } from 'knex';
+import { mapValues } from 'lodash';
 import { GraphQLDateTime, GraphQLJSONObject } from 'graphql-scalars';
 import fsPromise from 'fs/promises';
-
 import fs from 'fs';
 import {
   GraphQLBoolean,
@@ -23,6 +23,7 @@ import { Column } from '@vdtn359/knex-schema-inspector/dist/types/column';
 import { plural as pluralize } from 'pluralize';
 import { ForeignKey } from '@vdtn359/knex-schema-inspector/dist/types/foreign-key';
 import jsonStringify from 'json-stringify-deterministic';
+import { GraphQLScalarType } from 'graphql/index';
 import { SqlTableMapper } from './table-mapper';
 import { SchemaOptions, TableOptions } from './options';
 
@@ -52,9 +53,48 @@ export class SchemaMapper implements DatabaseMapper {
         }
         return next();
       },
+      postProcessResponse: (result, queryContext) => {
+        if (!queryContext?.table || !result || typeof result !== 'object') {
+          return result;
+        }
+        if (Array.isArray(result)) {
+          return result.map((record) =>
+            this.transformResult(record, queryContext.table)
+          );
+        }
+        return this.transformResult(result, queryContext.table);
+      },
       ...config,
     });
     this.inspector = schemaInspector(this.instance);
+  }
+
+  private transformResult(record: Record<string, any>, table: string) {
+    const tableMetadata = this.getTableMetadata(table);
+    return mapValues(record, (value, key) => {
+      if (!value) {
+        return value;
+      }
+      if (tableMetadata.columns[key]) {
+        const columnMetadata = tableMetadata.columns[key];
+        if (!(columnMetadata.type instanceof GraphQLScalarType)) {
+          return value;
+        }
+        if (
+          columnMetadata.type.name === 'JSONObject' &&
+          typeof value === 'string'
+        ) {
+          return JSON.parse(value);
+        }
+        if (
+          columnMetadata.type.name === 'Date' ||
+          columnMetadata.type.name === 'DateTime'
+        ) {
+          return new Date(value).toISOString();
+        }
+      }
+      return value;
+    });
   }
 
   static async create(config: Knex.Config, options?: SchemaOptions) {
@@ -324,7 +364,8 @@ export class SchemaMapper implements DatabaseMapper {
     }
     if (
       transformedType.includes('datetime') ||
-      transformedType.includes('timestamp')
+      transformedType.includes('timestamp') ||
+      transformedType.includes('time')
     ) {
       return GraphQLDateTime;
     }

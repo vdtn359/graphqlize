@@ -61,7 +61,7 @@ describe('Has one nested association', () => {
     const { body: response } = await listUsersQuery(server, {
       filter: {
         userSessions: {
-          session: { _nested: false, _count: { id: { _eq: 2 } } },
+          session: { _count: { id: { _eq: 2 } } },
         },
       },
     });

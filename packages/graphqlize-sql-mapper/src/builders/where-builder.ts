@@ -59,7 +59,7 @@ export class WhereBuilder {
     knexBuilder,
     column,
     operator,
-    value,
+    value: originalValue,
     type,
   }: {
     knexBuilder: Knex.QueryBuilder;
@@ -69,6 +69,7 @@ export class WhereBuilder {
     type?: string;
   }) {
     const dialectHandler = getDialectHandler(knexBuilder.client.dialect);
+    const value = dialectHandler.transform(originalValue);
     switch (operator) {
       case '_eq':
         return knexBuilder.andWhere(column, value);
@@ -111,7 +112,10 @@ export class WhereBuilder {
       case '_endsWith':
         return knexBuilder.andWhereLike(column, `%${value}`);
       case '_iLike':
-        return knexBuilder.andWhereILike(column, value);
+        return knexBuilder.andWhereLike(
+          this.knex.raw(`LOWER(${column.toString()})`) as any,
+          value ? value.toLowerCase() : value
+        );
       case '_fields':
         return knexBuilder.andWhere((subQuery) => {
           for (const field of value) {
@@ -330,6 +334,15 @@ export class WhereBuilder {
         column: aggregateField,
         filterValue: filter,
       });
+      const foreignKeyMetadata = this.selectBuilder.getForeignKey();
+      if (foreignKeyMetadata) {
+        const topWhereBuilder = this.selectBuilder.getWhereBuilder();
+        knexBuilder.groupBy(
+          foreignKeyMetadata.referenceColumns.map(
+            (foreignKeyColumn) => `${topWhereBuilder.alias}.${foreignKeyColumn}`
+          )
+        );
+      }
     }
     const { where, bindings } = whereBuilder.toQuery();
     if (where) {

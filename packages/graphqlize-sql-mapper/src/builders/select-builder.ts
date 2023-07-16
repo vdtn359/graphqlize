@@ -47,6 +47,8 @@ export class SelectBuilder {
 
   private readonly useWindowFunctions?: boolean;
 
+  private readonly foreignKey?: ForeignKeyMetadata;
+
   constructor({
     filter,
     pagination,
@@ -62,6 +64,7 @@ export class SelectBuilder {
     aliasMap = {},
     isTopLevel = true,
     useWindowFunctions = false,
+    foreignKey,
   }: {
     filter?: Record<string, any>;
     fields?: Record<string, any>;
@@ -77,6 +80,7 @@ export class SelectBuilder {
     isTopLevel?: boolean;
     aliasMap?: Record<string, number>;
     useWindowFunctions?: boolean;
+    foreignKey?: ForeignKeyMetadata;
   }) {
     this.schemaMapper = schemaMapper;
     this.pagination = pagination;
@@ -91,7 +95,12 @@ export class SelectBuilder {
     this.sort = sort;
     this.aliasMap = aliasMap;
     this.isTopLevel = isTopLevel;
-    this.knexBuilder = knexBuilder ?? this.knex.select();
+    this.foreignKey = foreignKey;
+    this.knexBuilder =
+      knexBuilder ??
+      this.knex.select().queryContext({
+        table: this.metadata.name,
+      });
 
     this.topWhereBuilder = new WhereBuilder({
       filter: this.filter,
@@ -268,6 +277,7 @@ export class SelectBuilder {
         schemaMapper: this.schemaMapper,
         aliasMap: this.aliasMap,
         isTopLevel: false,
+        foreignKey,
       });
 
       selectBuilder.list(1);
@@ -392,7 +402,7 @@ export class SelectBuilder {
     });
   }
 
-  private getWhereBuilder() {
+  getWhereBuilder() {
     return this.topWhereBuilder;
   }
 
@@ -669,5 +679,9 @@ export class SelectBuilder {
     return map(fields, function traverse(value) {
       handleNode(this, value);
     });
+  }
+
+  getForeignKey() {
+    return this.foreignKey;
   }
 }

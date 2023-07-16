@@ -9,4 +9,5 @@ export interface BaseDialect {
   second(knex: Knex, name: string): Knex.Raw;
   dayOfWeek(knex: Knex, name: string): Knex.Raw;
   day(knex: Knex, name: string): Knex.Raw;
+  transform(value: any): any;
 }

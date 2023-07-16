@@ -1,0 +1,30 @@
+{
+  "name": "@vdtn359/sqlite-graphqlize-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "lint": "eslint .",
+    "test": "DIALECT=sqlite jest --silent --runInBand -c node_modules/@vdtn359/graphqlize-tests/jest.config.js",
+    "start": "DEBUG=knex:* npx tsx watch src/index.ts",
+    "seed": "DIALECT=sqlite npx tsx node_modules/@vdtn359/graphqlize-tests/src/database/seed.ts"
+  },
+  "dependencies": {
+    "@vdtn359/graphqlize-schema": "workspace:*",
+    "@vdtn359/graphqlize-sql-mapper": "workspace:*",
+    "@vdtn359/graphqlize-tests": "workspace:*",
+    "graphql": "^16.7.1",
+    "graphql-yoga": "^4.0.2",
+    "sqlite3": "^5.1.6"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

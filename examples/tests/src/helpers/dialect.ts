@@ -1,4 +1,5 @@
 import { Options } from 'sequelize';
+import * as path from 'path';
 
 export enum Dialect {
   POSTGRES = 'postgres',
@@ -24,6 +25,14 @@ export const getSequelizeOptions = (dialect: Dialect): Options => {
       password: 'postgres',
       port: 50432,
       database: 'graphqlize',
+      logQueryParameters: true,
+      benchmark: true,
+    };
+  }
+  if (dialect === Dialect.SQLITE) {
+    return {
+      dialect: 'sqlite',
+      storage: path.resolve(__dirname, '..', '..', '..', 'sqlite', 'sqlite.db'),
       logQueryParameters: true,
       benchmark: true,
     };
@@ -55,6 +64,21 @@ export const getSchemaOptions = (dialect: Dialect): any => {
         password: 'postgres',
         database: 'graphqlize',
         charset: 'utf8',
+      },
+    };
+  }
+  if (dialect === Dialect.SQLITE) {
+    return {
+      client: 'sqlite3',
+      connection: {
+        filename: path.resolve(
+          __dirname,
+          '..',
+          '..',
+          '..',
+          'sqlite',
+          'sqlite.db'
+        ),
       },
     };
   }

@@ -37,4 +37,8 @@ export class DefaultDialect implements BaseDialect {
   json(knex: Knex, column: string, field: string) {
     return knex.raw(`${column}->>'${field}'`);
   }
+
+  transform(value: any) {
+    return value;
+  }
 }

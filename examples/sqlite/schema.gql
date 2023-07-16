@@ -1,35 +1,33 @@
 type Query {
-  getInstrument(by: GetInstrumentInput!): Instrument
-  listInstruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
-  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!], groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResult
-  getOrchestra(by: GetOrchestraInput!): Orchestra
-  listOrchestras(filter: ListOrchestrasInput, pagination: Pagination = {limit: 20}, sort: [SortOrchestra!]): Orchestras!
-  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: [SortOrchestra!], groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResult
-  getSession(by: GetSessionInput!): Session
-  listSessions(filter: ListSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortSession!]): Sessions!
-  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: [SortSession!], groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResult
   getStat(by: GetStatInput!): Stat
   listStats(filter: ListStatsInput, pagination: Pagination = {limit: 20}, sort: [SortStat!]): Stats!
   aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: [SortStat!], groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResult
-  getUserSession(by: GetUserSessionInput!): UserSession
-  listUserSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
-  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!], groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResult
   getUser(by: GetUserInput!): User
   listUsers(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
   aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!], groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResult
+  getOrchestra(by: GetOrchestraInput!): Orchestra
+  listOrchestras(filter: ListOrchestrasInput, pagination: Pagination = {limit: 20}, sort: [SortOrchestra!]): Orchestras!
+  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: [SortOrchestra!], groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResult
+  getInstrument(by: GetInstrumentInput!): Instrument
+  listInstruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
+  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!], groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResult
+  getSession(by: GetSessionInput!): Session
+  listSessions(filter: ListSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortSession!]): Sessions!
+  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: [SortSession!], groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResult
+  getUserSession(by: GetUserSessionInput!): UserSession
+  listUserSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
+  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!], groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResult
 }
 
-type Instrument {
-  id: Int!
-  type: String!
-  description: String
-  purchaseDate: DateTime!
+type Stat {
+  id: Int
+  exp: Int!
+  likes: Int!
+  views: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
-  userId: Int
-  orchestraId: Int
+  users(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
   user: User
-  orchestra: Orchestra
 }
 
 """
@@ -37,8 +35,15 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+type Users {
+  records: [User!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
 type User {
-  id: Int!
+  id: Int
   username: String!
   provider: String!
   email: String!
@@ -48,8 +53,8 @@ type User {
   createdAt: DateTime!
   updatedAt: DateTime!
   mentorId: Int
-  stats: Stat
   mentor: User
+  stats: Stat
   instruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!]): Instruments!
   userSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!]): UserSessions!
   students(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
@@ -60,51 +65,56 @@ The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](
 """
 scalar JSONObject @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
 
-type Stat {
-  id: Int!
-  exp: Int!
-  likes: Int!
-  views: Int!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  users(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
-  user: User
-}
-
-type Users {
-  records: [User!]!
+type Instruments {
+  records: [Instrument!]!
   limit: Int!
   offset: Int!
   count: Int
 }
 
-input ListUsersInput {
+type Instrument {
+  id: Int
+  type: String!
+  description: String
+  purchaseDate: DateTime!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  userId: Int
+  orchestraId: Int
+  orchestra: Orchestra
+  user: User
+}
+
+type Orchestra {
+  id: Int
+  name: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  instruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!]): Instruments!
+}
+
+input ListInstrumentsInput {
   _required: Boolean
   _nested: Boolean
-  _not: ListUsersInput
+  _not: ListInstrumentsInput
   _raw: RawExpression
-  _and: [ListUsersInput!]
-  _or: [ListUsersInput!]
+  _and: [ListInstrumentsInput!]
+  _or: [ListInstrumentsInput!]
   id: NumberFilter
-  username: StringFilter
-  provider: StringFilter
-  email: StringFilter
-  statsId: NumberFilter
-  details: JsonFilter
-  verified: BooleanFilter
+  type: StringFilter
+  description: StringFilter
+  purchaseDate: DateFilter
   createdAt: DateFilter
   updatedAt: DateFilter
-  mentorId: NumberFilter
-  stats: ListStatsInput
-  mentor: ListUsersInput
-  instruments: ListInstrumentsInput
-  userSessions: ListUserSessionsInput
-  students: ListUsersInput
-  _count: CountUsersFilterInput
-  _avg: AvgUsersFilterInput
-  _sum: SumUsersFilterInput
-  _min: MinUsersFilterInput
-  _max: MaxUsersFilterInput
+  userId: NumberFilter
+  orchestraId: NumberFilter
+  orchestra: ListOrchestrasInput
+  user: ListUsersInput
+  _count: CountInstrumentsFilterInput
+  _avg: AvgInstrumentsFilterInput
+  _sum: SumInstrumentsFilterInput
+  _min: MinInstrumentsFilterInput
+  _max: MaxInstrumentsFilterInput
 }
 
 input RawExpression {
@@ -150,6 +160,101 @@ input StringFilter {
   _endsWith: String
 }
 
+input DateFilter {
+  _eq: Date
+  _neq: Date
+  _lt: Date
+  _lte: Date
+  _gt: Date
+  _gte: Date
+  _between: [Date]
+  _notBetween: [Date]
+  _in: [Date]
+  _notIn: [Date]
+  _year: NumberFilter
+  _month: NumberFilter
+  _day: NumberFilter
+  _hour: NumberFilter
+  _minute: NumberFilter
+  _second: NumberFilter
+  _dayOfWeek: NumberFilter
+  _date: StringFilter
+}
+
+scalar Date
+
+input ListOrchestrasInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListOrchestrasInput
+  _raw: RawExpression
+  _and: [ListOrchestrasInput!]
+  _or: [ListOrchestrasInput!]
+  id: NumberFilter
+  name: StringFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  instruments: ListInstrumentsInput
+  _count: CountOrchestrasFilterInput
+  _avg: AvgOrchestrasFilterInput
+  _sum: SumOrchestrasFilterInput
+  _min: MinOrchestrasFilterInput
+  _max: MaxOrchestrasFilterInput
+}
+
+input CountOrchestrasFilterInput {
+  id: NumberFilter
+  name: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgOrchestrasFilterInput {
+  id: NumberFilter
+}
+
+input SumOrchestrasFilterInput {
+  id: Int
+}
+
+input MinOrchestrasFilterInput {
+  id: Int
+}
+
+input MaxOrchestrasFilterInput {
+  id: Int
+}
+
+input ListUsersInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListUsersInput
+  _raw: RawExpression
+  _and: [ListUsersInput!]
+  _or: [ListUsersInput!]
+  id: NumberFilter
+  username: StringFilter
+  provider: StringFilter
+  email: StringFilter
+  statsId: NumberFilter
+  details: JsonFilter
+  verified: BooleanFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  mentorId: NumberFilter
+  mentor: ListUsersInput
+  stats: ListStatsInput
+  instruments: ListInstrumentsInput
+  userSessions: ListUserSessionsInput
+  students: ListUsersInput
+  _count: CountUsersFilterInput
+  _avg: AvgUsersFilterInput
+  _sum: SumUsersFilterInput
+  _min: MinUsersFilterInput
+  _max: MaxUsersFilterInput
+}
+
 input JsonFilter {
   _fields: [JsonFieldFilter!]!
 }
@@ -186,29 +291,6 @@ input BooleanFilter {
   _eq: Boolean
   _neq: Boolean
 }
-
-input DateFilter {
-  _eq: Date
-  _neq: Date
-  _lt: Date
-  _lte: Date
-  _gt: Date
-  _gte: Date
-  _between: [Date]
-  _notBetween: [Date]
-  _in: [Date]
-  _notIn: [Date]
-  _year: NumberFilter
-  _month: NumberFilter
-  _day: NumberFilter
-  _hour: NumberFilter
-  _minute: NumberFilter
-  _second: NumberFilter
-  _dayOfWeek: NumberFilter
-  _date: StringFilter
-}
-
-scalar Date
 
 input ListStatsInput {
   _required: Boolean
@@ -270,109 +352,6 @@ input MaxStatsFilterInput {
   views: Int
 }
 
-input ListInstrumentsInput {
-  _required: Boolean
-  _nested: Boolean
-  _not: ListInstrumentsInput
-  _raw: RawExpression
-  _and: [ListInstrumentsInput!]
-  _or: [ListInstrumentsInput!]
-  id: NumberFilter
-  type: StringFilter
-  description: StringFilter
-  purchaseDate: DateFilter
-  createdAt: DateFilter
-  updatedAt: DateFilter
-  userId: NumberFilter
-  orchestraId: NumberFilter
-  user: ListUsersInput
-  orchestra: ListOrchestrasInput
-  _count: CountInstrumentsFilterInput
-  _avg: AvgInstrumentsFilterInput
-  _sum: SumInstrumentsFilterInput
-  _min: MinInstrumentsFilterInput
-  _max: MaxInstrumentsFilterInput
-}
-
-input ListOrchestrasInput {
-  _required: Boolean
-  _nested: Boolean
-  _not: ListOrchestrasInput
-  _raw: RawExpression
-  _and: [ListOrchestrasInput!]
-  _or: [ListOrchestrasInput!]
-  id: NumberFilter
-  name: StringFilter
-  createdAt: DateFilter
-  updatedAt: DateFilter
-  instruments: ListInstrumentsInput
-  _count: CountOrchestrasFilterInput
-  _avg: AvgOrchestrasFilterInput
-  _sum: SumOrchestrasFilterInput
-  _min: MinOrchestrasFilterInput
-  _max: MaxOrchestrasFilterInput
-}
-
-input CountOrchestrasFilterInput {
-  id: NumberFilter
-  name: NumberFilter
-  createdAt: NumberFilter
-  updatedAt: NumberFilter
-  _all: NumberFilter
-}
-
-input AvgOrchestrasFilterInput {
-  id: NumberFilter
-}
-
-input SumOrchestrasFilterInput {
-  id: Int
-}
-
-input MinOrchestrasFilterInput {
-  id: Int
-}
-
-input MaxOrchestrasFilterInput {
-  id: Int
-}
-
-input CountInstrumentsFilterInput {
-  id: NumberFilter
-  type: NumberFilter
-  description: NumberFilter
-  purchaseDate: NumberFilter
-  createdAt: NumberFilter
-  updatedAt: NumberFilter
-  userId: NumberFilter
-  orchestraId: NumberFilter
-  _all: NumberFilter
-}
-
-input AvgInstrumentsFilterInput {
-  id: NumberFilter
-  userId: NumberFilter
-  orchestraId: NumberFilter
-}
-
-input SumInstrumentsFilterInput {
-  id: Int
-  userId: Int
-  orchestraId: Int
-}
-
-input MinInstrumentsFilterInput {
-  id: Int
-  userId: Int
-  orchestraId: Int
-}
-
-input MaxInstrumentsFilterInput {
-  id: Int
-  userId: Int
-  orchestraId: Int
-}
-
 input ListUserSessionsInput {
   _required: Boolean
   _nested: Boolean
@@ -386,8 +365,8 @@ input ListUserSessionsInput {
   updatedAt: DateFilter
   userId: NumberFilter
   sessionId: NumberFilter
-  user: ListUsersInput
   session: ListSessionsInput
+  user: ListUsersInput
   _count: CountUserSessionsFilterInput
   _avg: AvgUserSessionsFilterInput
   _sum: SumUserSessionsFilterInput
@@ -406,7 +385,7 @@ input ListSessionsInput {
   name: StringFilter
   start: DateFilter
   end: DateFilter
-  time: DateFilter
+  time: StringFilter
   location: StringFilter
   createdAt: DateFilter
   updatedAt: DateFilter
@@ -518,6 +497,42 @@ input MaxUsersFilterInput {
   mentorId: Int
 }
 
+input CountInstrumentsFilterInput {
+  id: NumberFilter
+  type: NumberFilter
+  description: NumberFilter
+  purchaseDate: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  userId: NumberFilter
+  orchestraId: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgInstrumentsFilterInput {
+  id: NumberFilter
+  userId: NumberFilter
+  orchestraId: NumberFilter
+}
+
+input SumInstrumentsFilterInput {
+  id: Int
+  userId: Int
+  orchestraId: Int
+}
+
+input MinInstrumentsFilterInput {
+  id: Int
+  userId: Int
+  orchestraId: Int
+}
+
+input MaxInstrumentsFilterInput {
+  id: Int
+  userId: Int
+  orchestraId: Int
+}
+
 input Pagination {
   disabled: Boolean
   page: Int
@@ -525,27 +540,22 @@ input Pagination {
   offset: Int = 0
 }
 
-input SortUser {
+input SortInstrument {
   id: SortOption
-  username: SortOption
-  provider: SortOption
-  email: SortOption
-  statsId: SortOption
-  details: SortOption
-  verified: SortOption
+  type: SortOption
+  description: SortOption
+  purchaseDate: SortOption
   createdAt: SortOption
   updatedAt: SortOption
-  mentorId: SortOption
-  stats: SortStat
-  mentor: SortUser
-  instruments: SortInstrument
-  userSessions: SortUserSession
-  students: SortUser
-  _count: CountUsersSortInput
-  _avg: AvgUsersSortInput
-  _sum: SumUsersSortInput
-  _min: MinUsersSortInput
-  _max: MaxUsersSortInput
+  userId: SortOption
+  orchestraId: SortOption
+  orchestra: SortOrchestra
+  user: SortUser
+  _count: CountInstrumentsSortInput
+  _avg: AvgInstrumentsSortInput
+  _sum: SumInstrumentsSortInput
+  _min: MinInstrumentsSortInput
+  _max: MaxInstrumentsSortInput
 }
 
 input SortOption {
@@ -561,6 +571,66 @@ enum SortDirection {
 enum NullsDirection {
   FIRST
   LAST
+}
+
+input SortOrchestra {
+  id: SortOption
+  name: SortOption
+  createdAt: SortOption
+  updatedAt: SortOption
+  instruments: SortInstrument
+  _count: CountOrchestrasSortInput
+  _avg: AvgOrchestrasSortInput
+  _sum: SumOrchestrasSortInput
+  _min: MinOrchestrasSortInput
+  _max: MaxOrchestrasSortInput
+}
+
+input CountOrchestrasSortInput {
+  id: SortOption
+  name: SortOption
+  createdAt: SortOption
+  updatedAt: SortOption
+  _all: SortOption
+}
+
+input AvgOrchestrasSortInput {
+  id: SortOption
+}
+
+input SumOrchestrasSortInput {
+  id: SortOption
+}
+
+input MinOrchestrasSortInput {
+  id: SortOption
+}
+
+input MaxOrchestrasSortInput {
+  id: SortOption
+}
+
+input SortUser {
+  id: SortOption
+  username: SortOption
+  provider: SortOption
+  email: SortOption
+  statsId: SortOption
+  details: SortOption
+  verified: SortOption
+  createdAt: SortOption
+  updatedAt: SortOption
+  mentorId: SortOption
+  mentor: SortUser
+  stats: SortStat
+  instruments: SortInstrument
+  userSessions: SortUserSession
+  students: SortUser
+  _count: CountUsersSortInput
+  _avg: AvgUsersSortInput
+  _sum: SumUsersSortInput
+  _min: MinUsersSortInput
+  _max: MaxUsersSortInput
 }
 
 input SortStat {
@@ -617,97 +687,6 @@ input MaxStatsSortInput {
   views: SortOption
 }
 
-input SortInstrument {
-  id: SortOption
-  type: SortOption
-  description: SortOption
-  purchaseDate: SortOption
-  createdAt: SortOption
-  updatedAt: SortOption
-  userId: SortOption
-  orchestraId: SortOption
-  user: SortUser
-  orchestra: SortOrchestra
-  _count: CountInstrumentsSortInput
-  _avg: AvgInstrumentsSortInput
-  _sum: SumInstrumentsSortInput
-  _min: MinInstrumentsSortInput
-  _max: MaxInstrumentsSortInput
-}
-
-input SortOrchestra {
-  id: SortOption
-  name: SortOption
-  createdAt: SortOption
-  updatedAt: SortOption
-  instruments: SortInstrument
-  _count: CountOrchestrasSortInput
-  _avg: AvgOrchestrasSortInput
-  _sum: SumOrchestrasSortInput
-  _min: MinOrchestrasSortInput
-  _max: MaxOrchestrasSortInput
-}
-
-input CountOrchestrasSortInput {
-  id: SortOption
-  name: SortOption
-  createdAt: SortOption
-  updatedAt: SortOption
-  _all: SortOption
-}
-
-input AvgOrchestrasSortInput {
-  id: SortOption
-}
-
-input SumOrchestrasSortInput {
-  id: SortOption
-}
-
-input MinOrchestrasSortInput {
-  id: SortOption
-}
-
-input MaxOrchestrasSortInput {
-  id: SortOption
-}
-
-input CountInstrumentsSortInput {
-  id: SortOption
-  type: SortOption
-  description: SortOption
-  purchaseDate: SortOption
-  createdAt: SortOption
-  updatedAt: SortOption
-  userId: SortOption
-  orchestraId: SortOption
-  _all: SortOption
-}
-
-input AvgInstrumentsSortInput {
-  id: SortOption
-  userId: SortOption
-  orchestraId: SortOption
-}
-
-input SumInstrumentsSortInput {
-  id: SortOption
-  userId: SortOption
-  orchestraId: SortOption
-}
-
-input MinInstrumentsSortInput {
-  id: SortOption
-  userId: SortOption
-  orchestraId: SortOption
-}
-
-input MaxInstrumentsSortInput {
-  id: SortOption
-  userId: SortOption
-  orchestraId: SortOption
-}
-
 input SortUserSession {
   id: SortOption
   time: SortOption
@@ -715,8 +694,8 @@ input SortUserSession {
   updatedAt: SortOption
   userId: SortOption
   sessionId: SortOption
-  user: SortUser
   session: SortSession
+  user: SortUser
   _count: CountUserSessionsSortInput
   _avg: AvgUserSessionsSortInput
   _sum: SumUserSessionsSortInput
@@ -841,11 +820,40 @@ input MaxUsersSortInput {
   mentorId: SortOption
 }
 
-type Instruments {
-  records: [Instrument!]!
-  limit: Int!
-  offset: Int!
-  count: Int
+input CountInstrumentsSortInput {
+  id: SortOption
+  type: SortOption
+  description: SortOption
+  purchaseDate: SortOption
+  createdAt: SortOption
+  updatedAt: SortOption
+  userId: SortOption
+  orchestraId: SortOption
+  _all: SortOption
+}
+
+input AvgInstrumentsSortInput {
+  id: SortOption
+  userId: SortOption
+  orchestraId: SortOption
+}
+
+input SumInstrumentsSortInput {
+  id: SortOption
+  userId: SortOption
+  orchestraId: SortOption
+}
+
+input MinInstrumentsSortInput {
+  id: SortOption
+  userId: SortOption
+  orchestraId: SortOption
+}
+
+input MaxInstrumentsSortInput {
+  id: SortOption
+  userId: SortOption
+  orchestraId: SortOption
 }
 
 type UserSessions {
@@ -856,34 +864,328 @@ type UserSessions {
 }
 
 type UserSession {
-  id: Int!
+  id: Int
   time: DateTime!
   createdAt: DateTime!
   updatedAt: DateTime!
   userId: Int
   sessionId: Int
-  user: User
   session: Session
+  user: User
 }
 
 type Session {
-  id: Int!
+  id: Int
   name: String!
   start: DateTime!
   end: DateTime!
-  time: DateTime!
+  time: String!
   location: String!
   createdAt: DateTime!
   updatedAt: DateTime!
   userSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!]): UserSessions!
 }
 
-type Orchestra {
-  id: Int!
-  name: String!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  instruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!]): Instruments!
+input GetStatInput {
+  id: Int
+}
+
+type Stats {
+  records: [Stat!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateStatsResult {
+  records: [AggregateStat!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateStat {
+  group: JSON
+  count: CountStat
+  avg: AvgStat
+  sum: SumStat
+  min: MinStat
+  max: MaxStat
+}
+
+type CountStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  createdAt: Int
+  updatedAt: Int
+  _all: Int
+  user: CountUser
+}
+
+type CountUser {
+  id: Int
+  username: Int
+  provider: Int
+  email: Int
+  statsId: Int
+  details: Int
+  verified: Int
+  createdAt: Int
+  updatedAt: Int
+  mentorId: Int
+  _all: Int
+  mentor: CountUser
+  stats: CountStat
+}
+
+type AvgStat {
+  id: Float
+  exp: Float
+  likes: Float
+  views: Float
+  user: AvgUser
+}
+
+type AvgUser {
+  id: Float
+  statsId: Float
+  mentorId: Float
+  mentor: AvgUser
+  stats: AvgStat
+}
+
+type SumStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: SumUser
+}
+
+type SumUser {
+  id: Int
+  statsId: Int
+  mentorId: Int
+  mentor: SumUser
+  stats: SumStat
+}
+
+type MinStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: MinUser
+}
+
+type MinUser {
+  id: Int
+  statsId: Int
+  mentorId: Int
+  mentor: MinUser
+  stats: MinStat
+}
+
+type MaxStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: MaxUser
+}
+
+type MaxUser {
+  id: Int
+  statsId: Int
+  mentorId: Int
+  mentor: MaxUser
+  stats: MaxStat
+}
+
+input StatsGroupBy {
+  id: Boolean
+  exp: Boolean
+  likes: Boolean
+  views: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  user: UsersGroupBy
+}
+
+input UsersGroupBy {
+  id: Boolean
+  username: Boolean
+  provider: Boolean
+  email: Boolean
+  statsId: Boolean
+  details: Boolean
+  verified: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  mentorId: Boolean
+  mentor: UsersGroupBy
+  stats: StatsGroupBy
+}
+
+""""""
+input StatsHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStatsInput
+  _raw: RawExpression
+  _and: [ListStatsInput!]
+  _or: [ListStatsInput!]
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  user: ListUsersInput
+  users: ListUsersInput
+  _count: CountStatsFilterInput
+  _avg: AvgStatsFilterInput
+  _sum: SumStatsFilterInput
+  _min: MinStatsFilterInput
+  _max: MaxStatsFilterInput
+}
+
+input GetUserInput {
+  id: Int
+  username: String
+  statsId: Int
+  email__provider: UsersEmailProviderKey
+}
+
+input UsersEmailProviderKey {
+  email: String!
+  provider: String!
+}
+
+type AggregateUsersResult {
+  records: [AggregateUser!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateUser {
+  group: JSON
+  count: CountUser
+  avg: AvgUser
+  sum: SumUser
+  min: MinUser
+  max: MaxUser
+}
+
+""""""
+input UsersHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListUsersInput
+  _raw: RawExpression
+  _and: [ListUsersInput!]
+  _or: [ListUsersInput!]
+  id: NumberFilter
+  username: StringFilter
+  provider: StringFilter
+  email: StringFilter
+  statsId: NumberFilter
+  details: JsonFilter
+  verified: BooleanFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  mentorId: NumberFilter
+  mentor: ListUsersInput
+  stats: ListStatsInput
+  instruments: ListInstrumentsInput
+  userSessions: ListUserSessionsInput
+  students: ListUsersInput
+  _count: CountUsersFilterInput
+  _avg: AvgUsersFilterInput
+  _sum: SumUsersFilterInput
+  _min: MinUsersFilterInput
+  _max: MaxUsersFilterInput
+}
+
+input GetOrchestraInput {
+  id: Int
+}
+
+type Orchestras {
+  records: [Orchestra!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateOrchestrasResult {
+  records: [AggregateOrchestra!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateOrchestra {
+  group: JSON
+  count: CountOrchestra
+  avg: AvgOrchestra
+  sum: SumOrchestra
+  min: MinOrchestra
+  max: MaxOrchestra
+}
+
+type CountOrchestra {
+  id: Int
+  name: Int
+  createdAt: Int
+  updatedAt: Int
+  _all: Int
+}
+
+type AvgOrchestra {
+  id: Float
+}
+
+type SumOrchestra {
+  id: Int
+}
+
+type MinOrchestra {
+  id: Int
+}
+
+type MaxOrchestra {
+  id: Int
+}
+
+input OrchestrasGroupBy {
+  id: Boolean
+  name: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+}
+
+""""""
+input OrchestrasHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListOrchestrasInput
+  _raw: RawExpression
+  _and: [ListOrchestrasInput!]
+  _or: [ListOrchestrasInput!]
+  id: NumberFilter
+  name: StringFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  instruments: ListInstrumentsInput
+  _count: CountOrchestrasFilterInput
+  _avg: AvgOrchestrasFilterInput
+  _sum: SumOrchestrasFilterInput
+  _min: MinOrchestrasFilterInput
+  _max: MaxOrchestrasFilterInput
 }
 
 input GetInstrumentInput {
@@ -916,155 +1218,40 @@ type CountInstrument {
   userId: Int
   orchestraId: Int
   _all: Int
-  user: CountUser
   orchestra: CountOrchestra
-}
-
-type CountUser {
-  id: Int
-  username: Int
-  provider: Int
-  email: Int
-  statsId: Int
-  details: Int
-  verified: Int
-  createdAt: Int
-  updatedAt: Int
-  mentorId: Int
-  _all: Int
-  stats: CountStat
-  mentor: CountUser
-}
-
-type CountStat {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
-  createdAt: Int
-  updatedAt: Int
-  _all: Int
   user: CountUser
-}
-
-type CountOrchestra {
-  id: Int
-  name: Int
-  createdAt: Int
-  updatedAt: Int
-  _all: Int
 }
 
 type AvgInstrument {
   id: Float
   userId: Float
   orchestraId: Float
-  user: AvgUser
   orchestra: AvgOrchestra
-}
-
-type AvgUser {
-  id: Float
-  statsId: Float
-  mentorId: Float
-  stats: AvgStat
-  mentor: AvgUser
-}
-
-type AvgStat {
-  id: Float
-  exp: Float
-  likes: Float
-  views: Float
   user: AvgUser
-}
-
-type AvgOrchestra {
-  id: Float
 }
 
 type SumInstrument {
   id: Int
   userId: Int
   orchestraId: Int
-  user: SumUser
   orchestra: SumOrchestra
-}
-
-type SumUser {
-  id: Int
-  statsId: Int
-  mentorId: Int
-  stats: SumStat
-  mentor: SumUser
-}
-
-type SumStat {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
   user: SumUser
-}
-
-type SumOrchestra {
-  id: Int
 }
 
 type MinInstrument {
   id: Int
   userId: Int
   orchestraId: Int
-  user: MinUser
   orchestra: MinOrchestra
-}
-
-type MinUser {
-  id: Int
-  statsId: Int
-  mentorId: Int
-  stats: MinStat
-  mentor: MinUser
-}
-
-type MinStat {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
   user: MinUser
-}
-
-type MinOrchestra {
-  id: Int
 }
 
 type MaxInstrument {
   id: Int
   userId: Int
   orchestraId: Int
-  user: MaxUser
   orchestra: MaxOrchestra
-}
-
-type MaxUser {
-  id: Int
-  statsId: Int
-  mentorId: Int
-  stats: MaxStat
-  mentor: MaxUser
-}
-
-type MaxStat {
-  id: Int
-  exp: Int
-  likes: Int
-  views: Int
   user: MaxUser
-}
-
-type MaxOrchestra {
-  id: Int
 }
 
 input InstrumentsGroupBy {
@@ -1076,40 +1263,8 @@ input InstrumentsGroupBy {
   updatedAt: Boolean
   userId: Boolean
   orchestraId: Boolean
-  user: UsersGroupBy
   orchestra: OrchestrasGroupBy
-}
-
-input UsersGroupBy {
-  id: Boolean
-  username: Boolean
-  provider: Boolean
-  email: Boolean
-  statsId: Boolean
-  details: Boolean
-  verified: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-  mentorId: Boolean
-  stats: StatsGroupBy
-  mentor: UsersGroupBy
-}
-
-input StatsGroupBy {
-  id: Boolean
-  exp: Boolean
-  likes: Boolean
-  views: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
   user: UsersGroupBy
-}
-
-input OrchestrasGroupBy {
-  id: Boolean
-  name: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
 }
 
 """"""
@@ -1128,60 +1283,13 @@ input InstrumentsHaving {
   updatedAt: DateFilter
   userId: NumberFilter
   orchestraId: NumberFilter
-  user: ListUsersInput
   orchestra: ListOrchestrasInput
+  user: ListUsersInput
   _count: CountInstrumentsFilterInput
   _avg: AvgInstrumentsFilterInput
   _sum: SumInstrumentsFilterInput
   _min: MinInstrumentsFilterInput
   _max: MaxInstrumentsFilterInput
-}
-
-input GetOrchestraInput {
-  id: Int
-}
-
-type Orchestras {
-  records: [Orchestra!]!
-  limit: Int!
-  offset: Int!
-  count: Int
-}
-
-type AggregateOrchestrasResult {
-  records: [AggregateOrchestra!]!
-  limit: Int
-  offset: Int
-  count: Int
-}
-
-type AggregateOrchestra {
-  group: JSON
-  count: CountOrchestra
-  avg: AvgOrchestra
-  sum: SumOrchestra
-  min: MinOrchestra
-  max: MaxOrchestra
-}
-
-""""""
-input OrchestrasHaving {
-  _required: Boolean
-  _nested: Boolean
-  _not: ListOrchestrasInput
-  _raw: RawExpression
-  _and: [ListOrchestrasInput!]
-  _or: [ListOrchestrasInput!]
-  id: NumberFilter
-  name: StringFilter
-  createdAt: DateFilter
-  updatedAt: DateFilter
-  instruments: ListInstrumentsInput
-  _count: CountOrchestrasFilterInput
-  _avg: AvgOrchestrasFilterInput
-  _sum: SumOrchestrasFilterInput
-  _min: MinOrchestrasFilterInput
-  _max: MaxOrchestrasFilterInput
 }
 
 input GetSessionInput {
@@ -1262,7 +1370,7 @@ input SessionsHaving {
   name: StringFilter
   start: DateFilter
   end: DateFilter
-  time: DateFilter
+  time: StringFilter
   location: StringFilter
   createdAt: DateFilter
   updatedAt: DateFilter
@@ -1272,56 +1380,6 @@ input SessionsHaving {
   _sum: SumSessionsFilterInput
   _min: MinSessionsFilterInput
   _max: MaxSessionsFilterInput
-}
-
-input GetStatInput {
-  id: Int
-}
-
-type Stats {
-  records: [Stat!]!
-  limit: Int!
-  offset: Int!
-  count: Int
-}
-
-type AggregateStatsResult {
-  records: [AggregateStat!]!
-  limit: Int
-  offset: Int
-  count: Int
-}
-
-type AggregateStat {
-  group: JSON
-  count: CountStat
-  avg: AvgStat
-  sum: SumStat
-  min: MinStat
-  max: MaxStat
-}
-
-""""""
-input StatsHaving {
-  _required: Boolean
-  _nested: Boolean
-  _not: ListStatsInput
-  _raw: RawExpression
-  _and: [ListStatsInput!]
-  _or: [ListStatsInput!]
-  id: NumberFilter
-  exp: NumberFilter
-  likes: NumberFilter
-  views: NumberFilter
-  createdAt: DateFilter
-  updatedAt: DateFilter
-  user: ListUsersInput
-  users: ListUsersInput
-  _count: CountStatsFilterInput
-  _avg: AvgStatsFilterInput
-  _sum: SumStatsFilterInput
-  _min: MinStatsFilterInput
-  _max: MaxStatsFilterInput
 }
 
 input GetUserSessionInput {
@@ -1352,40 +1410,40 @@ type CountUserSession {
   userId: Int
   sessionId: Int
   _all: Int
-  user: CountUser
   session: CountSession
+  user: CountUser
 }
 
 type AvgUserSession {
   id: Float
   userId: Float
   sessionId: Float
-  user: AvgUser
   session: AvgSession
+  user: AvgUser
 }
 
 type SumUserSession {
   id: Int
   userId: Int
   sessionId: Int
-  user: SumUser
   session: SumSession
+  user: SumUser
 }
 
 type MinUserSession {
   id: Int
   userId: Int
   sessionId: Int
-  user: MinUser
   session: MinSession
+  user: MinUser
 }
 
 type MaxUserSession {
   id: Int
   userId: Int
   sessionId: Int
-  user: MaxUser
   session: MaxSession
+  user: MaxUser
 }
 
 input UserSessionsGroupBy {
@@ -1395,8 +1453,8 @@ input UserSessionsGroupBy {
   updatedAt: Boolean
   userId: Boolean
   sessionId: Boolean
-  user: UsersGroupBy
   session: SessionsGroupBy
+  user: UsersGroupBy
 }
 
 """"""
@@ -1413,69 +1471,11 @@ input UserSessionsHaving {
   updatedAt: DateFilter
   userId: NumberFilter
   sessionId: NumberFilter
-  user: ListUsersInput
   session: ListSessionsInput
+  user: ListUsersInput
   _count: CountUserSessionsFilterInput
   _avg: AvgUserSessionsFilterInput
   _sum: SumUserSessionsFilterInput
   _min: MinUserSessionsFilterInput
   _max: MaxUserSessionsFilterInput
-}
-
-input GetUserInput {
-  id: Int
-  username: String
-  statsId: Int
-  email__provider: UsersEmailProviderKey
-}
-
-input UsersEmailProviderKey {
-  email: String!
-  provider: String!
-}
-
-type AggregateUsersResult {
-  records: [AggregateUser!]!
-  limit: Int
-  offset: Int
-  count: Int
-}
-
-type AggregateUser {
-  group: JSON
-  count: CountUser
-  avg: AvgUser
-  sum: SumUser
-  min: MinUser
-  max: MaxUser
-}
-
-""""""
-input UsersHaving {
-  _required: Boolean
-  _nested: Boolean
-  _not: ListUsersInput
-  _raw: RawExpression
-  _and: [ListUsersInput!]
-  _or: [ListUsersInput!]
-  id: NumberFilter
-  username: StringFilter
-  provider: StringFilter
-  email: StringFilter
-  statsId: NumberFilter
-  details: JsonFilter
-  verified: BooleanFilter
-  createdAt: DateFilter
-  updatedAt: DateFilter
-  mentorId: NumberFilter
-  stats: ListStatsInput
-  mentor: ListUsersInput
-  instruments: ListInstrumentsInput
-  userSessions: ListUserSessionsInput
-  students: ListUsersInput
-  _count: CountUsersFilterInput
-  _avg: AvgUsersFilterInput
-  _sum: SumUsersFilterInput
-  _min: MinUsersFilterInput
-  _max: MaxUsersFilterInput
 }
