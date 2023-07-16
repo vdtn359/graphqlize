@@ -352,7 +352,8 @@ export class SchemaMapper implements DatabaseMapper {
     if (
       transformedType.includes('char') ||
       transformedType.includes('text') ||
-      transformedType === 'time'
+      transformedType === 'time' ||
+      transformedType === 'blob'
     ) {
       return GraphQLString;
     }
@@ -371,7 +372,9 @@ export class SchemaMapper implements DatabaseMapper {
     }
     if (
       transformedType.includes('float') ||
-      transformedType.includes('double')
+      transformedType.includes('double') ||
+      transformedType === 'numeric' ||
+      transformedType === 'decimal'
     ) {
       return GraphQLFloat;
     }

@@ -1,0 +1,27 @@
+{
+  "name": "@vdtn359/graphlize-demo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "lint": "eslint .",
+    "start": "DEBUG=knex:* npx tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@vdtn359/graphqlize-schema": "workspace:*",
+    "@vdtn359/graphqlize-sql-mapper": "workspace:*",
+    "graphql": "^16.7.1",
+    "graphql-yoga": "^4.0.2",
+    "sqlite3": "^5.1.6"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

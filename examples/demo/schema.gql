@@ -1,0 +1,3551 @@
+type Query {
+  getActor(by: GetActorInput!): Actor
+  listActors(filter: ListActorsInput, pagination: Pagination = {limit: 20}, sort: [SortActor!]): Actors!
+  aggregateActors(filter: ListActorsInput, pagination: Pagination, sort: [SortActor!], groupBy: ActorGroupBy, having: ActorHaving): AggregateActorResult
+  getCountry(by: GetCountryInput!): Country
+  listCountries(filter: ListCountriesInput, pagination: Pagination = {limit: 20}, sort: [SortCountry!]): Countries!
+  aggregateCountries(filter: ListCountriesInput, pagination: Pagination, sort: [SortCountry!], groupBy: CountryGroupBy, having: CountryHaving): AggregateCountryResult
+  getCity(by: GetCityInput!): City
+  listCities(filter: ListCitiesInput, pagination: Pagination = {limit: 20}, sort: [SortCity!]): Cities!
+  aggregateCities(filter: ListCitiesInput, pagination: Pagination, sort: [SortCity!], groupBy: CityGroupBy, having: CityHaving): AggregateCityResult
+  getAddress(by: GetAddressInput!): Address
+  listAddresses(filter: ListAddressesInput, pagination: Pagination = {limit: 20}, sort: [SortAddress!]): Addresses!
+  aggregateAddresses(filter: ListAddressesInput, pagination: Pagination, sort: [SortAddress!], groupBy: AddressGroupBy, having: AddressHaving): AggregateAddressResult
+  getLanguage(by: GetLanguageInput!): Language
+  listLanguages(filter: ListLanguagesInput, pagination: Pagination = {limit: 20}, sort: [SortLanguage!]): Languages!
+  aggregateLanguages(filter: ListLanguagesInput, pagination: Pagination, sort: [SortLanguage!], groupBy: LanguageGroupBy, having: LanguageHaving): AggregateLanguageResult
+  getCategory(by: GetCategoryInput!): Category
+  listCategories(filter: ListCategoriesInput, pagination: Pagination = {limit: 20}, sort: [SortCategory!]): Categories!
+  aggregateCategories(filter: ListCategoriesInput, pagination: Pagination, sort: [SortCategory!], groupBy: CategoryGroupBy, having: CategoryHaving): AggregateCategoryResult
+  getCustomer(by: GetCustomerInput!): Customer
+  listCustomers(filter: ListCustomersInput, pagination: Pagination = {limit: 20}, sort: [SortCustomer!]): Customers!
+  aggregateCustomers(filter: ListCustomersInput, pagination: Pagination, sort: [SortCustomer!], groupBy: CustomerGroupBy, having: CustomerHaving): AggregateCustomerResult
+  getFilm(by: GetFilmInput!): Film
+  listFilms(filter: ListFilmsInput, pagination: Pagination = {limit: 20}, sort: [SortFilm!]): Films!
+  aggregateFilms(filter: ListFilmsInput, pagination: Pagination, sort: [SortFilm!], groupBy: FilmGroupBy, having: FilmHaving): AggregateFilmResult
+  getFilmActor(by: GetFilmActorInput!): FilmActor
+  listFilmActors(filter: ListFilmActorsInput, pagination: Pagination = {limit: 20}, sort: [SortFilmActor!]): FilmActors!
+  aggregateFilmActors(filter: ListFilmActorsInput, pagination: Pagination, sort: [SortFilmActor!], groupBy: FilmActorGroupBy, having: FilmActorHaving): AggregateFilmActorResult
+  getFilmCategory(by: GetFilmCategoryInput!): FilmCategory
+  listFilmCategories(filter: ListFilmCategoriesInput, pagination: Pagination = {limit: 20}, sort: [SortFilmCategory!]): FilmCategories!
+  aggregateFilmCategories(filter: ListFilmCategoriesInput, pagination: Pagination, sort: [SortFilmCategory!], groupBy: FilmCategoryGroupBy, having: FilmCategoryHaving): AggregateFilmCategoryResult
+  getFilmText(by: GetFilmTextInput!): FilmText
+  listFilmTexts(filter: ListFilmTextsInput, pagination: Pagination = {limit: 20}, sort: [SortFilmText!]): FilmTexts!
+  aggregateFilmTexts(filter: ListFilmTextsInput, pagination: Pagination, sort: [SortFilmText!], groupBy: FilmTextGroupBy, having: FilmTextHaving): AggregateFilmTextResult
+  getInventory(by: GetInventoryInput!): Inventory
+  listInventories(filter: ListInventoriesInput, pagination: Pagination = {limit: 20}, sort: [SortInventory!]): Inventories!
+  aggregateInventories(filter: ListInventoriesInput, pagination: Pagination, sort: [SortInventory!], groupBy: InventoryGroupBy, having: InventoryHaving): AggregateInventoryResult
+  getStaff(by: GetStaffInput!): Staff
+  listStaffList(filter: ListStaffListInput, pagination: Pagination = {limit: 20}, sort: [SortStaff!]): StaffList!
+  aggregateStaffList(filter: ListStaffListInput, pagination: Pagination, sort: [SortStaff!], groupBy: StaffGroupBy, having: StaffHaving): AggregateStaffResult
+  getStore(by: GetStoreInput!): Store
+  listStores(filter: ListStoresInput, pagination: Pagination = {limit: 20}, sort: [SortStore!]): Stores!
+  aggregateStores(filter: ListStoresInput, pagination: Pagination, sort: [SortStore!], groupBy: StoreGroupBy, having: StoreHaving): AggregateStoreResult
+  getPayment(by: GetPaymentInput!): Payment
+  listPayments(filter: ListPaymentsInput, pagination: Pagination = {limit: 20}, sort: [SortPayment!]): Payments!
+  aggregatePayments(filter: ListPaymentsInput, pagination: Pagination, sort: [SortPayment!], groupBy: PaymentGroupBy, having: PaymentHaving): AggregatePaymentResult
+  getRental(by: GetRentalInput!): Rental
+  listRentals(filter: ListRentalsInput, pagination: Pagination = {limit: 20}, sort: [SortRental!]): Rentals!
+  aggregateRentals(filter: ListRentalsInput, pagination: Pagination, sort: [SortRental!], groupBy: RentalGroupBy, having: RentalHaving): AggregateRentalResult
+}
+
+type Actor {
+  actorId: Float!
+  firstName: String!
+  lastName: String!
+  lastUpdate: DateTime!
+  filmActors(filter: ListFilmActorsInput, pagination: Pagination, sort: [SortFilmActor!]): FilmActors!
+}
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+type FilmActors {
+  records: [FilmActor!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type FilmActor {
+  actorId: Int!
+  filmId: Int!
+  lastUpdate: DateTime!
+  film: Film!
+  actor: Actor!
+}
+
+type Film {
+  filmId: Int!
+  title: String!
+  description: String
+  releaseYear: String
+  languageId: Int!
+  originalLanguageId: Int
+  rentalDuration: Int!
+  rentalRate: Float!
+  length: Int
+  replacementCost: Float!
+  rating: String
+  specialFeatures: String
+  lastUpdate: DateTime!
+  originalLanguage: Language
+  language: Language!
+  filmActors(filter: ListFilmActorsInput, pagination: Pagination, sort: [SortFilmActor!]): FilmActors!
+  filmCategories(filter: ListFilmCategoriesInput, pagination: Pagination, sort: [SortFilmCategory!]): FilmCategories!
+  inventories(filter: ListInventoriesInput, pagination: Pagination, sort: [SortInventory!]): Inventories!
+}
+
+type Language {
+  languageId: Int!
+  name: String!
+  lastUpdate: DateTime!
+  films(filter: ListFilmsInput, pagination: Pagination, sort: [SortFilm!]): Films!
+}
+
+type Films {
+  records: [Film!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+input ListFilmsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmsInput
+  _raw: RawExpression
+  _and: [ListFilmsInput!]
+  _or: [ListFilmsInput!]
+  filmId: NumberFilter
+  title: StringFilter
+  description: StringFilter
+  releaseYear: StringFilter
+  languageId: NumberFilter
+  originalLanguageId: NumberFilter
+  rentalDuration: NumberFilter
+  rentalRate: NumberFilter
+  length: NumberFilter
+  replacementCost: NumberFilter
+  rating: StringFilter
+  specialFeatures: StringFilter
+  lastUpdate: DateFilter
+  originalLanguage: ListLanguagesInput
+  language: ListLanguagesInput
+  filmActors: ListFilmActorsInput
+  filmCategories: ListFilmCategoriesInput
+  inventories: ListInventoriesInput
+  _count: CountFilmFilterInput
+  _avg: AvgFilmFilterInput
+  _sum: SumFilmFilterInput
+  _min: MinFilmFilterInput
+  _max: MaxFilmFilterInput
+}
+
+input RawExpression {
+  expression: String
+  bindings: [JSON]
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+input NumberFilter {
+  _eq: Float
+  _neq: Float
+  _lt: Float
+  _lte: Float
+  _gt: Float
+  _gte: Float
+  _between: [Float]
+  _notBetween: [Float]
+  _in: [Float]
+  _notIn: [Float]
+}
+
+input StringFilter {
+  _eq: String
+  _neq: String
+  _lt: String
+  _lte: String
+  _gt: String
+  _gte: String
+  _like: String
+  _iLike: String
+  _regExp: String
+  _iRegExp: String
+  _between: [String!]
+  _notBetween: [String!]
+  _in: [String]
+  _notIn: [String]
+  _contains: String
+  _startsWith: String
+  _endsWith: String
+}
+
+input DateFilter {
+  _eq: Date
+  _neq: Date
+  _lt: Date
+  _lte: Date
+  _gt: Date
+  _gte: Date
+  _between: [Date]
+  _notBetween: [Date]
+  _in: [Date]
+  _notIn: [Date]
+  _year: NumberFilter
+  _month: NumberFilter
+  _day: NumberFilter
+  _hour: NumberFilter
+  _minute: NumberFilter
+  _second: NumberFilter
+  _dayOfWeek: NumberFilter
+  _date: StringFilter
+}
+
+scalar Date
+
+input ListLanguagesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListLanguagesInput
+  _raw: RawExpression
+  _and: [ListLanguagesInput!]
+  _or: [ListLanguagesInput!]
+  languageId: NumberFilter
+  name: StringFilter
+  lastUpdate: DateFilter
+  films: ListFilmsInput
+  _count: CountLanguageFilterInput
+  _avg: AvgLanguageFilterInput
+  _sum: SumLanguageFilterInput
+  _min: MinLanguageFilterInput
+  _max: MaxLanguageFilterInput
+}
+
+input CountLanguageFilterInput {
+  languageId: NumberFilter
+  name: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgLanguageFilterInput {
+  languageId: NumberFilter
+}
+
+input SumLanguageFilterInput {
+  languageId: Int
+}
+
+input MinLanguageFilterInput {
+  languageId: Int
+}
+
+input MaxLanguageFilterInput {
+  languageId: Int
+}
+
+input ListFilmActorsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmActorsInput
+  _raw: RawExpression
+  _and: [ListFilmActorsInput!]
+  _or: [ListFilmActorsInput!]
+  actorId: NumberFilter
+  filmId: NumberFilter
+  lastUpdate: DateFilter
+  film: ListFilmsInput
+  actor: ListActorsInput
+  _count: CountFilmActorFilterInput
+  _avg: AvgFilmActorFilterInput
+  _sum: SumFilmActorFilterInput
+  _min: MinFilmActorFilterInput
+  _max: MaxFilmActorFilterInput
+}
+
+input ListActorsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListActorsInput
+  _raw: RawExpression
+  _and: [ListActorsInput!]
+  _or: [ListActorsInput!]
+  actorId: NumberFilter
+  firstName: StringFilter
+  lastName: StringFilter
+  lastUpdate: DateFilter
+  filmActors: ListFilmActorsInput
+  _count: CountActorFilterInput
+  _avg: AvgActorFilterInput
+  _sum: SumActorFilterInput
+  _min: MinActorFilterInput
+  _max: MaxActorFilterInput
+}
+
+input CountActorFilterInput {
+  actorId: NumberFilter
+  firstName: NumberFilter
+  lastName: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgActorFilterInput {
+  actorId: NumberFilter
+}
+
+input SumActorFilterInput {
+  actorId: Float
+}
+
+input MinActorFilterInput {
+  actorId: Float
+}
+
+input MaxActorFilterInput {
+  actorId: Float
+}
+
+input CountFilmActorFilterInput {
+  actorId: NumberFilter
+  filmId: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgFilmActorFilterInput {
+  actorId: NumberFilter
+  filmId: NumberFilter
+}
+
+input SumFilmActorFilterInput {
+  actorId: Int
+  filmId: Int
+}
+
+input MinFilmActorFilterInput {
+  actorId: Int
+  filmId: Int
+}
+
+input MaxFilmActorFilterInput {
+  actorId: Int
+  filmId: Int
+}
+
+input ListFilmCategoriesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmCategoriesInput
+  _raw: RawExpression
+  _and: [ListFilmCategoriesInput!]
+  _or: [ListFilmCategoriesInput!]
+  filmId: NumberFilter
+  categoryId: NumberFilter
+  lastUpdate: DateFilter
+  category: ListCategoriesInput
+  film: ListFilmsInput
+  _count: CountFilmCategoryFilterInput
+  _avg: AvgFilmCategoryFilterInput
+  _sum: SumFilmCategoryFilterInput
+  _min: MinFilmCategoryFilterInput
+  _max: MaxFilmCategoryFilterInput
+}
+
+input ListCategoriesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCategoriesInput
+  _raw: RawExpression
+  _and: [ListCategoriesInput!]
+  _or: [ListCategoriesInput!]
+  categoryId: NumberFilter
+  name: StringFilter
+  lastUpdate: DateFilter
+  filmCategories: ListFilmCategoriesInput
+  _count: CountCategoryFilterInput
+  _avg: AvgCategoryFilterInput
+  _sum: SumCategoryFilterInput
+  _min: MinCategoryFilterInput
+  _max: MaxCategoryFilterInput
+}
+
+input CountCategoryFilterInput {
+  categoryId: NumberFilter
+  name: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgCategoryFilterInput {
+  categoryId: NumberFilter
+}
+
+input SumCategoryFilterInput {
+  categoryId: Int
+}
+
+input MinCategoryFilterInput {
+  categoryId: Int
+}
+
+input MaxCategoryFilterInput {
+  categoryId: Int
+}
+
+input CountFilmCategoryFilterInput {
+  filmId: NumberFilter
+  categoryId: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgFilmCategoryFilterInput {
+  filmId: NumberFilter
+  categoryId: NumberFilter
+}
+
+input SumFilmCategoryFilterInput {
+  filmId: Int
+  categoryId: Int
+}
+
+input MinFilmCategoryFilterInput {
+  filmId: Int
+  categoryId: Int
+}
+
+input MaxFilmCategoryFilterInput {
+  filmId: Int
+  categoryId: Int
+}
+
+input ListInventoriesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListInventoriesInput
+  _raw: RawExpression
+  _and: [ListInventoriesInput!]
+  _or: [ListInventoriesInput!]
+  inventoryId: NumberFilter
+  filmId: NumberFilter
+  storeId: NumberFilter
+  lastUpdate: DateFilter
+  film: ListFilmsInput
+  store: ListStoresInput
+  rentals: ListRentalsInput
+  _count: CountInventoryFilterInput
+  _avg: AvgInventoryFilterInput
+  _sum: SumInventoryFilterInput
+  _min: MinInventoryFilterInput
+  _max: MaxInventoryFilterInput
+}
+
+input ListStoresInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStoresInput
+  _raw: RawExpression
+  _and: [ListStoresInput!]
+  _or: [ListStoresInput!]
+  storeId: NumberFilter
+  managerStaffId: NumberFilter
+  addressId: NumberFilter
+  lastUpdate: DateFilter
+  address: ListAddressesInput
+  managerStaff: ListStaffListInput
+  customers: ListCustomersInput
+  inventories: ListInventoriesInput
+  staff: ListStaffListInput
+  _count: CountStoreFilterInput
+  _avg: AvgStoreFilterInput
+  _sum: SumStoreFilterInput
+  _min: MinStoreFilterInput
+  _max: MaxStoreFilterInput
+}
+
+input ListAddressesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListAddressesInput
+  _raw: RawExpression
+  _and: [ListAddressesInput!]
+  _or: [ListAddressesInput!]
+  addressId: NumberFilter
+  address: StringFilter
+  address2: StringFilter
+  district: StringFilter
+  cityId: NumberFilter
+  postalCode: StringFilter
+  phone: StringFilter
+  lastUpdate: DateFilter
+  city: ListCitiesInput
+  customers: ListCustomersInput
+  staff: ListStaffListInput
+  stores: ListStoresInput
+  _count: CountAddressFilterInput
+  _avg: AvgAddressFilterInput
+  _sum: SumAddressFilterInput
+  _min: MinAddressFilterInput
+  _max: MaxAddressFilterInput
+}
+
+input ListCitiesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCitiesInput
+  _raw: RawExpression
+  _and: [ListCitiesInput!]
+  _or: [ListCitiesInput!]
+  cityId: NumberFilter
+  city: StringFilter
+  countryId: NumberFilter
+  lastUpdate: DateFilter
+  country: ListCountriesInput
+  addresses: ListAddressesInput
+  _count: CountCityFilterInput
+  _avg: AvgCityFilterInput
+  _sum: SumCityFilterInput
+  _min: MinCityFilterInput
+  _max: MaxCityFilterInput
+}
+
+input ListCountriesInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCountriesInput
+  _raw: RawExpression
+  _and: [ListCountriesInput!]
+  _or: [ListCountriesInput!]
+  countryId: NumberFilter
+  country: StringFilter
+  lastUpdate: DateFilter
+  cities: ListCitiesInput
+  _count: CountCountryFilterInput
+  _avg: AvgCountryFilterInput
+  _sum: SumCountryFilterInput
+  _min: MinCountryFilterInput
+  _max: MaxCountryFilterInput
+}
+
+input CountCountryFilterInput {
+  countryId: NumberFilter
+  country: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgCountryFilterInput {
+  countryId: NumberFilter
+}
+
+input SumCountryFilterInput {
+  countryId: Int
+}
+
+input MinCountryFilterInput {
+  countryId: Int
+}
+
+input MaxCountryFilterInput {
+  countryId: Int
+}
+
+input CountCityFilterInput {
+  cityId: NumberFilter
+  city: NumberFilter
+  countryId: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgCityFilterInput {
+  cityId: NumberFilter
+  countryId: NumberFilter
+}
+
+input SumCityFilterInput {
+  cityId: Int
+  countryId: Int
+}
+
+input MinCityFilterInput {
+  cityId: Int
+  countryId: Int
+}
+
+input MaxCityFilterInput {
+  cityId: Int
+  countryId: Int
+}
+
+input ListCustomersInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCustomersInput
+  _raw: RawExpression
+  _and: [ListCustomersInput!]
+  _or: [ListCustomersInput!]
+  customerId: NumberFilter
+  storeId: NumberFilter
+  firstName: StringFilter
+  lastName: StringFilter
+  email: StringFilter
+  addressId: NumberFilter
+  active: StringFilter
+  createDate: DateFilter
+  lastUpdate: DateFilter
+  address: ListAddressesInput
+  store: ListStoresInput
+  payments: ListPaymentsInput
+  rentals: ListRentalsInput
+  _count: CountCustomerFilterInput
+  _avg: AvgCustomerFilterInput
+  _sum: SumCustomerFilterInput
+  _min: MinCustomerFilterInput
+  _max: MaxCustomerFilterInput
+}
+
+input ListPaymentsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListPaymentsInput
+  _raw: RawExpression
+  _and: [ListPaymentsInput!]
+  _or: [ListPaymentsInput!]
+  paymentId: NumberFilter
+  customerId: NumberFilter
+  staffId: NumberFilter
+  rentalId: NumberFilter
+  amount: NumberFilter
+  paymentDate: DateFilter
+  lastUpdate: DateFilter
+  staff: ListStaffListInput
+  customer: ListCustomersInput
+  rental: ListRentalsInput
+  _count: CountPaymentFilterInput
+  _avg: AvgPaymentFilterInput
+  _sum: SumPaymentFilterInput
+  _min: MinPaymentFilterInput
+  _max: MaxPaymentFilterInput
+}
+
+input ListStaffListInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStaffListInput
+  _raw: RawExpression
+  _and: [ListStaffListInput!]
+  _or: [ListStaffListInput!]
+  staffId: NumberFilter
+  firstName: StringFilter
+  lastName: StringFilter
+  addressId: NumberFilter
+  picture: StringFilter
+  email: StringFilter
+  storeId: NumberFilter
+  active: NumberFilter
+  username: StringFilter
+  password: StringFilter
+  lastUpdate: DateFilter
+  address: ListAddressesInput
+  store: ListStoresInput
+  stores: ListStoresInput
+  payments: ListPaymentsInput
+  rentals: ListRentalsInput
+  _count: CountStaffFilterInput
+  _avg: AvgStaffFilterInput
+  _sum: SumStaffFilterInput
+  _min: MinStaffFilterInput
+  _max: MaxStaffFilterInput
+}
+
+input ListRentalsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListRentalsInput
+  _raw: RawExpression
+  _and: [ListRentalsInput!]
+  _or: [ListRentalsInput!]
+  rentalId: NumberFilter
+  rentalDate: DateFilter
+  inventoryId: NumberFilter
+  customerId: NumberFilter
+  returnDate: DateFilter
+  staffId: NumberFilter
+  lastUpdate: DateFilter
+  customer: ListCustomersInput
+  inventory: ListInventoriesInput
+  staff: ListStaffListInput
+  payments: ListPaymentsInput
+  _count: CountRentalFilterInput
+  _avg: AvgRentalFilterInput
+  _sum: SumRentalFilterInput
+  _min: MinRentalFilterInput
+  _max: MaxRentalFilterInput
+}
+
+input CountRentalFilterInput {
+  rentalId: NumberFilter
+  rentalDate: NumberFilter
+  inventoryId: NumberFilter
+  customerId: NumberFilter
+  returnDate: NumberFilter
+  staffId: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgRentalFilterInput {
+  rentalId: NumberFilter
+  inventoryId: NumberFilter
+  customerId: NumberFilter
+  staffId: NumberFilter
+}
+
+input SumRentalFilterInput {
+  rentalId: Int
+  inventoryId: Int
+  customerId: Int
+  staffId: Int
+}
+
+input MinRentalFilterInput {
+  rentalId: Int
+  inventoryId: Int
+  customerId: Int
+  staffId: Int
+}
+
+input MaxRentalFilterInput {
+  rentalId: Int
+  inventoryId: Int
+  customerId: Int
+  staffId: Int
+}
+
+input CountStaffFilterInput {
+  staffId: NumberFilter
+  firstName: NumberFilter
+  lastName: NumberFilter
+  addressId: NumberFilter
+  picture: NumberFilter
+  email: NumberFilter
+  storeId: NumberFilter
+  active: NumberFilter
+  username: NumberFilter
+  password: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgStaffFilterInput {
+  staffId: NumberFilter
+  addressId: NumberFilter
+  storeId: NumberFilter
+  active: NumberFilter
+}
+
+input SumStaffFilterInput {
+  staffId: Int
+  addressId: Int
+  storeId: Int
+  active: Int
+}
+
+input MinStaffFilterInput {
+  staffId: Int
+  addressId: Int
+  storeId: Int
+  active: Int
+}
+
+input MaxStaffFilterInput {
+  staffId: Int
+  addressId: Int
+  storeId: Int
+  active: Int
+}
+
+input CountPaymentFilterInput {
+  paymentId: NumberFilter
+  customerId: NumberFilter
+  staffId: NumberFilter
+  rentalId: NumberFilter
+  amount: NumberFilter
+  paymentDate: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgPaymentFilterInput {
+  paymentId: NumberFilter
+  customerId: NumberFilter
+  staffId: NumberFilter
+  rentalId: NumberFilter
+  amount: NumberFilter
+}
+
+input SumPaymentFilterInput {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Float
+}
+
+input MinPaymentFilterInput {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Float
+}
+
+input MaxPaymentFilterInput {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Float
+}
+
+input CountCustomerFilterInput {
+  customerId: NumberFilter
+  storeId: NumberFilter
+  firstName: NumberFilter
+  lastName: NumberFilter
+  email: NumberFilter
+  addressId: NumberFilter
+  active: NumberFilter
+  createDate: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgCustomerFilterInput {
+  customerId: NumberFilter
+  storeId: NumberFilter
+  addressId: NumberFilter
+}
+
+input SumCustomerFilterInput {
+  customerId: Int
+  storeId: Int
+  addressId: Int
+}
+
+input MinCustomerFilterInput {
+  customerId: Int
+  storeId: Int
+  addressId: Int
+}
+
+input MaxCustomerFilterInput {
+  customerId: Int
+  storeId: Int
+  addressId: Int
+}
+
+input CountAddressFilterInput {
+  addressId: NumberFilter
+  address: NumberFilter
+  address2: NumberFilter
+  district: NumberFilter
+  cityId: NumberFilter
+  postalCode: NumberFilter
+  phone: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgAddressFilterInput {
+  addressId: NumberFilter
+  cityId: NumberFilter
+}
+
+input SumAddressFilterInput {
+  addressId: Int
+  cityId: Int
+}
+
+input MinAddressFilterInput {
+  addressId: Int
+  cityId: Int
+}
+
+input MaxAddressFilterInput {
+  addressId: Int
+  cityId: Int
+}
+
+input CountStoreFilterInput {
+  storeId: NumberFilter
+  managerStaffId: NumberFilter
+  addressId: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgStoreFilterInput {
+  storeId: NumberFilter
+  managerStaffId: NumberFilter
+  addressId: NumberFilter
+}
+
+input SumStoreFilterInput {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+}
+
+input MinStoreFilterInput {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+}
+
+input MaxStoreFilterInput {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+}
+
+input CountInventoryFilterInput {
+  inventoryId: NumberFilter
+  filmId: NumberFilter
+  storeId: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgInventoryFilterInput {
+  inventoryId: NumberFilter
+  filmId: NumberFilter
+  storeId: NumberFilter
+}
+
+input SumInventoryFilterInput {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+}
+
+input MinInventoryFilterInput {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+}
+
+input MaxInventoryFilterInput {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+}
+
+input CountFilmFilterInput {
+  filmId: NumberFilter
+  title: NumberFilter
+  description: NumberFilter
+  releaseYear: NumberFilter
+  languageId: NumberFilter
+  originalLanguageId: NumberFilter
+  rentalDuration: NumberFilter
+  rentalRate: NumberFilter
+  length: NumberFilter
+  replacementCost: NumberFilter
+  rating: NumberFilter
+  specialFeatures: NumberFilter
+  lastUpdate: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgFilmFilterInput {
+  filmId: NumberFilter
+  languageId: NumberFilter
+  originalLanguageId: NumberFilter
+  rentalDuration: NumberFilter
+  rentalRate: NumberFilter
+  length: NumberFilter
+  replacementCost: NumberFilter
+}
+
+input SumFilmFilterInput {
+  filmId: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Float
+  length: Int
+  replacementCost: Float
+}
+
+input MinFilmFilterInput {
+  filmId: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Float
+  length: Int
+  replacementCost: Float
+}
+
+input MaxFilmFilterInput {
+  filmId: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Float
+  length: Int
+  replacementCost: Float
+}
+
+input Pagination {
+  disabled: Boolean
+  page: Int
+  limit: Int = 20
+  offset: Int = 0
+}
+
+input SortFilm {
+  filmId: SortOption
+  title: SortOption
+  description: SortOption
+  releaseYear: SortOption
+  languageId: SortOption
+  originalLanguageId: SortOption
+  rentalDuration: SortOption
+  rentalRate: SortOption
+  length: SortOption
+  replacementCost: SortOption
+  rating: SortOption
+  specialFeatures: SortOption
+  lastUpdate: SortOption
+  originalLanguage: SortLanguage
+  language: SortLanguage
+  filmActors: SortFilmActor
+  filmCategories: SortFilmCategory
+  inventories: SortInventory
+  _count: CountFilmSortInput
+  _avg: AvgFilmSortInput
+  _sum: SumFilmSortInput
+  _min: MinFilmSortInput
+  _max: MaxFilmSortInput
+}
+
+input SortOption {
+  direction: SortDirection!
+  nulls: NullsDirection
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum NullsDirection {
+  FIRST
+  LAST
+}
+
+input SortLanguage {
+  languageId: SortOption
+  name: SortOption
+  lastUpdate: SortOption
+  films: SortFilm
+  _count: CountLanguageSortInput
+  _avg: AvgLanguageSortInput
+  _sum: SumLanguageSortInput
+  _min: MinLanguageSortInput
+  _max: MaxLanguageSortInput
+}
+
+input CountLanguageSortInput {
+  languageId: SortOption
+  name: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgLanguageSortInput {
+  languageId: SortOption
+}
+
+input SumLanguageSortInput {
+  languageId: SortOption
+}
+
+input MinLanguageSortInput {
+  languageId: SortOption
+}
+
+input MaxLanguageSortInput {
+  languageId: SortOption
+}
+
+input SortFilmActor {
+  actorId: SortOption
+  filmId: SortOption
+  lastUpdate: SortOption
+  film: SortFilm
+  actor: SortActor
+  _count: CountFilmActorSortInput
+  _avg: AvgFilmActorSortInput
+  _sum: SumFilmActorSortInput
+  _min: MinFilmActorSortInput
+  _max: MaxFilmActorSortInput
+}
+
+input SortActor {
+  actorId: SortOption
+  firstName: SortOption
+  lastName: SortOption
+  lastUpdate: SortOption
+  filmActors: SortFilmActor
+  _count: CountActorSortInput
+  _avg: AvgActorSortInput
+  _sum: SumActorSortInput
+  _min: MinActorSortInput
+  _max: MaxActorSortInput
+}
+
+input CountActorSortInput {
+  actorId: SortOption
+  firstName: SortOption
+  lastName: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgActorSortInput {
+  actorId: SortOption
+}
+
+input SumActorSortInput {
+  actorId: SortOption
+}
+
+input MinActorSortInput {
+  actorId: SortOption
+}
+
+input MaxActorSortInput {
+  actorId: SortOption
+}
+
+input CountFilmActorSortInput {
+  actorId: SortOption
+  filmId: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgFilmActorSortInput {
+  actorId: SortOption
+  filmId: SortOption
+}
+
+input SumFilmActorSortInput {
+  actorId: SortOption
+  filmId: SortOption
+}
+
+input MinFilmActorSortInput {
+  actorId: SortOption
+  filmId: SortOption
+}
+
+input MaxFilmActorSortInput {
+  actorId: SortOption
+  filmId: SortOption
+}
+
+input SortFilmCategory {
+  filmId: SortOption
+  categoryId: SortOption
+  lastUpdate: SortOption
+  category: SortCategory
+  film: SortFilm
+  _count: CountFilmCategorySortInput
+  _avg: AvgFilmCategorySortInput
+  _sum: SumFilmCategorySortInput
+  _min: MinFilmCategorySortInput
+  _max: MaxFilmCategorySortInput
+}
+
+input SortCategory {
+  categoryId: SortOption
+  name: SortOption
+  lastUpdate: SortOption
+  filmCategories: SortFilmCategory
+  _count: CountCategorySortInput
+  _avg: AvgCategorySortInput
+  _sum: SumCategorySortInput
+  _min: MinCategorySortInput
+  _max: MaxCategorySortInput
+}
+
+input CountCategorySortInput {
+  categoryId: SortOption
+  name: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgCategorySortInput {
+  categoryId: SortOption
+}
+
+input SumCategorySortInput {
+  categoryId: SortOption
+}
+
+input MinCategorySortInput {
+  categoryId: SortOption
+}
+
+input MaxCategorySortInput {
+  categoryId: SortOption
+}
+
+input CountFilmCategorySortInput {
+  filmId: SortOption
+  categoryId: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgFilmCategorySortInput {
+  filmId: SortOption
+  categoryId: SortOption
+}
+
+input SumFilmCategorySortInput {
+  filmId: SortOption
+  categoryId: SortOption
+}
+
+input MinFilmCategorySortInput {
+  filmId: SortOption
+  categoryId: SortOption
+}
+
+input MaxFilmCategorySortInput {
+  filmId: SortOption
+  categoryId: SortOption
+}
+
+input SortInventory {
+  inventoryId: SortOption
+  filmId: SortOption
+  storeId: SortOption
+  lastUpdate: SortOption
+  film: SortFilm
+  store: SortStore
+  rentals: SortRental
+  _count: CountInventorySortInput
+  _avg: AvgInventorySortInput
+  _sum: SumInventorySortInput
+  _min: MinInventorySortInput
+  _max: MaxInventorySortInput
+}
+
+input SortStore {
+  storeId: SortOption
+  managerStaffId: SortOption
+  addressId: SortOption
+  lastUpdate: SortOption
+  address: SortAddress
+  managerStaff: SortStaff
+  customers: SortCustomer
+  inventories: SortInventory
+  staff: SortStaff
+  _count: CountStoreSortInput
+  _avg: AvgStoreSortInput
+  _sum: SumStoreSortInput
+  _min: MinStoreSortInput
+  _max: MaxStoreSortInput
+}
+
+input SortAddress {
+  addressId: SortOption
+  address: SortOption
+  address2: SortOption
+  district: SortOption
+  cityId: SortOption
+  postalCode: SortOption
+  phone: SortOption
+  lastUpdate: SortOption
+  city: SortCity
+  customers: SortCustomer
+  staff: SortStaff
+  stores: SortStore
+  _count: CountAddressSortInput
+  _avg: AvgAddressSortInput
+  _sum: SumAddressSortInput
+  _min: MinAddressSortInput
+  _max: MaxAddressSortInput
+}
+
+input SortCity {
+  cityId: SortOption
+  city: SortOption
+  countryId: SortOption
+  lastUpdate: SortOption
+  country: SortCountry
+  addresses: SortAddress
+  _count: CountCitySortInput
+  _avg: AvgCitySortInput
+  _sum: SumCitySortInput
+  _min: MinCitySortInput
+  _max: MaxCitySortInput
+}
+
+input SortCountry {
+  countryId: SortOption
+  country: SortOption
+  lastUpdate: SortOption
+  cities: SortCity
+  _count: CountCountrySortInput
+  _avg: AvgCountrySortInput
+  _sum: SumCountrySortInput
+  _min: MinCountrySortInput
+  _max: MaxCountrySortInput
+}
+
+input CountCountrySortInput {
+  countryId: SortOption
+  country: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgCountrySortInput {
+  countryId: SortOption
+}
+
+input SumCountrySortInput {
+  countryId: SortOption
+}
+
+input MinCountrySortInput {
+  countryId: SortOption
+}
+
+input MaxCountrySortInput {
+  countryId: SortOption
+}
+
+input CountCitySortInput {
+  cityId: SortOption
+  city: SortOption
+  countryId: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgCitySortInput {
+  cityId: SortOption
+  countryId: SortOption
+}
+
+input SumCitySortInput {
+  cityId: SortOption
+  countryId: SortOption
+}
+
+input MinCitySortInput {
+  cityId: SortOption
+  countryId: SortOption
+}
+
+input MaxCitySortInput {
+  cityId: SortOption
+  countryId: SortOption
+}
+
+input SortCustomer {
+  customerId: SortOption
+  storeId: SortOption
+  firstName: SortOption
+  lastName: SortOption
+  email: SortOption
+  addressId: SortOption
+  active: SortOption
+  createDate: SortOption
+  lastUpdate: SortOption
+  address: SortAddress
+  store: SortStore
+  payments: SortPayment
+  rentals: SortRental
+  _count: CountCustomerSortInput
+  _avg: AvgCustomerSortInput
+  _sum: SumCustomerSortInput
+  _min: MinCustomerSortInput
+  _max: MaxCustomerSortInput
+}
+
+input SortPayment {
+  paymentId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+  rentalId: SortOption
+  amount: SortOption
+  paymentDate: SortOption
+  lastUpdate: SortOption
+  staff: SortStaff
+  customer: SortCustomer
+  rental: SortRental
+  _count: CountPaymentSortInput
+  _avg: AvgPaymentSortInput
+  _sum: SumPaymentSortInput
+  _min: MinPaymentSortInput
+  _max: MaxPaymentSortInput
+}
+
+input SortStaff {
+  staffId: SortOption
+  firstName: SortOption
+  lastName: SortOption
+  addressId: SortOption
+  picture: SortOption
+  email: SortOption
+  storeId: SortOption
+  active: SortOption
+  username: SortOption
+  password: SortOption
+  lastUpdate: SortOption
+  address: SortAddress
+  store: SortStore
+  stores: SortStore
+  payments: SortPayment
+  rentals: SortRental
+  _count: CountStaffSortInput
+  _avg: AvgStaffSortInput
+  _sum: SumStaffSortInput
+  _min: MinStaffSortInput
+  _max: MaxStaffSortInput
+}
+
+input SortRental {
+  rentalId: SortOption
+  rentalDate: SortOption
+  inventoryId: SortOption
+  customerId: SortOption
+  returnDate: SortOption
+  staffId: SortOption
+  lastUpdate: SortOption
+  customer: SortCustomer
+  inventory: SortInventory
+  staff: SortStaff
+  payments: SortPayment
+  _count: CountRentalSortInput
+  _avg: AvgRentalSortInput
+  _sum: SumRentalSortInput
+  _min: MinRentalSortInput
+  _max: MaxRentalSortInput
+}
+
+input CountRentalSortInput {
+  rentalId: SortOption
+  rentalDate: SortOption
+  inventoryId: SortOption
+  customerId: SortOption
+  returnDate: SortOption
+  staffId: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgRentalSortInput {
+  rentalId: SortOption
+  inventoryId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+}
+
+input SumRentalSortInput {
+  rentalId: SortOption
+  inventoryId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+}
+
+input MinRentalSortInput {
+  rentalId: SortOption
+  inventoryId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+}
+
+input MaxRentalSortInput {
+  rentalId: SortOption
+  inventoryId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+}
+
+input CountStaffSortInput {
+  staffId: SortOption
+  firstName: SortOption
+  lastName: SortOption
+  addressId: SortOption
+  picture: SortOption
+  email: SortOption
+  storeId: SortOption
+  active: SortOption
+  username: SortOption
+  password: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgStaffSortInput {
+  staffId: SortOption
+  addressId: SortOption
+  storeId: SortOption
+  active: SortOption
+}
+
+input SumStaffSortInput {
+  staffId: SortOption
+  addressId: SortOption
+  storeId: SortOption
+  active: SortOption
+}
+
+input MinStaffSortInput {
+  staffId: SortOption
+  addressId: SortOption
+  storeId: SortOption
+  active: SortOption
+}
+
+input MaxStaffSortInput {
+  staffId: SortOption
+  addressId: SortOption
+  storeId: SortOption
+  active: SortOption
+}
+
+input CountPaymentSortInput {
+  paymentId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+  rentalId: SortOption
+  amount: SortOption
+  paymentDate: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgPaymentSortInput {
+  paymentId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+  rentalId: SortOption
+  amount: SortOption
+}
+
+input SumPaymentSortInput {
+  paymentId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+  rentalId: SortOption
+  amount: SortOption
+}
+
+input MinPaymentSortInput {
+  paymentId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+  rentalId: SortOption
+  amount: SortOption
+}
+
+input MaxPaymentSortInput {
+  paymentId: SortOption
+  customerId: SortOption
+  staffId: SortOption
+  rentalId: SortOption
+  amount: SortOption
+}
+
+input CountCustomerSortInput {
+  customerId: SortOption
+  storeId: SortOption
+  firstName: SortOption
+  lastName: SortOption
+  email: SortOption
+  addressId: SortOption
+  active: SortOption
+  createDate: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgCustomerSortInput {
+  customerId: SortOption
+  storeId: SortOption
+  addressId: SortOption
+}
+
+input SumCustomerSortInput {
+  customerId: SortOption
+  storeId: SortOption
+  addressId: SortOption
+}
+
+input MinCustomerSortInput {
+  customerId: SortOption
+  storeId: SortOption
+  addressId: SortOption
+}
+
+input MaxCustomerSortInput {
+  customerId: SortOption
+  storeId: SortOption
+  addressId: SortOption
+}
+
+input CountAddressSortInput {
+  addressId: SortOption
+  address: SortOption
+  address2: SortOption
+  district: SortOption
+  cityId: SortOption
+  postalCode: SortOption
+  phone: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgAddressSortInput {
+  addressId: SortOption
+  cityId: SortOption
+}
+
+input SumAddressSortInput {
+  addressId: SortOption
+  cityId: SortOption
+}
+
+input MinAddressSortInput {
+  addressId: SortOption
+  cityId: SortOption
+}
+
+input MaxAddressSortInput {
+  addressId: SortOption
+  cityId: SortOption
+}
+
+input CountStoreSortInput {
+  storeId: SortOption
+  managerStaffId: SortOption
+  addressId: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgStoreSortInput {
+  storeId: SortOption
+  managerStaffId: SortOption
+  addressId: SortOption
+}
+
+input SumStoreSortInput {
+  storeId: SortOption
+  managerStaffId: SortOption
+  addressId: SortOption
+}
+
+input MinStoreSortInput {
+  storeId: SortOption
+  managerStaffId: SortOption
+  addressId: SortOption
+}
+
+input MaxStoreSortInput {
+  storeId: SortOption
+  managerStaffId: SortOption
+  addressId: SortOption
+}
+
+input CountInventorySortInput {
+  inventoryId: SortOption
+  filmId: SortOption
+  storeId: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgInventorySortInput {
+  inventoryId: SortOption
+  filmId: SortOption
+  storeId: SortOption
+}
+
+input SumInventorySortInput {
+  inventoryId: SortOption
+  filmId: SortOption
+  storeId: SortOption
+}
+
+input MinInventorySortInput {
+  inventoryId: SortOption
+  filmId: SortOption
+  storeId: SortOption
+}
+
+input MaxInventorySortInput {
+  inventoryId: SortOption
+  filmId: SortOption
+  storeId: SortOption
+}
+
+input CountFilmSortInput {
+  filmId: SortOption
+  title: SortOption
+  description: SortOption
+  releaseYear: SortOption
+  languageId: SortOption
+  originalLanguageId: SortOption
+  rentalDuration: SortOption
+  rentalRate: SortOption
+  length: SortOption
+  replacementCost: SortOption
+  rating: SortOption
+  specialFeatures: SortOption
+  lastUpdate: SortOption
+  _all: SortOption
+}
+
+input AvgFilmSortInput {
+  filmId: SortOption
+  languageId: SortOption
+  originalLanguageId: SortOption
+  rentalDuration: SortOption
+  rentalRate: SortOption
+  length: SortOption
+  replacementCost: SortOption
+}
+
+input SumFilmSortInput {
+  filmId: SortOption
+  languageId: SortOption
+  originalLanguageId: SortOption
+  rentalDuration: SortOption
+  rentalRate: SortOption
+  length: SortOption
+  replacementCost: SortOption
+}
+
+input MinFilmSortInput {
+  filmId: SortOption
+  languageId: SortOption
+  originalLanguageId: SortOption
+  rentalDuration: SortOption
+  rentalRate: SortOption
+  length: SortOption
+  replacementCost: SortOption
+}
+
+input MaxFilmSortInput {
+  filmId: SortOption
+  languageId: SortOption
+  originalLanguageId: SortOption
+  rentalDuration: SortOption
+  rentalRate: SortOption
+  length: SortOption
+  replacementCost: SortOption
+}
+
+type FilmCategories {
+  records: [FilmCategory!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type FilmCategory {
+  filmId: Int!
+  categoryId: Int!
+  lastUpdate: DateTime!
+  category: Category!
+  film: Film!
+}
+
+type Category {
+  categoryId: Int!
+  name: String!
+  lastUpdate: DateTime!
+  filmCategories(filter: ListFilmCategoriesInput, pagination: Pagination, sort: [SortFilmCategory!]): FilmCategories!
+}
+
+type Inventories {
+  records: [Inventory!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Inventory {
+  inventoryId: Int!
+  filmId: Int!
+  storeId: Int!
+  lastUpdate: DateTime!
+  film: Film!
+  store: Store!
+  rentals(filter: ListRentalsInput, pagination: Pagination, sort: [SortRental!]): Rentals!
+}
+
+type Store {
+  storeId: Int!
+  managerStaffId: Int!
+  addressId: Int!
+  lastUpdate: DateTime!
+  address: Address!
+  managerStaff: Staff!
+  customers(filter: ListCustomersInput, pagination: Pagination, sort: [SortCustomer!]): Customers!
+  inventories(filter: ListInventoriesInput, pagination: Pagination, sort: [SortInventory!]): Inventories!
+  staff(filter: ListStaffListInput, pagination: Pagination, sort: [SortStaff!]): StaffList!
+}
+
+type Address {
+  addressId: Int!
+  address: String!
+  address2: String
+  district: String!
+  cityId: Int!
+  postalCode: String
+  phone: String!
+  lastUpdate: DateTime!
+  city: City!
+  customers(filter: ListCustomersInput, pagination: Pagination, sort: [SortCustomer!]): Customers!
+  staff(filter: ListStaffListInput, pagination: Pagination, sort: [SortStaff!]): StaffList!
+  stores(filter: ListStoresInput, pagination: Pagination, sort: [SortStore!]): Stores!
+}
+
+type City {
+  cityId: Int!
+  city: String!
+  countryId: Int!
+  lastUpdate: DateTime!
+  country: Country!
+  addresses(filter: ListAddressesInput, pagination: Pagination, sort: [SortAddress!]): Addresses!
+}
+
+type Country {
+  countryId: Int!
+  country: String!
+  lastUpdate: DateTime
+  cities(filter: ListCitiesInput, pagination: Pagination, sort: [SortCity!]): Cities!
+}
+
+type Cities {
+  records: [City!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Addresses {
+  records: [Address!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Customers {
+  records: [Customer!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Customer {
+  customerId: Int!
+  storeId: Int!
+  firstName: String!
+  lastName: String!
+  email: String
+  addressId: Int!
+  active: String!
+  createDate: DateTime!
+  lastUpdate: DateTime!
+  address: Address!
+  store: Store!
+  payments(filter: ListPaymentsInput, pagination: Pagination, sort: [SortPayment!]): Payments!
+  rentals(filter: ListRentalsInput, pagination: Pagination, sort: [SortRental!]): Rentals!
+}
+
+type Payments {
+  records: [Payment!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Payment {
+  paymentId: Int!
+  customerId: Int!
+  staffId: Int!
+  rentalId: Int
+  amount: Float!
+  paymentDate: DateTime!
+  lastUpdate: DateTime!
+  staff: Staff!
+  customer: Customer!
+  rental: Rental
+}
+
+type Staff {
+  staffId: Int!
+  firstName: String!
+  lastName: String!
+  addressId: Int!
+  picture: String
+  email: String
+  storeId: Int!
+  active: Int!
+  username: String!
+  password: String
+  lastUpdate: DateTime!
+  address: Address!
+  store: Store!
+  stores(filter: ListStoresInput, pagination: Pagination, sort: [SortStore!]): Stores!
+  payments(filter: ListPaymentsInput, pagination: Pagination, sort: [SortPayment!]): Payments!
+  rentals(filter: ListRentalsInput, pagination: Pagination, sort: [SortRental!]): Rentals!
+}
+
+type Stores {
+  records: [Store!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Rentals {
+  records: [Rental!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type Rental {
+  rentalId: Int!
+  rentalDate: DateTime!
+  inventoryId: Int!
+  customerId: Int!
+  returnDate: DateTime
+  staffId: Int!
+  lastUpdate: DateTime!
+  customer: Customer!
+  inventory: Inventory!
+  staff: Staff!
+  payments(filter: ListPaymentsInput, pagination: Pagination, sort: [SortPayment!]): Payments!
+}
+
+type StaffList {
+  records: [Staff!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+input GetActorInput {
+  actorId: Float
+}
+
+type Actors {
+  records: [Actor!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateActorResult {
+  records: [AggregateActor!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateActor {
+  group: JSON
+  count: CountActor
+  avg: AvgActor
+  sum: SumActor
+  min: MinActor
+  max: MaxActor
+}
+
+type CountActor {
+  actorId: Int
+  firstName: Int
+  lastName: Int
+  lastUpdate: Int
+  _all: Int
+}
+
+type AvgActor {
+  actorId: Float
+}
+
+type SumActor {
+  actorId: Float
+}
+
+type MinActor {
+  actorId: Float
+}
+
+type MaxActor {
+  actorId: Float
+}
+
+input ActorGroupBy {
+  actorId: Boolean
+  firstName: Boolean
+  lastName: Boolean
+  lastUpdate: Boolean
+}
+
+""""""
+input ActorHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListActorsInput
+  _raw: RawExpression
+  _and: [ListActorsInput!]
+  _or: [ListActorsInput!]
+  actorId: NumberFilter
+  firstName: StringFilter
+  lastName: StringFilter
+  lastUpdate: DateFilter
+  filmActors: ListFilmActorsInput
+  _count: CountActorFilterInput
+  _avg: AvgActorFilterInput
+  _sum: SumActorFilterInput
+  _min: MinActorFilterInput
+  _max: MaxActorFilterInput
+}
+
+input GetCountryInput {
+  countryId: Int
+}
+
+type Countries {
+  records: [Country!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateCountryResult {
+  records: [AggregateCountry!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateCountry {
+  group: JSON
+  count: CountCountry
+  avg: AvgCountry
+  sum: SumCountry
+  min: MinCountry
+  max: MaxCountry
+}
+
+type CountCountry {
+  countryId: Int
+  country: Int
+  lastUpdate: Int
+  _all: Int
+}
+
+type AvgCountry {
+  countryId: Float
+}
+
+type SumCountry {
+  countryId: Int
+}
+
+type MinCountry {
+  countryId: Int
+}
+
+type MaxCountry {
+  countryId: Int
+}
+
+input CountryGroupBy {
+  countryId: Boolean
+  country: Boolean
+  lastUpdate: Boolean
+}
+
+""""""
+input CountryHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCountriesInput
+  _raw: RawExpression
+  _and: [ListCountriesInput!]
+  _or: [ListCountriesInput!]
+  countryId: NumberFilter
+  country: StringFilter
+  lastUpdate: DateFilter
+  cities: ListCitiesInput
+  _count: CountCountryFilterInput
+  _avg: AvgCountryFilterInput
+  _sum: SumCountryFilterInput
+  _min: MinCountryFilterInput
+  _max: MaxCountryFilterInput
+}
+
+input GetCityInput {
+  cityId: Int
+}
+
+type AggregateCityResult {
+  records: [AggregateCity!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateCity {
+  group: JSON
+  count: CountCity
+  avg: AvgCity
+  sum: SumCity
+  min: MinCity
+  max: MaxCity
+}
+
+type CountCity {
+  cityId: Int
+  city: Int
+  countryId: Int
+  lastUpdate: Int
+  _all: Int
+  country: CountCountry
+}
+
+type AvgCity {
+  cityId: Float
+  countryId: Float
+  country: AvgCountry
+}
+
+type SumCity {
+  cityId: Int
+  countryId: Int
+  country: SumCountry
+}
+
+type MinCity {
+  cityId: Int
+  countryId: Int
+  country: MinCountry
+}
+
+type MaxCity {
+  cityId: Int
+  countryId: Int
+  country: MaxCountry
+}
+
+input CityGroupBy {
+  cityId: Boolean
+  city: Boolean
+  countryId: Boolean
+  lastUpdate: Boolean
+  country: CountryGroupBy
+}
+
+""""""
+input CityHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCitiesInput
+  _raw: RawExpression
+  _and: [ListCitiesInput!]
+  _or: [ListCitiesInput!]
+  cityId: NumberFilter
+  city: StringFilter
+  countryId: NumberFilter
+  lastUpdate: DateFilter
+  country: ListCountriesInput
+  addresses: ListAddressesInput
+  _count: CountCityFilterInput
+  _avg: AvgCityFilterInput
+  _sum: SumCityFilterInput
+  _min: MinCityFilterInput
+  _max: MaxCityFilterInput
+}
+
+input GetAddressInput {
+  addressId: Int
+}
+
+type AggregateAddressResult {
+  records: [AggregateAddress!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateAddress {
+  group: JSON
+  count: CountAddress
+  avg: AvgAddress
+  sum: SumAddress
+  min: MinAddress
+  max: MaxAddress
+}
+
+type CountAddress {
+  addressId: Int
+  address: Int
+  address2: Int
+  district: Int
+  cityId: Int
+  postalCode: Int
+  phone: Int
+  lastUpdate: Int
+  _all: Int
+  city: CountCity
+}
+
+type AvgAddress {
+  addressId: Float
+  cityId: Float
+  city: AvgCity
+}
+
+type SumAddress {
+  addressId: Int
+  cityId: Int
+  city: SumCity
+}
+
+type MinAddress {
+  addressId: Int
+  cityId: Int
+  city: MinCity
+}
+
+type MaxAddress {
+  addressId: Int
+  cityId: Int
+  city: MaxCity
+}
+
+input AddressGroupBy {
+  addressId: Boolean
+  address: Boolean
+  address2: Boolean
+  district: Boolean
+  cityId: Boolean
+  postalCode: Boolean
+  phone: Boolean
+  lastUpdate: Boolean
+  city: CityGroupBy
+}
+
+""""""
+input AddressHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListAddressesInput
+  _raw: RawExpression
+  _and: [ListAddressesInput!]
+  _or: [ListAddressesInput!]
+  addressId: NumberFilter
+  address: StringFilter
+  address2: StringFilter
+  district: StringFilter
+  cityId: NumberFilter
+  postalCode: StringFilter
+  phone: StringFilter
+  lastUpdate: DateFilter
+  city: ListCitiesInput
+  customers: ListCustomersInput
+  staff: ListStaffListInput
+  stores: ListStoresInput
+  _count: CountAddressFilterInput
+  _avg: AvgAddressFilterInput
+  _sum: SumAddressFilterInput
+  _min: MinAddressFilterInput
+  _max: MaxAddressFilterInput
+}
+
+input GetLanguageInput {
+  languageId: Int
+}
+
+type Languages {
+  records: [Language!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateLanguageResult {
+  records: [AggregateLanguage!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateLanguage {
+  group: JSON
+  count: CountLanguage
+  avg: AvgLanguage
+  sum: SumLanguage
+  min: MinLanguage
+  max: MaxLanguage
+}
+
+type CountLanguage {
+  languageId: Int
+  name: Int
+  lastUpdate: Int
+  _all: Int
+}
+
+type AvgLanguage {
+  languageId: Float
+}
+
+type SumLanguage {
+  languageId: Int
+}
+
+type MinLanguage {
+  languageId: Int
+}
+
+type MaxLanguage {
+  languageId: Int
+}
+
+input LanguageGroupBy {
+  languageId: Boolean
+  name: Boolean
+  lastUpdate: Boolean
+}
+
+""""""
+input LanguageHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListLanguagesInput
+  _raw: RawExpression
+  _and: [ListLanguagesInput!]
+  _or: [ListLanguagesInput!]
+  languageId: NumberFilter
+  name: StringFilter
+  lastUpdate: DateFilter
+  films: ListFilmsInput
+  _count: CountLanguageFilterInput
+  _avg: AvgLanguageFilterInput
+  _sum: SumLanguageFilterInput
+  _min: MinLanguageFilterInput
+  _max: MaxLanguageFilterInput
+}
+
+input GetCategoryInput {
+  categoryId: Int
+}
+
+type Categories {
+  records: [Category!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateCategoryResult {
+  records: [AggregateCategory!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateCategory {
+  group: JSON
+  count: CountCategory
+  avg: AvgCategory
+  sum: SumCategory
+  min: MinCategory
+  max: MaxCategory
+}
+
+type CountCategory {
+  categoryId: Int
+  name: Int
+  lastUpdate: Int
+  _all: Int
+}
+
+type AvgCategory {
+  categoryId: Float
+}
+
+type SumCategory {
+  categoryId: Int
+}
+
+type MinCategory {
+  categoryId: Int
+}
+
+type MaxCategory {
+  categoryId: Int
+}
+
+input CategoryGroupBy {
+  categoryId: Boolean
+  name: Boolean
+  lastUpdate: Boolean
+}
+
+""""""
+input CategoryHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCategoriesInput
+  _raw: RawExpression
+  _and: [ListCategoriesInput!]
+  _or: [ListCategoriesInput!]
+  categoryId: NumberFilter
+  name: StringFilter
+  lastUpdate: DateFilter
+  filmCategories: ListFilmCategoriesInput
+  _count: CountCategoryFilterInput
+  _avg: AvgCategoryFilterInput
+  _sum: SumCategoryFilterInput
+  _min: MinCategoryFilterInput
+  _max: MaxCategoryFilterInput
+}
+
+input GetCustomerInput {
+  customerId: Int
+}
+
+type AggregateCustomerResult {
+  records: [AggregateCustomer!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateCustomer {
+  group: JSON
+  count: CountCustomer
+  avg: AvgCustomer
+  sum: SumCustomer
+  min: MinCustomer
+  max: MaxCustomer
+}
+
+type CountCustomer {
+  customerId: Int
+  storeId: Int
+  firstName: Int
+  lastName: Int
+  email: Int
+  addressId: Int
+  active: Int
+  createDate: Int
+  lastUpdate: Int
+  _all: Int
+  address: CountAddress
+  store: CountStore
+}
+
+type CountStore {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+  lastUpdate: Int
+  _all: Int
+  address: CountAddress
+  managerStaff: CountStaff
+}
+
+type CountStaff {
+  staffId: Int
+  firstName: Int
+  lastName: Int
+  addressId: Int
+  picture: Int
+  email: Int
+  storeId: Int
+  active: Int
+  username: Int
+  password: Int
+  lastUpdate: Int
+  _all: Int
+  address: CountAddress
+  store: CountStore
+}
+
+type AvgCustomer {
+  customerId: Float
+  storeId: Float
+  addressId: Float
+  address: AvgAddress
+  store: AvgStore
+}
+
+type AvgStore {
+  storeId: Float
+  managerStaffId: Float
+  addressId: Float
+  address: AvgAddress
+  managerStaff: AvgStaff
+}
+
+type AvgStaff {
+  staffId: Float
+  addressId: Float
+  storeId: Float
+  active: Float
+  address: AvgAddress
+  store: AvgStore
+}
+
+type SumCustomer {
+  customerId: Int
+  storeId: Int
+  addressId: Int
+  address: SumAddress
+  store: SumStore
+}
+
+type SumStore {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+  address: SumAddress
+  managerStaff: SumStaff
+}
+
+type SumStaff {
+  staffId: Int
+  addressId: Int
+  storeId: Int
+  active: Int
+  address: SumAddress
+  store: SumStore
+}
+
+type MinCustomer {
+  customerId: Int
+  storeId: Int
+  addressId: Int
+  address: MinAddress
+  store: MinStore
+}
+
+type MinStore {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+  address: MinAddress
+  managerStaff: MinStaff
+}
+
+type MinStaff {
+  staffId: Int
+  addressId: Int
+  storeId: Int
+  active: Int
+  address: MinAddress
+  store: MinStore
+}
+
+type MaxCustomer {
+  customerId: Int
+  storeId: Int
+  addressId: Int
+  address: MaxAddress
+  store: MaxStore
+}
+
+type MaxStore {
+  storeId: Int
+  managerStaffId: Int
+  addressId: Int
+  address: MaxAddress
+  managerStaff: MaxStaff
+}
+
+type MaxStaff {
+  staffId: Int
+  addressId: Int
+  storeId: Int
+  active: Int
+  address: MaxAddress
+  store: MaxStore
+}
+
+input CustomerGroupBy {
+  customerId: Boolean
+  storeId: Boolean
+  firstName: Boolean
+  lastName: Boolean
+  email: Boolean
+  addressId: Boolean
+  active: Boolean
+  createDate: Boolean
+  lastUpdate: Boolean
+  address: AddressGroupBy
+  store: StoreGroupBy
+}
+
+input StoreGroupBy {
+  storeId: Boolean
+  managerStaffId: Boolean
+  addressId: Boolean
+  lastUpdate: Boolean
+  address: AddressGroupBy
+  managerStaff: StaffGroupBy
+}
+
+input StaffGroupBy {
+  staffId: Boolean
+  firstName: Boolean
+  lastName: Boolean
+  addressId: Boolean
+  picture: Boolean
+  email: Boolean
+  storeId: Boolean
+  active: Boolean
+  username: Boolean
+  password: Boolean
+  lastUpdate: Boolean
+  address: AddressGroupBy
+  store: StoreGroupBy
+}
+
+""""""
+input CustomerHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListCustomersInput
+  _raw: RawExpression
+  _and: [ListCustomersInput!]
+  _or: [ListCustomersInput!]
+  customerId: NumberFilter
+  storeId: NumberFilter
+  firstName: StringFilter
+  lastName: StringFilter
+  email: StringFilter
+  addressId: NumberFilter
+  active: StringFilter
+  createDate: DateFilter
+  lastUpdate: DateFilter
+  address: ListAddressesInput
+  store: ListStoresInput
+  payments: ListPaymentsInput
+  rentals: ListRentalsInput
+  _count: CountCustomerFilterInput
+  _avg: AvgCustomerFilterInput
+  _sum: SumCustomerFilterInput
+  _min: MinCustomerFilterInput
+  _max: MaxCustomerFilterInput
+}
+
+input GetFilmInput {
+  filmId: Int
+}
+
+type AggregateFilmResult {
+  records: [AggregateFilm!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateFilm {
+  group: JSON
+  count: CountFilm
+  avg: AvgFilm
+  sum: SumFilm
+  min: MinFilm
+  max: MaxFilm
+}
+
+type CountFilm {
+  filmId: Int
+  title: Int
+  description: Int
+  releaseYear: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Int
+  length: Int
+  replacementCost: Int
+  rating: Int
+  specialFeatures: Int
+  lastUpdate: Int
+  _all: Int
+  originalLanguage: CountLanguage
+  language: CountLanguage
+}
+
+type AvgFilm {
+  filmId: Float
+  languageId: Float
+  originalLanguageId: Float
+  rentalDuration: Float
+  rentalRate: Float
+  length: Float
+  replacementCost: Float
+  originalLanguage: AvgLanguage
+  language: AvgLanguage
+}
+
+type SumFilm {
+  filmId: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Float
+  length: Int
+  replacementCost: Float
+  originalLanguage: SumLanguage
+  language: SumLanguage
+}
+
+type MinFilm {
+  filmId: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Float
+  length: Int
+  replacementCost: Float
+  originalLanguage: MinLanguage
+  language: MinLanguage
+}
+
+type MaxFilm {
+  filmId: Int
+  languageId: Int
+  originalLanguageId: Int
+  rentalDuration: Int
+  rentalRate: Float
+  length: Int
+  replacementCost: Float
+  originalLanguage: MaxLanguage
+  language: MaxLanguage
+}
+
+input FilmGroupBy {
+  filmId: Boolean
+  title: Boolean
+  description: Boolean
+  releaseYear: Boolean
+  languageId: Boolean
+  originalLanguageId: Boolean
+  rentalDuration: Boolean
+  rentalRate: Boolean
+  length: Boolean
+  replacementCost: Boolean
+  rating: Boolean
+  specialFeatures: Boolean
+  lastUpdate: Boolean
+  originalLanguage: LanguageGroupBy
+  language: LanguageGroupBy
+}
+
+""""""
+input FilmHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmsInput
+  _raw: RawExpression
+  _and: [ListFilmsInput!]
+  _or: [ListFilmsInput!]
+  filmId: NumberFilter
+  title: StringFilter
+  description: StringFilter
+  releaseYear: StringFilter
+  languageId: NumberFilter
+  originalLanguageId: NumberFilter
+  rentalDuration: NumberFilter
+  rentalRate: NumberFilter
+  length: NumberFilter
+  replacementCost: NumberFilter
+  rating: StringFilter
+  specialFeatures: StringFilter
+  lastUpdate: DateFilter
+  originalLanguage: ListLanguagesInput
+  language: ListLanguagesInput
+  filmActors: ListFilmActorsInput
+  filmCategories: ListFilmCategoriesInput
+  inventories: ListInventoriesInput
+  _count: CountFilmFilterInput
+  _avg: AvgFilmFilterInput
+  _sum: SumFilmFilterInput
+  _min: MinFilmFilterInput
+  _max: MaxFilmFilterInput
+}
+
+input GetFilmActorInput {
+  actorId: Int
+}
+
+type AggregateFilmActorResult {
+  records: [AggregateFilmActor!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateFilmActor {
+  group: JSON
+  count: CountFilmActor
+  avg: AvgFilmActor
+  sum: SumFilmActor
+  min: MinFilmActor
+  max: MaxFilmActor
+}
+
+type CountFilmActor {
+  actorId: Int
+  filmId: Int
+  lastUpdate: Int
+  _all: Int
+  film: CountFilm
+  actor: CountActor
+}
+
+type AvgFilmActor {
+  actorId: Float
+  filmId: Float
+  film: AvgFilm
+  actor: AvgActor
+}
+
+type SumFilmActor {
+  actorId: Int
+  filmId: Int
+  film: SumFilm
+  actor: SumActor
+}
+
+type MinFilmActor {
+  actorId: Int
+  filmId: Int
+  film: MinFilm
+  actor: MinActor
+}
+
+type MaxFilmActor {
+  actorId: Int
+  filmId: Int
+  film: MaxFilm
+  actor: MaxActor
+}
+
+input FilmActorGroupBy {
+  actorId: Boolean
+  filmId: Boolean
+  lastUpdate: Boolean
+  film: FilmGroupBy
+  actor: ActorGroupBy
+}
+
+""""""
+input FilmActorHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmActorsInput
+  _raw: RawExpression
+  _and: [ListFilmActorsInput!]
+  _or: [ListFilmActorsInput!]
+  actorId: NumberFilter
+  filmId: NumberFilter
+  lastUpdate: DateFilter
+  film: ListFilmsInput
+  actor: ListActorsInput
+  _count: CountFilmActorFilterInput
+  _avg: AvgFilmActorFilterInput
+  _sum: SumFilmActorFilterInput
+  _min: MinFilmActorFilterInput
+  _max: MaxFilmActorFilterInput
+}
+
+input GetFilmCategoryInput {
+  filmId: Int
+}
+
+type AggregateFilmCategoryResult {
+  records: [AggregateFilmCategory!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateFilmCategory {
+  group: JSON
+  count: CountFilmCategory
+  avg: AvgFilmCategory
+  sum: SumFilmCategory
+  min: MinFilmCategory
+  max: MaxFilmCategory
+}
+
+type CountFilmCategory {
+  filmId: Int
+  categoryId: Int
+  lastUpdate: Int
+  _all: Int
+  category: CountCategory
+  film: CountFilm
+}
+
+type AvgFilmCategory {
+  filmId: Float
+  categoryId: Float
+  category: AvgCategory
+  film: AvgFilm
+}
+
+type SumFilmCategory {
+  filmId: Int
+  categoryId: Int
+  category: SumCategory
+  film: SumFilm
+}
+
+type MinFilmCategory {
+  filmId: Int
+  categoryId: Int
+  category: MinCategory
+  film: MinFilm
+}
+
+type MaxFilmCategory {
+  filmId: Int
+  categoryId: Int
+  category: MaxCategory
+  film: MaxFilm
+}
+
+input FilmCategoryGroupBy {
+  filmId: Boolean
+  categoryId: Boolean
+  lastUpdate: Boolean
+  category: CategoryGroupBy
+  film: FilmGroupBy
+}
+
+""""""
+input FilmCategoryHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmCategoriesInput
+  _raw: RawExpression
+  _and: [ListFilmCategoriesInput!]
+  _or: [ListFilmCategoriesInput!]
+  filmId: NumberFilter
+  categoryId: NumberFilter
+  lastUpdate: DateFilter
+  category: ListCategoriesInput
+  film: ListFilmsInput
+  _count: CountFilmCategoryFilterInput
+  _avg: AvgFilmCategoryFilterInput
+  _sum: SumFilmCategoryFilterInput
+  _min: MinFilmCategoryFilterInput
+  _max: MaxFilmCategoryFilterInput
+}
+
+type FilmText {
+  filmId: Int!
+  title: String!
+  description: String
+}
+
+input GetFilmTextInput {
+  filmId: Int
+}
+
+type FilmTexts {
+  records: [FilmText!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+input ListFilmTextsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmTextsInput
+  _raw: RawExpression
+  _and: [ListFilmTextsInput!]
+  _or: [ListFilmTextsInput!]
+  filmId: NumberFilter
+  title: StringFilter
+  description: StringFilter
+  _count: CountFilmTextFilterInput
+  _avg: AvgFilmTextFilterInput
+  _sum: SumFilmTextFilterInput
+  _min: MinFilmTextFilterInput
+  _max: MaxFilmTextFilterInput
+}
+
+input CountFilmTextFilterInput {
+  filmId: NumberFilter
+  title: NumberFilter
+  description: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgFilmTextFilterInput {
+  filmId: NumberFilter
+}
+
+input SumFilmTextFilterInput {
+  filmId: Int
+}
+
+input MinFilmTextFilterInput {
+  filmId: Int
+}
+
+input MaxFilmTextFilterInput {
+  filmId: Int
+}
+
+input SortFilmText {
+  filmId: SortOption
+  title: SortOption
+  description: SortOption
+  _count: CountFilmTextSortInput
+  _avg: AvgFilmTextSortInput
+  _sum: SumFilmTextSortInput
+  _min: MinFilmTextSortInput
+  _max: MaxFilmTextSortInput
+}
+
+input CountFilmTextSortInput {
+  filmId: SortOption
+  title: SortOption
+  description: SortOption
+  _all: SortOption
+}
+
+input AvgFilmTextSortInput {
+  filmId: SortOption
+}
+
+input SumFilmTextSortInput {
+  filmId: SortOption
+}
+
+input MinFilmTextSortInput {
+  filmId: SortOption
+}
+
+input MaxFilmTextSortInput {
+  filmId: SortOption
+}
+
+type AggregateFilmTextResult {
+  records: [AggregateFilmText!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateFilmText {
+  group: JSON
+  count: CountFilmText
+  avg: AvgFilmText
+  sum: SumFilmText
+  min: MinFilmText
+  max: MaxFilmText
+}
+
+type CountFilmText {
+  filmId: Int
+  title: Int
+  description: Int
+  _all: Int
+}
+
+type AvgFilmText {
+  filmId: Float
+}
+
+type SumFilmText {
+  filmId: Int
+}
+
+type MinFilmText {
+  filmId: Int
+}
+
+type MaxFilmText {
+  filmId: Int
+}
+
+input FilmTextGroupBy {
+  filmId: Boolean
+  title: Boolean
+  description: Boolean
+}
+
+""""""
+input FilmTextHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListFilmTextsInput
+  _raw: RawExpression
+  _and: [ListFilmTextsInput!]
+  _or: [ListFilmTextsInput!]
+  filmId: NumberFilter
+  title: StringFilter
+  description: StringFilter
+  _count: CountFilmTextFilterInput
+  _avg: AvgFilmTextFilterInput
+  _sum: SumFilmTextFilterInput
+  _min: MinFilmTextFilterInput
+  _max: MaxFilmTextFilterInput
+}
+
+input GetInventoryInput {
+  inventoryId: Int
+}
+
+type AggregateInventoryResult {
+  records: [AggregateInventory!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateInventory {
+  group: JSON
+  count: CountInventory
+  avg: AvgInventory
+  sum: SumInventory
+  min: MinInventory
+  max: MaxInventory
+}
+
+type CountInventory {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+  lastUpdate: Int
+  _all: Int
+  film: CountFilm
+  store: CountStore
+}
+
+type AvgInventory {
+  inventoryId: Float
+  filmId: Float
+  storeId: Float
+  film: AvgFilm
+  store: AvgStore
+}
+
+type SumInventory {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+  film: SumFilm
+  store: SumStore
+}
+
+type MinInventory {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+  film: MinFilm
+  store: MinStore
+}
+
+type MaxInventory {
+  inventoryId: Int
+  filmId: Int
+  storeId: Int
+  film: MaxFilm
+  store: MaxStore
+}
+
+input InventoryGroupBy {
+  inventoryId: Boolean
+  filmId: Boolean
+  storeId: Boolean
+  lastUpdate: Boolean
+  film: FilmGroupBy
+  store: StoreGroupBy
+}
+
+""""""
+input InventoryHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListInventoriesInput
+  _raw: RawExpression
+  _and: [ListInventoriesInput!]
+  _or: [ListInventoriesInput!]
+  inventoryId: NumberFilter
+  filmId: NumberFilter
+  storeId: NumberFilter
+  lastUpdate: DateFilter
+  film: ListFilmsInput
+  store: ListStoresInput
+  rentals: ListRentalsInput
+  _count: CountInventoryFilterInput
+  _avg: AvgInventoryFilterInput
+  _sum: SumInventoryFilterInput
+  _min: MinInventoryFilterInput
+  _max: MaxInventoryFilterInput
+}
+
+input GetStaffInput {
+  staffId: Int
+}
+
+type AggregateStaffResult {
+  records: [AggregateStaff!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateStaff {
+  group: JSON
+  count: CountStaff
+  avg: AvgStaff
+  sum: SumStaff
+  min: MinStaff
+  max: MaxStaff
+}
+
+""""""
+input StaffHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStaffListInput
+  _raw: RawExpression
+  _and: [ListStaffListInput!]
+  _or: [ListStaffListInput!]
+  staffId: NumberFilter
+  firstName: StringFilter
+  lastName: StringFilter
+  addressId: NumberFilter
+  picture: StringFilter
+  email: StringFilter
+  storeId: NumberFilter
+  active: NumberFilter
+  username: StringFilter
+  password: StringFilter
+  lastUpdate: DateFilter
+  address: ListAddressesInput
+  store: ListStoresInput
+  stores: ListStoresInput
+  payments: ListPaymentsInput
+  rentals: ListRentalsInput
+  _count: CountStaffFilterInput
+  _avg: AvgStaffFilterInput
+  _sum: SumStaffFilterInput
+  _min: MinStaffFilterInput
+  _max: MaxStaffFilterInput
+}
+
+input GetStoreInput {
+  storeId: Int
+}
+
+type AggregateStoreResult {
+  records: [AggregateStore!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateStore {
+  group: JSON
+  count: CountStore
+  avg: AvgStore
+  sum: SumStore
+  min: MinStore
+  max: MaxStore
+}
+
+""""""
+input StoreHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStoresInput
+  _raw: RawExpression
+  _and: [ListStoresInput!]
+  _or: [ListStoresInput!]
+  storeId: NumberFilter
+  managerStaffId: NumberFilter
+  addressId: NumberFilter
+  lastUpdate: DateFilter
+  address: ListAddressesInput
+  managerStaff: ListStaffListInput
+  customers: ListCustomersInput
+  inventories: ListInventoriesInput
+  staff: ListStaffListInput
+  _count: CountStoreFilterInput
+  _avg: AvgStoreFilterInput
+  _sum: SumStoreFilterInput
+  _min: MinStoreFilterInput
+  _max: MaxStoreFilterInput
+}
+
+input GetPaymentInput {
+  paymentId: Int
+}
+
+type AggregatePaymentResult {
+  records: [AggregatePayment!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregatePayment {
+  group: JSON
+  count: CountPayment
+  avg: AvgPayment
+  sum: SumPayment
+  min: MinPayment
+  max: MaxPayment
+}
+
+type CountPayment {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Int
+  paymentDate: Int
+  lastUpdate: Int
+  _all: Int
+  staff: CountStaff
+  customer: CountCustomer
+  rental: CountRental
+}
+
+type CountRental {
+  rentalId: Int
+  rentalDate: Int
+  inventoryId: Int
+  customerId: Int
+  returnDate: Int
+  staffId: Int
+  lastUpdate: Int
+  _all: Int
+  customer: CountCustomer
+  inventory: CountInventory
+  staff: CountStaff
+}
+
+type AvgPayment {
+  paymentId: Float
+  customerId: Float
+  staffId: Float
+  rentalId: Float
+  amount: Float
+  staff: AvgStaff
+  customer: AvgCustomer
+  rental: AvgRental
+}
+
+type AvgRental {
+  rentalId: Float
+  inventoryId: Float
+  customerId: Float
+  staffId: Float
+  customer: AvgCustomer
+  inventory: AvgInventory
+  staff: AvgStaff
+}
+
+type SumPayment {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Float
+  staff: SumStaff
+  customer: SumCustomer
+  rental: SumRental
+}
+
+type SumRental {
+  rentalId: Int
+  inventoryId: Int
+  customerId: Int
+  staffId: Int
+  customer: SumCustomer
+  inventory: SumInventory
+  staff: SumStaff
+}
+
+type MinPayment {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Float
+  staff: MinStaff
+  customer: MinCustomer
+  rental: MinRental
+}
+
+type MinRental {
+  rentalId: Int
+  inventoryId: Int
+  customerId: Int
+  staffId: Int
+  customer: MinCustomer
+  inventory: MinInventory
+  staff: MinStaff
+}
+
+type MaxPayment {
+  paymentId: Int
+  customerId: Int
+  staffId: Int
+  rentalId: Int
+  amount: Float
+  staff: MaxStaff
+  customer: MaxCustomer
+  rental: MaxRental
+}
+
+type MaxRental {
+  rentalId: Int
+  inventoryId: Int
+  customerId: Int
+  staffId: Int
+  customer: MaxCustomer
+  inventory: MaxInventory
+  staff: MaxStaff
+}
+
+input PaymentGroupBy {
+  paymentId: Boolean
+  customerId: Boolean
+  staffId: Boolean
+  rentalId: Boolean
+  amount: Boolean
+  paymentDate: Boolean
+  lastUpdate: Boolean
+  staff: StaffGroupBy
+  customer: CustomerGroupBy
+  rental: RentalGroupBy
+}
+
+input RentalGroupBy {
+  rentalId: Boolean
+  rentalDate: Boolean
+  inventoryId: Boolean
+  customerId: Boolean
+  returnDate: Boolean
+  staffId: Boolean
+  lastUpdate: Boolean
+  customer: CustomerGroupBy
+  inventory: InventoryGroupBy
+  staff: StaffGroupBy
+}
+
+""""""
+input PaymentHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListPaymentsInput
+  _raw: RawExpression
+  _and: [ListPaymentsInput!]
+  _or: [ListPaymentsInput!]
+  paymentId: NumberFilter
+  customerId: NumberFilter
+  staffId: NumberFilter
+  rentalId: NumberFilter
+  amount: NumberFilter
+  paymentDate: DateFilter
+  lastUpdate: DateFilter
+  staff: ListStaffListInput
+  customer: ListCustomersInput
+  rental: ListRentalsInput
+  _count: CountPaymentFilterInput
+  _avg: AvgPaymentFilterInput
+  _sum: SumPaymentFilterInput
+  _min: MinPaymentFilterInput
+  _max: MaxPaymentFilterInput
+}
+
+input GetRentalInput {
+  rentalId: Int
+}
+
+type AggregateRentalResult {
+  records: [AggregateRental!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateRental {
+  group: JSON
+  count: CountRental
+  avg: AvgRental
+  sum: SumRental
+  min: MinRental
+  max: MaxRental
+}
+
+""""""
+input RentalHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListRentalsInput
+  _raw: RawExpression
+  _and: [ListRentalsInput!]
+  _or: [ListRentalsInput!]
+  rentalId: NumberFilter
+  rentalDate: DateFilter
+  inventoryId: NumberFilter
+  customerId: NumberFilter
+  returnDate: DateFilter
+  staffId: NumberFilter
+  lastUpdate: DateFilter
+  customer: ListCustomersInput
+  inventory: ListInventoriesInput
+  staff: ListStaffListInput
+  payments: ListPaymentsInput
+  _count: CountRentalFilterInput
+  _avg: AvgRentalFilterInput
+  _sum: SumRentalFilterInput
+  _min: MinRentalFilterInput
+  _max: MaxRentalFilterInput
+}
