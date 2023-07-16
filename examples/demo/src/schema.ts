@@ -7,7 +7,7 @@ export async function buildSchema() {
     {
       client: 'sqlite3',
       connection: {
-        filename: path.resolve(__dirname, '..', 'sakila.db'),
+        filename: path.resolve(process.cwd(), 'sakila.db'),
       },
     },
     {
