@@ -323,7 +323,7 @@ export class SelectBuilder {
       }
     );
 
-    return isBelongsTo ? targetAlias : alias;
+    return targetAlias;
   }
 
   getSchemaMapper() {

@@ -54,6 +54,7 @@ export class AggregateInputBuilder {
       for (const [column, foreignKey] of Object.entries({
         ...this.metadata.belongsTo,
         ...this.metadata.hasOne,
+        ...this.metadata.hasMany,
       })) {
         const { referenceTable } = foreignKey;
         const aggregateInputBuilder = schemaBuilder

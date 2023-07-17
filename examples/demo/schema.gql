@@ -2017,6 +2017,173 @@ input ActorGroupBy {
   firstName: Boolean
   lastName: Boolean
   lastUpdate: Boolean
+  filmActors: FilmActorGroupBy
+}
+
+input FilmActorGroupBy {
+  actorId: Boolean
+  filmId: Boolean
+  lastUpdate: Boolean
+  film: FilmGroupBy
+  actor: ActorGroupBy
+}
+
+input FilmGroupBy {
+  filmId: Boolean
+  title: Boolean
+  description: Boolean
+  releaseYear: Boolean
+  languageId: Boolean
+  originalLanguageId: Boolean
+  rentalDuration: Boolean
+  rentalRate: Boolean
+  length: Boolean
+  replacementCost: Boolean
+  rating: Boolean
+  specialFeatures: Boolean
+  lastUpdate: Boolean
+  originalLanguage: LanguageGroupBy
+  language: LanguageGroupBy
+  filmActors: FilmActorGroupBy
+  filmCategories: FilmCategoryGroupBy
+  inventories: InventoryGroupBy
+}
+
+input LanguageGroupBy {
+  languageId: Boolean
+  name: Boolean
+  lastUpdate: Boolean
+  films: FilmGroupBy
+}
+
+input FilmCategoryGroupBy {
+  filmId: Boolean
+  categoryId: Boolean
+  lastUpdate: Boolean
+  category: CategoryGroupBy
+  film: FilmGroupBy
+}
+
+input CategoryGroupBy {
+  categoryId: Boolean
+  name: Boolean
+  lastUpdate: Boolean
+  filmCategories: FilmCategoryGroupBy
+}
+
+input InventoryGroupBy {
+  inventoryId: Boolean
+  filmId: Boolean
+  storeId: Boolean
+  lastUpdate: Boolean
+  film: FilmGroupBy
+  store: StoreGroupBy
+  rentals: RentalGroupBy
+}
+
+input StoreGroupBy {
+  storeId: Boolean
+  managerStaffId: Boolean
+  addressId: Boolean
+  lastUpdate: Boolean
+  address: AddressGroupBy
+  managerStaff: StaffGroupBy
+  customers: CustomerGroupBy
+  inventories: InventoryGroupBy
+  staff: StaffGroupBy
+}
+
+input AddressGroupBy {
+  addressId: Boolean
+  address: Boolean
+  address2: Boolean
+  district: Boolean
+  cityId: Boolean
+  postalCode: Boolean
+  phone: Boolean
+  lastUpdate: Boolean
+  city: CityGroupBy
+  customers: CustomerGroupBy
+  staff: StaffGroupBy
+  stores: StoreGroupBy
+}
+
+input CityGroupBy {
+  cityId: Boolean
+  city: Boolean
+  countryId: Boolean
+  lastUpdate: Boolean
+  country: CountryGroupBy
+  addresses: AddressGroupBy
+}
+
+input CountryGroupBy {
+  countryId: Boolean
+  country: Boolean
+  lastUpdate: Boolean
+  cities: CityGroupBy
+}
+
+input CustomerGroupBy {
+  customerId: Boolean
+  storeId: Boolean
+  firstName: Boolean
+  lastName: Boolean
+  email: Boolean
+  addressId: Boolean
+  active: Boolean
+  createDate: Boolean
+  lastUpdate: Boolean
+  address: AddressGroupBy
+  store: StoreGroupBy
+  payments: PaymentGroupBy
+  rentals: RentalGroupBy
+}
+
+input PaymentGroupBy {
+  paymentId: Boolean
+  customerId: Boolean
+  staffId: Boolean
+  rentalId: Boolean
+  amount: Boolean
+  paymentDate: Boolean
+  lastUpdate: Boolean
+  staff: StaffGroupBy
+  customer: CustomerGroupBy
+  rental: RentalGroupBy
+}
+
+input StaffGroupBy {
+  staffId: Boolean
+  firstName: Boolean
+  lastName: Boolean
+  addressId: Boolean
+  picture: Boolean
+  email: Boolean
+  storeId: Boolean
+  active: Boolean
+  username: Boolean
+  password: Boolean
+  lastUpdate: Boolean
+  address: AddressGroupBy
+  store: StoreGroupBy
+  stores: StoreGroupBy
+  payments: PaymentGroupBy
+  rentals: RentalGroupBy
+}
+
+input RentalGroupBy {
+  rentalId: Boolean
+  rentalDate: Boolean
+  inventoryId: Boolean
+  customerId: Boolean
+  returnDate: Boolean
+  staffId: Boolean
+  lastUpdate: Boolean
+  customer: CustomerGroupBy
+  inventory: InventoryGroupBy
+  staff: StaffGroupBy
+  payments: PaymentGroupBy
 }
 
 """"""
@@ -2089,12 +2256,6 @@ type MaxCountry {
   countryId: Int
 }
 
-input CountryGroupBy {
-  countryId: Boolean
-  country: Boolean
-  lastUpdate: Boolean
-}
-
 """"""
 input CountryHaving {
   _required: Boolean
@@ -2165,14 +2326,6 @@ type MaxCity {
   cityId: Int
   countryId: Int
   country: MaxCountry
-}
-
-input CityGroupBy {
-  cityId: Boolean
-  city: Boolean
-  countryId: Boolean
-  lastUpdate: Boolean
-  country: CountryGroupBy
 }
 
 """"""
@@ -2253,18 +2406,6 @@ type MaxAddress {
   city: MaxCity
 }
 
-input AddressGroupBy {
-  addressId: Boolean
-  address: Boolean
-  address2: Boolean
-  district: Boolean
-  cityId: Boolean
-  postalCode: Boolean
-  phone: Boolean
-  lastUpdate: Boolean
-  city: CityGroupBy
-}
-
 """"""
 input AddressHaving {
   _required: Boolean
@@ -2342,12 +2483,6 @@ type MaxLanguage {
   languageId: Int
 }
 
-input LanguageGroupBy {
-  languageId: Boolean
-  name: Boolean
-  lastUpdate: Boolean
-}
-
 """"""
 input LanguageHaving {
   _required: Boolean
@@ -2415,12 +2550,6 @@ type MinCategory {
 
 type MaxCategory {
   categoryId: Int
-}
-
-input CategoryGroupBy {
-  categoryId: Boolean
-  name: Boolean
-  lastUpdate: Boolean
 }
 
 """"""
@@ -2604,45 +2733,6 @@ type MaxStaff {
   store: MaxStore
 }
 
-input CustomerGroupBy {
-  customerId: Boolean
-  storeId: Boolean
-  firstName: Boolean
-  lastName: Boolean
-  email: Boolean
-  addressId: Boolean
-  active: Boolean
-  createDate: Boolean
-  lastUpdate: Boolean
-  address: AddressGroupBy
-  store: StoreGroupBy
-}
-
-input StoreGroupBy {
-  storeId: Boolean
-  managerStaffId: Boolean
-  addressId: Boolean
-  lastUpdate: Boolean
-  address: AddressGroupBy
-  managerStaff: StaffGroupBy
-}
-
-input StaffGroupBy {
-  staffId: Boolean
-  firstName: Boolean
-  lastName: Boolean
-  addressId: Boolean
-  picture: Boolean
-  email: Boolean
-  storeId: Boolean
-  active: Boolean
-  username: Boolean
-  password: Boolean
-  lastUpdate: Boolean
-  address: AddressGroupBy
-  store: StoreGroupBy
-}
-
 """"""
 input CustomerHaving {
   _required: Boolean
@@ -2758,24 +2848,6 @@ type MaxFilm {
   language: MaxLanguage
 }
 
-input FilmGroupBy {
-  filmId: Boolean
-  title: Boolean
-  description: Boolean
-  releaseYear: Boolean
-  languageId: Boolean
-  originalLanguageId: Boolean
-  rentalDuration: Boolean
-  rentalRate: Boolean
-  length: Boolean
-  replacementCost: Boolean
-  rating: Boolean
-  specialFeatures: Boolean
-  lastUpdate: Boolean
-  originalLanguage: LanguageGroupBy
-  language: LanguageGroupBy
-}
-
 """"""
 input FilmHaving {
   _required: Boolean
@@ -2866,14 +2938,6 @@ type MaxFilmActor {
   actor: MaxActor
 }
 
-input FilmActorGroupBy {
-  actorId: Boolean
-  filmId: Boolean
-  lastUpdate: Boolean
-  film: FilmGroupBy
-  actor: ActorGroupBy
-}
-
 """"""
 input FilmActorHaving {
   _required: Boolean
@@ -2949,14 +3013,6 @@ type MaxFilmCategory {
   categoryId: Int
   category: MaxCategory
   film: MaxFilm
-}
-
-input FilmCategoryGroupBy {
-  filmId: Boolean
-  categoryId: Boolean
-  lastUpdate: Boolean
-  category: CategoryGroupBy
-  film: FilmGroupBy
 }
 
 """"""
@@ -3193,15 +3249,6 @@ type MaxInventory {
   storeId: Int
   film: MaxFilm
   store: MaxStore
-}
-
-input InventoryGroupBy {
-  inventoryId: Boolean
-  filmId: Boolean
-  storeId: Boolean
-  lastUpdate: Boolean
-  film: FilmGroupBy
-  store: StoreGroupBy
 }
 
 """"""
@@ -3451,32 +3498,6 @@ type MaxRental {
   customer: MaxCustomer
   inventory: MaxInventory
   staff: MaxStaff
-}
-
-input PaymentGroupBy {
-  paymentId: Boolean
-  customerId: Boolean
-  staffId: Boolean
-  rentalId: Boolean
-  amount: Boolean
-  paymentDate: Boolean
-  lastUpdate: Boolean
-  staff: StaffGroupBy
-  customer: CustomerGroupBy
-  rental: RentalGroupBy
-}
-
-input RentalGroupBy {
-  rentalId: Boolean
-  rentalDate: Boolean
-  inventoryId: Boolean
-  customerId: Boolean
-  returnDate: Boolean
-  staffId: Boolean
-  lastUpdate: Boolean
-  customer: CustomerGroupBy
-  inventory: InventoryGroupBy
-  staff: StaffGroupBy
 }
 
 """"""

@@ -189,5 +189,19 @@ Display the most frequently rented movies in descending order.
 
 In your new role as an executive, you would like to have an easy way of viewing the Top five genres by gross revenue
 ```bash
-
+{
+  aggregatePayments(
+    groupBy: {rental: {inventory: {film: {filmCategories: {category: {name: true}}}}}}
+    filter: {amount: {_gt: 0}, rental: {inventory: {film: {filmCategories: {category: {_required: true}}}}}}
+    pagination: { limit: 5 },
+    sort: [{ _sum: { amount: { direction: DESC }}}]
+  ) {
+    records {
+      group
+      sum {
+        amount
+      }
+    }
+  }
+}
 ```
