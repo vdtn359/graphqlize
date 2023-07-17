@@ -40,6 +40,9 @@ export class AggregateResolver extends DefaultResolver {
     const transformedGroupBy = groupBy
       ? translator.reverseToDB(groupBy)
       : undefined;
+    const transformedSort = (sort ?? []).map((sortItem: any) =>
+      translator.reverseToDB(sortItem)
+    );
 
     const results = await this.repository.aggregate({
       fields,
@@ -47,7 +50,7 @@ export class AggregateResolver extends DefaultResolver {
       groupBy: transformedGroupBy,
       having,
       pagination,
-      sort,
+      sort: transformedSort,
     });
     const convertFromDB = translator.convertFromDB.bind(translator);
     return results.map((item: any) =>
@@ -55,7 +58,9 @@ export class AggregateResolver extends DefaultResolver {
         if (
           this.key &&
           this.parent &&
-          !['count', 'sum', 'avg', 'max', 'group', 'min'].includes(this.key)
+          !['count', 'sum', 'avg', 'max', 'group', 'min', '_all'].includes(
+            this.key
+          )
         ) {
           this.parent.update(convertFromDB(this.parent.node, false), true);
         }

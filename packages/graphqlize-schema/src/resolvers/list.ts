@@ -22,10 +22,10 @@ export class ListResolver extends DefaultResolver {
     this.repository = repository;
   }
 
-  async resolve({ filter, pagination, sort = [] }: Record<string, any> = {}) {
+  async resolve({ filter, pagination, sort }: Record<string, any> = {}) {
     const translator = this.tableBuilder.getTranslator();
     const transformedFilter = translator.reverseToDB(filter);
-    const transformedSort = sort.map((sortItem: any) =>
+    const transformedSort = (sort ?? []).map((sortItem: any) =>
       translator.reverseToDB(sortItem)
     );
     const result: any[] = await this.repository.list({
