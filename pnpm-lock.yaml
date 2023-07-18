@@ -253,9 +253,6 @@ importers:
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
-      traverse:
-        specifier: ^0.6.7
-        version: 0.6.7
     devDependencies:
       '@types/lodash':
         specifier: ^4.14.195
@@ -263,9 +260,6 @@ importers:
       '@types/pluralize':
         specifier: ^0.0.29
         version: 0.0.29
-      '@types/traverse':
-        specifier: ^0.6.32
-        version: 0.6.32
       '@vdtn359/graphqlize-mapper':
         specifier: ^1.0.0
         version: link:../graphqlize-mapper

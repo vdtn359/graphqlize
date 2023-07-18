@@ -127,6 +127,9 @@ export class TableTranslator {
   }
 
   columnName(name: string) {
+    if (name === '_all') {
+      return name;
+    }
     return name
       .split('__')
       .map((part) => transform(part, this.casing))
@@ -190,11 +193,24 @@ export class TableTranslator {
   }
 
   convertFromDB(record: Record<string, any>, includesRaw = true) {
-    const result = mapKeys(record, (value, key) => this.columnName(key) ?? key);
+    const result = mapKeys(record, (value, key) => this.columnName(key));
     if (result && includesRaw) {
       result.$raw = record;
     }
     return result;
+  }
+
+  deepConvertFromDB(record: Record<string, any>) {
+    return objectTransform(record, (ret: any, value: any, key: string) => {
+      const transformedKey = this.columnName(key);
+      if (value && typeof value === 'object') {
+        // eslint-disable-next-line no-param-reassign
+        ret[transformedKey] = this.deepConvertFromDB(value);
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        ret[transformedKey] = value;
+      }
+    });
   }
 
   columnTypeLookup(typeName: string) {

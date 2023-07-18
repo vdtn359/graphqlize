@@ -1,7 +1,6 @@
 import type { DatabaseMapper } from '@vdtn359/graphqlize-mapper';
 import { parseResolveInfo, ResolveTree } from 'graphql-parse-resolve-info';
 import { flatten, isEmpty } from 'lodash';
-import { map } from 'traverse';
 import { GraphQLResolveInfo } from 'graphql/type';
 import type { TableBuilder } from '../builders/table';
 import { DefaultResolver } from './default';
@@ -52,20 +51,7 @@ export class AggregateResolver extends DefaultResolver {
       pagination,
       sort: transformedSort,
     });
-    const convertFromDB = translator.convertFromDB.bind(translator);
-    return results.map((item: any) =>
-      map(item, function traverse() {
-        if (
-          this.key &&
-          this.parent &&
-          !['count', 'sum', 'avg', 'max', 'group', 'min', '_all'].includes(
-            this.key
-          )
-        ) {
-          this.parent.update(convertFromDB(this.parent.node, false), true);
-        }
-      })
-    );
+    return results.map((item: any) => translator.deepConvertFromDB(item));
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

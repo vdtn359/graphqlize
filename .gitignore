@@ -9,6 +9,7 @@ dist/
 *.db
 .esbuild
 coverage
+.serverless
 # Compiled Java class files
 *.class
 
