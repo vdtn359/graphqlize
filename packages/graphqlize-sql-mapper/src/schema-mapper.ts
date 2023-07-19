@@ -90,7 +90,8 @@ export class SchemaMapper implements DatabaseMapper {
           columnMetadata.type.name === 'Date' ||
           columnMetadata.type.name === 'DateTime'
         ) {
-          return new Date(value).toISOString();
+          const date = new Date(value);
+          return Number.isNaN(date.getTime()) ? null : date.toISOString();
         }
       }
       return value;
