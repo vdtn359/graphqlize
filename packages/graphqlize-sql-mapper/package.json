@@ -31,7 +31,8 @@
   },
   "peerDependencies": {
     "graphql": "^16",
-    "graphql-scalars": "^1.22.2"
+    "graphql-scalars": "^1.22.2",
+    "@vdtn359/graphqlize-mapper": "^1.0.0"
   },
   "keywords": [],
   "author": "",

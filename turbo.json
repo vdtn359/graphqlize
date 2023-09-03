@@ -27,6 +27,17 @@
       ],
       "outputs": []
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.json",
+        "../../tsconfig.json"
+      ],
+      "outputs": []
+    },
     "clean": {
       "outputs": []
     },

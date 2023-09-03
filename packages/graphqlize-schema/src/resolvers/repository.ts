@@ -6,6 +6,7 @@ import type {
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
 import DataLoader from 'dataloader';
+import { uniqBy } from 'lodash';
 
 export class Repository<T = any> {
   private readonly uniqueDataLoaders: Record<
@@ -72,11 +73,12 @@ export class Repository<T = any> {
     sort?: Record<string, any>[];
   }) {
     return new DataLoader<Record<string, any>, any>(async (keys) => {
+      const uniqueKeys = uniqBy(keys, (key) => JSON.stringify(key));
       const result = await this.tableMapper.findByFilter({
-        partitions: keys,
+        partitions: uniqueKeys,
         filter,
         pagination: unique
-          ? { limit: keys.length, offset: 0, ...pagination }
+          ? { limit: uniqueKeys.length, offset: 0, ...pagination }
           : pagination,
         sort,
       });

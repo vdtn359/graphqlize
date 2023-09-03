@@ -1012,6 +1012,7 @@ input StatsGroupBy {
   createdAt: Boolean
   updatedAt: Boolean
   user: UsersGroupBy
+  users: UsersGroupBy
 }
 
 input UsersGroupBy {
@@ -1027,6 +1028,53 @@ input UsersGroupBy {
   mentorId: Boolean
   mentor: UsersGroupBy
   stats: StatsGroupBy
+  instruments: InstrumentsGroupBy
+  userSessions: UserSessionsGroupBy
+  students: UsersGroupBy
+}
+
+input InstrumentsGroupBy {
+  id: Boolean
+  type: Boolean
+  description: Boolean
+  purchaseDate: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  userId: Boolean
+  orchestraId: Boolean
+  orchestra: OrchestrasGroupBy
+  user: UsersGroupBy
+}
+
+input OrchestrasGroupBy {
+  id: Boolean
+  name: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  instruments: InstrumentsGroupBy
+}
+
+input UserSessionsGroupBy {
+  id: Boolean
+  time: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  userId: Boolean
+  sessionId: Boolean
+  session: SessionsGroupBy
+  user: UsersGroupBy
+}
+
+input SessionsGroupBy {
+  id: Boolean
+  name: Boolean
+  start: Boolean
+  end: Boolean
+  time: Boolean
+  location: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  userSessions: UserSessionsGroupBy
 }
 
 """"""
@@ -1161,13 +1209,6 @@ type MaxOrchestra {
   id: Int
 }
 
-input OrchestrasGroupBy {
-  id: Boolean
-  name: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-}
-
 """"""
 input OrchestrasHaving {
   _required: Boolean
@@ -1254,19 +1295,6 @@ type MaxInstrument {
   user: MaxUser
 }
 
-input InstrumentsGroupBy {
-  id: Boolean
-  type: Boolean
-  description: Boolean
-  purchaseDate: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-  userId: Boolean
-  orchestraId: Boolean
-  orchestra: OrchestrasGroupBy
-  user: UsersGroupBy
-}
-
 """"""
 input InstrumentsHaving {
   _required: Boolean
@@ -1345,17 +1373,6 @@ type MinSession {
 
 type MaxSession {
   id: Int
-}
-
-input SessionsGroupBy {
-  id: Boolean
-  name: Boolean
-  start: Boolean
-  end: Boolean
-  time: Boolean
-  location: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
 }
 
 """"""
@@ -1444,17 +1461,6 @@ type MaxUserSession {
   sessionId: Int
   session: MaxSession
   user: MaxUser
-}
-
-input UserSessionsGroupBy {
-  id: Boolean
-  time: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-  userId: Boolean
-  sessionId: Boolean
-  session: SessionsGroupBy
-  user: UsersGroupBy
 }
 
 """"""

@@ -1,9 +1,11 @@
-export interface TableOptions {
+import type { IntrospectionTableResult } from '@vdtn359/graphqlize-mapper';
+
+export type TableOptions = Partial<IntrospectionTableResult> & {
   includeColumns?: string[];
   excludeColumns?: string[];
   includeForeignKeys?: string[];
   excludeForeignKeys?: string[];
-}
+};
 
 export interface SchemaOptions {
   allowWindowFunctions?: boolean;
@@ -11,6 +13,6 @@ export interface SchemaOptions {
   versionFile?: string;
   includeTables?: string[];
   excludeTables?: string[];
-
+  introspect?: boolean;
   tables?: Record<string, TableOptions>;
 }

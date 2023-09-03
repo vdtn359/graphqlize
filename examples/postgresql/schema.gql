@@ -1093,6 +1093,9 @@ input UsersGroupBy {
   mentorId: Boolean
   stats: StatsGroupBy
   mentor: UsersGroupBy
+  instruments: InstrumentsGroupBy
+  userSessions: UserSessionsGroupBy
+  students: UsersGroupBy
 }
 
 input StatsGroupBy {
@@ -1103,6 +1106,30 @@ input StatsGroupBy {
   createdAt: Boolean
   updatedAt: Boolean
   user: UsersGroupBy
+  users: UsersGroupBy
+}
+
+input UserSessionsGroupBy {
+  id: Boolean
+  time: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  userId: Boolean
+  sessionId: Boolean
+  user: UsersGroupBy
+  session: SessionsGroupBy
+}
+
+input SessionsGroupBy {
+  id: Boolean
+  name: Boolean
+  start: Boolean
+  end: Boolean
+  time: Boolean
+  location: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  userSessions: UserSessionsGroupBy
 }
 
 input OrchestrasGroupBy {
@@ -1110,6 +1137,7 @@ input OrchestrasGroupBy {
   name: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  instruments: InstrumentsGroupBy
 }
 
 """"""
@@ -1237,17 +1265,6 @@ type MinSession {
 
 type MaxSession {
   id: Int
-}
-
-input SessionsGroupBy {
-  id: Boolean
-  name: Boolean
-  start: Boolean
-  end: Boolean
-  time: Boolean
-  location: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
 }
 
 """"""
@@ -1386,17 +1403,6 @@ type MaxUserSession {
   sessionId: Int
   user: MaxUser
   session: MaxSession
-}
-
-input UserSessionsGroupBy {
-  id: Boolean
-  time: Boolean
-  createdAt: Boolean
-  updatedAt: Boolean
-  userId: Boolean
-  sessionId: Boolean
-  user: UsersGroupBy
-  session: SessionsGroupBy
 }
 
 """"""

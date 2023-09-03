@@ -2,12 +2,14 @@ import type {
   DatabaseMapper,
   ForeignKeyMetadata,
   ForeignKeyType,
+  IntrospectionResult,
+  IntrospectionTableResult,
   TableMapper,
   TableMetadata,
 } from '@vdtn359/graphqlize-mapper';
 import schemaInspector from '@vdtn359/knex-schema-inspector';
 import { knex, Knex } from 'knex';
-import { mapValues } from 'lodash';
+import { fromPairs, mapValues, merge } from 'lodash';
 import { GraphQLDateTime, GraphQLJSONObject } from 'graphql-scalars';
 import fsPromise from 'fs/promises';
 import fs from 'fs';
@@ -27,17 +29,10 @@ import { GraphQLScalarType } from 'graphql/index';
 import { SqlTableMapper } from './table-mapper';
 import { SchemaOptions, TableOptions } from './options';
 
-type IntrospectionResult = {
-  table: string;
-  columns: Column[];
-  foreignKeys: ForeignKey[];
-  primaryKey: string | null;
-}[];
-
 export class SchemaMapper implements DatabaseMapper {
   instance: Knex;
 
-  private inspector: ReturnType<typeof schemaInspector>;
+  private inspector: ReturnType<typeof schemaInspector> | null;
 
   private tables: Record<string, TableMetadata> = {};
 
@@ -45,6 +40,7 @@ export class SchemaMapper implements DatabaseMapper {
     config: Knex.Config,
     private readonly options: SchemaOptions = {}
   ) {
+    const { introspect = true } = options;
     this.instance = knex({
       // @ts-ignore: only applicable for mysql
       typeCast(field, next) {
@@ -66,11 +62,12 @@ export class SchemaMapper implements DatabaseMapper {
       },
       ...config,
     });
-    this.inspector = schemaInspector(this.instance);
+    this.inspector = introspect ? schemaInspector(this.instance) : null;
   }
 
   private transformResult(record: Record<string, any>, table: string) {
     const tableMetadata = this.getTableMetadata(table);
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     return mapValues(record, (value, key) => {
       if (!value) {
         return value;
@@ -79,6 +76,12 @@ export class SchemaMapper implements DatabaseMapper {
         const columnMetadata = tableMetadata.columns[key];
         if (!(columnMetadata.type instanceof GraphQLScalarType)) {
           return value;
+        }
+        if (columnMetadata.type.name === 'Int' && typeof value === 'string') {
+          return parseInt(value, 10);
+        }
+        if (columnMetadata.type.name === 'Float' && typeof value === 'string') {
+          return parseFloat(value);
         }
         if (
           columnMetadata.type.name === 'JSONObject' &&
@@ -139,42 +142,79 @@ export class SchemaMapper implements DatabaseMapper {
     return introspectResult;
   }
 
-  private async introspect() {
+  private async introspect(): Promise<IntrospectionResult> {
+    const { inspector } = this;
+    if (!inspector) {
+      if (!this.options.tables) {
+        throw new Error('Tables must be provided when not introspecting');
+      }
+      return mapValues(this.options.tables, (value, table) => ({
+        compositeKeys: {},
+        alias: table,
+        columns: {},
+        candidateKeys: {},
+        foreignKeys: {},
+        ...value,
+      })) as IntrospectionResult;
+    }
     let filteredTables =
-      this.options.includeTables ?? (await this.inspector.tables());
+      this.options.includeTables ?? (await inspector.tables());
     filteredTables = filteredTables.filter(
       (table) => !this.options.excludeTables?.includes(table)
     );
 
-    return Promise.all(
-      filteredTables.map(async (table) => {
-        const tableOption = this.options.tables?.[table] ?? {};
+    const introspectionResult = fromPairs(
+      await Promise.all(
+        filteredTables.map(async (table) => {
+          const tableOption = this.options.tables?.[table] ?? {};
 
-        const filteredColumns = this.filterColumns(
-          await this.inspector.columnInfo(table),
-          tableOption
-        );
+          const filteredColumns = this.filterColumns(
+            await inspector.columnInfo(table),
+            tableOption
+          );
 
-        const filteredForeignKeys = this.filterForeignKeys(
-          filteredTables,
-          filteredColumns.map((column) => column.name),
-          await this.inspector.foreignKeys(table),
-          tableOption
-        );
+          const filteredForeignKeys = this.filterForeignKeys(
+            filteredTables,
+            filteredColumns.map((column) => column.name),
+            await inspector.foreignKeys(table),
+            tableOption
+          );
 
-        const primaryKey = await this.inspector.primary(table);
-        return {
-          table,
-          columns: filteredColumns,
-          foreignKeys: filteredForeignKeys,
-          primaryKey: filteredColumns.some(
-            (column) => column.name === primaryKey
-          )
-            ? primaryKey
-            : null,
-        };
-      })
+          const primaryKey = await inspector.primary(table);
+
+          const introspectionTableResult: IntrospectionTableResult = {
+            alias: table,
+            primaryKey,
+            candidateKeys: {},
+            compositeKeys: {},
+            columns: {},
+            foreignKeys: this.getForeignKeys(filteredForeignKeys, table),
+          };
+
+          if (primaryKey) {
+            introspectionTableResult.candidateKeys[primaryKey] = [primaryKey];
+          }
+
+          for (const column of filteredColumns) {
+            introspectionTableResult.columns[column.name] = {
+              nullable: column.is_nullable,
+              defaultValue: column.default_value,
+              rawType: column.data_type,
+            };
+
+            if (column.is_unique) {
+              introspectionTableResult.candidateKeys[column.name] = [
+                column.name,
+              ];
+            }
+          }
+
+          return [table, introspectionTableResult];
+        })
+      )
     );
+
+    return merge(introspectionResult, this.options.tables);
   }
 
   private filterColumns(columns: Column[], tableOptions: TableOptions) {
@@ -235,58 +275,36 @@ export class SchemaMapper implements DatabaseMapper {
   async init() {
     const result = await this.getIntrospectionResult();
 
-    for (const tableInfo of result) {
-      const { table, columns, foreignKeys } = tableInfo;
-      const hasId = columns.find((column) => column.name === 'id');
-      if (!tableInfo.primaryKey && hasId) {
-        tableInfo.primaryKey = 'id';
-      }
+    for (const [table, tableInfo] of Object.entries(result)) {
+      const { columns, foreignKeys } = tableInfo;
       this.tables[table] = {
+        ...tableInfo,
         name: table,
-        columns: {},
-        primaryKey: null,
-        candidateKeys: {},
-        compositeKeys: {},
-        belongsTo: {},
+        columns: mapValues(columns, (column, name) => ({
+          ...column,
+          name,
+          type: this.mapType(column.rawType, column.enumValues),
+        })),
+        belongsTo: mapValues(foreignKeys, (value) => ({
+          ...value,
+          type: 'belongsTo' as const,
+          table,
+        })),
         hasOne: {},
         hasMany: {},
       };
-      this.buildCandidateKeys(tableInfo.primaryKey, columns, table);
-      this.buildBelongsTo(foreignKeys, table);
     }
 
-    for (const { table, foreignKeys } of result) {
-      this.buildHasMany(foreignKeys, table);
+    for (const [table, tableInfo] of Object.entries(result)) {
+      this.buildHasMany(tableInfo.foreignKeys, table);
     }
   }
 
-  private buildCandidateKeys(
-    primaryKey: string | null,
-    columns: Column[],
+  private getForeignKeys(
+    foreignKeys: ForeignKey[],
     table: string
-  ) {
-    if (primaryKey) {
-      this.tables[table].candidateKeys[primaryKey] = [primaryKey];
-    }
-
-    for (const column of columns) {
-      this.tables[table].columns[column.name] = {
-        name: column.name,
-        nullable: column.is_nullable,
-        isPrimaryKey: column.is_primary_key,
-        type: this.mapType(column),
-        defaultValue: column.default_value,
-        rawType: column.data_type,
-      };
-
-      if (column.is_unique) {
-        this.tables[table].candidateKeys[column.name] = [column.name];
-      }
-    }
-  }
-
-  private buildBelongsTo(foreignKeys: ForeignKey[], table: string) {
-    this.tables[table].belongsTo = foreignKeys.reduce((agg, current) => {
+  ): Record<string, ForeignKeyMetadata> {
+    return foreignKeys.reduce((agg, current) => {
       const constraintName = current.column.includes('_')
         ? current.column.replace(/_id$/, '')
         : current.column;
@@ -303,14 +321,17 @@ export class SchemaMapper implements DatabaseMapper {
     }, {});
   }
 
-  private buildHasMany(foreignKeys: ForeignKey[], table: string) {
-    for (const foreignKey of foreignKeys) {
-      if (table !== foreignKey.foreign_key_table) {
-        this.tables[foreignKey.foreign_key_table].hasMany[pluralize(table)] = {
-          columns: [foreignKey.foreign_key_column],
-          table: foreignKey.foreign_key_table,
+  private buildHasMany(
+    foreignKeys: IntrospectionTableResult['foreignKeys'],
+    table: string
+  ) {
+    for (const foreignKey of Object.values(foreignKeys)) {
+      if (table !== foreignKey.referenceTable) {
+        this.tables[foreignKey.referenceTable].hasMany[pluralize(table)] = {
+          columns: foreignKey.referenceColumns,
+          table: foreignKey.referenceTable,
           referenceTable: table,
-          referenceColumns: [foreignKey.column],
+          referenceColumns: foreignKey.columns,
           type: 'hasMany',
         };
       }
@@ -347,8 +368,7 @@ export class SchemaMapper implements DatabaseMapper {
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  private mapType(column: Column) {
-    const { data_type: dataType, enum_values: enumValues } = column;
+  private mapType(dataType: string, enumValues?: string[]) {
     const transformedType = dataType.toLowerCase();
     if (
       transformedType.includes('char') ||

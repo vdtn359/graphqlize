@@ -1,0 +1,29 @@
+{
+  "name": "@vdtn359/customize-graphqlize-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "lint": "eslint .",
+    "start": "DEBUG=knex:* npx tsx watch src/index.ts",
+    "seed": "DIALECT=mysql npx tsx node_modules/@vdtn359/graphqlize-tests/src/database/seed.ts"
+  },
+  "dependencies": {
+    "@vdtn359/graphqlize-schema": "workspace:*",
+    "@vdtn359/graphqlize-sql-mapper": "workspace:*",
+    "@vdtn359/graphqlize-tests": "workspace:*",
+    "graphql": "^16.7.1",
+    "graphql-yoga": "^4.0.2",
+    "mysql2": "^3.4.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

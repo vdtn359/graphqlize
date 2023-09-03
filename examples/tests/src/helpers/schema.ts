@@ -1,13 +1,14 @@
-import { SchemaMapper } from '@vdtn359/graphqlize-sql-mapper';
+import { SchemaMapper, SchemaOptions } from '@vdtn359/graphqlize-sql-mapper';
 import { SchemaBuilder } from '@vdtn359/graphqlize-schema';
 import { Dialect, getSchemaOptions } from './dialect';
 
-export async function buildSchema() {
+export async function buildSchema(options: SchemaOptions = {}) {
   const mapper = await SchemaMapper.create(
     getSchemaOptions(process.env.DIALECT as Dialect),
     {
       version: '1.0.0',
       allowWindowFunctions: true,
+      ...options,
     }
   );
   mapper.defineForeignKey({

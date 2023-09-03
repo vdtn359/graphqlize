@@ -2,6 +2,15 @@ import type { GraphQLType } from 'graphql';
 
 export type ForeignKeyType = 'hasOne' | 'belongsTo' | 'hasMany';
 
+export type IntrospectionTableResult = Pick<
+  TableMetadata,
+  'alias' | 'primaryKey' | 'candidateKeys' | 'compositeKeys'
+> & {
+  columns: Record<string, Omit<ColumnMetadata, 'name' | 'type'>>;
+  foreignKeys: Record<string, Omit<ForeignKeyMetadata, 'type' | 'table'>>;
+};
+export type IntrospectionResult = Record<string, IntrospectionTableResult>;
+
 export interface ForeignKeyMetadata {
   type: ForeignKeyType;
   table: string;
@@ -12,6 +21,7 @@ export interface ForeignKeyMetadata {
 
 export interface TableMetadata {
   name: string;
+  alias: string;
   primaryKey: string | null;
   columns: Record<string, ColumnMetadata>;
   candidateKeys: Record<string, string[]>;
@@ -25,9 +35,9 @@ export interface ColumnMetadata {
   name: string;
   nullable: boolean;
   defaultValue?: any;
-  isPrimaryKey: boolean;
   type: GraphQLType;
   rawType: string;
+  enumValues?: string[];
 }
 
 export interface TableMapper<T> {

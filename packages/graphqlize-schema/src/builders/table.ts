@@ -108,7 +108,7 @@ export class TableBuilder {
 
   buildObjectTC() {
     return this.composer.getOrCreateOTC(
-      this.translator.typeName(this.metadata.name),
+      this.translator.typeName(this.metadata.alias),
       (tc) => {
         for (const [columnName, columnMetadata] of Object.entries(
           this.metadata.columns
@@ -141,7 +141,7 @@ export class TableBuilder {
 
   buildBelongsToAssociation() {
     const tc = this.composer.getOTC(
-      this.translator.typeName(this.metadata.name)
+      this.translator.typeName(this.metadata.alias)
     );
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.belongsTo
@@ -175,7 +175,7 @@ export class TableBuilder {
 
   buildHasManyAssociation() {
     const tc = this.composer.getOTC(
-      this.translator.typeName(this.metadata.name)
+      this.translator.typeName(this.metadata.alias)
     );
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasMany
@@ -224,7 +224,7 @@ export class TableBuilder {
 
   buildHasOneAssociation() {
     const tc = this.composer.getOTC(
-      this.translator.typeName(this.metadata.name)
+      this.translator.typeName(this.metadata.alias)
     );
     for (const [constraintName, foreignKey] of Object.entries(
       this.metadata.hasOne
@@ -260,7 +260,7 @@ export class TableBuilder {
     const objectType = this.buildObjectTC();
 
     return this.composer.getOrCreateOTC(
-      this.translator.typeName(this.metadata.name, true),
+      this.translator.typeName(this.metadata.alias, true),
       (tc) => {
         tc.addFields({
           records: {

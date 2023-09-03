@@ -1,0 +1,623 @@
+type Query {
+  getUser(by: GetUserInput!): User
+  listUsers(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
+  aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!], groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResult
+  getStat(by: GetStatInput!): Stat
+  listStats(filter: ListStatsInput, pagination: Pagination = {limit: 20}, sort: [SortStat!]): Stats!
+  aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: [SortStat!], groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResult
+}
+
+type User {
+  id: Int!
+  username: String!
+  provider: String!
+  email: String!
+  statsId: Int
+  details: JSONObject
+  verified: Boolean
+  mentorId: Int
+  stats: Stat
+  mentor: User
+  students(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
+}
+
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+type Stat {
+  id: Int!
+  exp: Int!
+  likes: Int!
+  views: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  users(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!]): Users!
+  user: User
+}
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+type Users {
+  records: [User!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+input ListUsersInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListUsersInput
+  _raw: RawExpression
+  _and: [ListUsersInput!]
+  _or: [ListUsersInput!]
+  id: NumberFilter
+  username: StringFilter
+  provider: StringFilter
+  email: StringFilter
+  statsId: NumberFilter
+  details: JsonFilter
+  verified: BooleanFilter
+  mentorId: NumberFilter
+  stats: ListStatsInput
+  mentor: ListUsersInput
+  students: ListUsersInput
+  _count: CountUsersFilterInput
+  _avg: AvgUsersFilterInput
+  _sum: SumUsersFilterInput
+  _min: MinUsersFilterInput
+  _max: MaxUsersFilterInput
+}
+
+input RawExpression {
+  expression: String
+  bindings: [JSON]
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+input NumberFilter {
+  _eq: Float
+  _neq: Float
+  _lt: Float
+  _lte: Float
+  _gt: Float
+  _gte: Float
+  _between: [Float]
+  _notBetween: [Float]
+  _in: [Float]
+  _notIn: [Float]
+}
+
+input StringFilter {
+  _eq: String
+  _neq: String
+  _lt: String
+  _lte: String
+  _gt: String
+  _gte: String
+  _like: String
+  _iLike: String
+  _regExp: String
+  _iRegExp: String
+  _between: [String!]
+  _notBetween: [String!]
+  _in: [String]
+  _notIn: [String]
+  _contains: String
+  _startsWith: String
+  _endsWith: String
+}
+
+input JsonFilter {
+  _fields: [JsonFieldFilter!]!
+}
+
+input JsonFieldFilter {
+  field: String!
+  value: StringNumberFilter!
+}
+
+input StringNumberFilter {
+  _eq: StringNumber
+  _neq: StringNumber
+  _lt: StringNumber
+  _lte: StringNumber
+  _gt: StringNumber
+  _gte: StringNumber
+  _like: StringNumber
+  _iLike: StringNumber
+  _regExp: StringNumber
+  _iRegExp: StringNumber
+  _between: [StringNumber!]
+  _notBetween: [StringNumber!]
+  _in: [StringNumber]
+  _notIn: [StringNumber]
+  _contains: StringNumber
+  _startsWith: StringNumber
+  _endsWith: StringNumber
+}
+
+"""number or string"""
+scalar StringNumber
+
+input BooleanFilter {
+  _eq: Boolean
+  _neq: Boolean
+}
+
+input ListStatsInput {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStatsInput
+  _raw: RawExpression
+  _and: [ListStatsInput!]
+  _or: [ListStatsInput!]
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  user: ListUsersInput
+  users: ListUsersInput
+  _count: CountStatsFilterInput
+  _avg: AvgStatsFilterInput
+  _sum: SumStatsFilterInput
+  _min: MinStatsFilterInput
+  _max: MaxStatsFilterInput
+}
+
+input DateFilter {
+  _eq: Date
+  _neq: Date
+  _lt: Date
+  _lte: Date
+  _gt: Date
+  _gte: Date
+  _between: [Date]
+  _notBetween: [Date]
+  _in: [Date]
+  _notIn: [Date]
+  _year: NumberFilter
+  _month: NumberFilter
+  _day: NumberFilter
+  _hour: NumberFilter
+  _minute: NumberFilter
+  _second: NumberFilter
+  _dayOfWeek: NumberFilter
+  _date: StringFilter
+}
+
+scalar Date
+
+input CountStatsFilterInput {
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+  createdAt: NumberFilter
+  updatedAt: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgStatsFilterInput {
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+}
+
+input SumStatsFilterInput {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+input MinStatsFilterInput {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+input MaxStatsFilterInput {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+}
+
+input CountUsersFilterInput {
+  id: NumberFilter
+  username: NumberFilter
+  provider: NumberFilter
+  email: NumberFilter
+  statsId: NumberFilter
+  details: NumberFilter
+  verified: NumberFilter
+  mentorId: NumberFilter
+  _all: NumberFilter
+}
+
+input AvgUsersFilterInput {
+  id: NumberFilter
+  statsId: NumberFilter
+  mentorId: NumberFilter
+}
+
+input SumUsersFilterInput {
+  id: Int
+  statsId: Int
+  mentorId: Int
+}
+
+input MinUsersFilterInput {
+  id: Int
+  statsId: Int
+  mentorId: Int
+}
+
+input MaxUsersFilterInput {
+  id: Int
+  statsId: Int
+  mentorId: Int
+}
+
+input Pagination {
+  disabled: Boolean
+  page: Int
+  limit: Int = 20
+  offset: Int = 0
+}
+
+input SortUser {
+  id: SortOption
+  username: SortOption
+  provider: SortOption
+  email: SortOption
+  statsId: SortOption
+  details: SortOption
+  verified: SortOption
+  mentorId: SortOption
+  stats: SortStat
+  mentor: SortUser
+  students: SortUser
+  _count: CountUsersSortInput
+  _avg: AvgUsersSortInput
+  _sum: SumUsersSortInput
+  _min: MinUsersSortInput
+  _max: MaxUsersSortInput
+}
+
+input SortOption {
+  direction: SortDirection!
+  nulls: NullsDirection
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum NullsDirection {
+  FIRST
+  LAST
+}
+
+input SortStat {
+  id: SortOption
+  exp: SortOption
+  likes: SortOption
+  views: SortOption
+  createdAt: SortOption
+  updatedAt: SortOption
+  user: SortUser
+  users: SortUser
+  _count: CountStatsSortInput
+  _avg: AvgStatsSortInput
+  _sum: SumStatsSortInput
+  _min: MinStatsSortInput
+  _max: MaxStatsSortInput
+}
+
+input CountStatsSortInput {
+  id: SortOption
+  exp: SortOption
+  likes: SortOption
+  views: SortOption
+  createdAt: SortOption
+  updatedAt: SortOption
+  _all: SortOption
+}
+
+input AvgStatsSortInput {
+  id: SortOption
+  exp: SortOption
+  likes: SortOption
+  views: SortOption
+}
+
+input SumStatsSortInput {
+  id: SortOption
+  exp: SortOption
+  likes: SortOption
+  views: SortOption
+}
+
+input MinStatsSortInput {
+  id: SortOption
+  exp: SortOption
+  likes: SortOption
+  views: SortOption
+}
+
+input MaxStatsSortInput {
+  id: SortOption
+  exp: SortOption
+  likes: SortOption
+  views: SortOption
+}
+
+input CountUsersSortInput {
+  id: SortOption
+  username: SortOption
+  provider: SortOption
+  email: SortOption
+  statsId: SortOption
+  details: SortOption
+  verified: SortOption
+  mentorId: SortOption
+  _all: SortOption
+}
+
+input AvgUsersSortInput {
+  id: SortOption
+  statsId: SortOption
+  mentorId: SortOption
+}
+
+input SumUsersSortInput {
+  id: SortOption
+  statsId: SortOption
+  mentorId: SortOption
+}
+
+input MinUsersSortInput {
+  id: SortOption
+  statsId: SortOption
+  mentorId: SortOption
+}
+
+input MaxUsersSortInput {
+  id: SortOption
+  statsId: SortOption
+  mentorId: SortOption
+}
+
+input GetUserInput {
+  id: Int
+  username: String
+  statsId: Int
+  email__provider: UsersEmailProviderKey
+}
+
+input UsersEmailProviderKey {
+  email: String!
+  provider: String!
+}
+
+type AggregateUsersResult {
+  records: [AggregateUser!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateUser {
+  group: JSON
+  count: CountUser
+  avg: AvgUser
+  sum: SumUser
+  min: MinUser
+  max: MaxUser
+}
+
+type CountUser {
+  id: Int
+  username: Int
+  provider: Int
+  email: Int
+  statsId: Int
+  details: Int
+  verified: Int
+  mentorId: Int
+  _all: Int
+  stats: CountStat
+  mentor: CountUser
+}
+
+type CountStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  createdAt: Int
+  updatedAt: Int
+  _all: Int
+  user: CountUser
+}
+
+type AvgUser {
+  id: Float
+  statsId: Float
+  mentorId: Float
+  stats: AvgStat
+  mentor: AvgUser
+}
+
+type AvgStat {
+  id: Float
+  exp: Float
+  likes: Float
+  views: Float
+  user: AvgUser
+}
+
+type SumUser {
+  id: Int
+  statsId: Int
+  mentorId: Int
+  stats: SumStat
+  mentor: SumUser
+}
+
+type SumStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: SumUser
+}
+
+type MinUser {
+  id: Int
+  statsId: Int
+  mentorId: Int
+  stats: MinStat
+  mentor: MinUser
+}
+
+type MinStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: MinUser
+}
+
+type MaxUser {
+  id: Int
+  statsId: Int
+  mentorId: Int
+  stats: MaxStat
+  mentor: MaxUser
+}
+
+type MaxStat {
+  id: Int
+  exp: Int
+  likes: Int
+  views: Int
+  user: MaxUser
+}
+
+input UsersGroupBy {
+  id: Boolean
+  username: Boolean
+  provider: Boolean
+  email: Boolean
+  statsId: Boolean
+  details: Boolean
+  verified: Boolean
+  mentorId: Boolean
+  stats: StatsGroupBy
+  mentor: UsersGroupBy
+  students: UsersGroupBy
+}
+
+input StatsGroupBy {
+  id: Boolean
+  exp: Boolean
+  likes: Boolean
+  views: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
+  user: UsersGroupBy
+  users: UsersGroupBy
+}
+
+""""""
+input UsersHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListUsersInput
+  _raw: RawExpression
+  _and: [ListUsersInput!]
+  _or: [ListUsersInput!]
+  id: NumberFilter
+  username: StringFilter
+  provider: StringFilter
+  email: StringFilter
+  statsId: NumberFilter
+  details: JsonFilter
+  verified: BooleanFilter
+  mentorId: NumberFilter
+  stats: ListStatsInput
+  mentor: ListUsersInput
+  students: ListUsersInput
+  _count: CountUsersFilterInput
+  _avg: AvgUsersFilterInput
+  _sum: SumUsersFilterInput
+  _min: MinUsersFilterInput
+  _max: MaxUsersFilterInput
+}
+
+input GetStatInput {
+  id: Int
+}
+
+type Stats {
+  records: [Stat!]!
+  limit: Int!
+  offset: Int!
+  count: Int
+}
+
+type AggregateStatsResult {
+  records: [AggregateStat!]!
+  limit: Int
+  offset: Int
+  count: Int
+}
+
+type AggregateStat {
+  group: JSON
+  count: CountStat
+  avg: AvgStat
+  sum: SumStat
+  min: MinStat
+  max: MaxStat
+}
+
+""""""
+input StatsHaving {
+  _required: Boolean
+  _nested: Boolean
+  _not: ListStatsInput
+  _raw: RawExpression
+  _and: [ListStatsInput!]
+  _or: [ListStatsInput!]
+  id: NumberFilter
+  exp: NumberFilter
+  likes: NumberFilter
+  views: NumberFilter
+  createdAt: DateFilter
+  updatedAt: DateFilter
+  user: ListUsersInput
+  users: ListUsersInput
+  _count: CountStatsFilterInput
+  _avg: AvgStatsFilterInput
+  _sum: SumStatsFilterInput
+  _min: MinStatsFilterInput
+  _max: MaxStatsFilterInput
+}

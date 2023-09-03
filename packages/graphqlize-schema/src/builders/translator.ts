@@ -70,42 +70,42 @@ export class TableTranslator {
   }
 
   enumTypeName(name: string) {
-    return this.typeName(`${this.tableMetadata.name} ${name} Enum`);
+    return this.typeName(`${this.tableMetadata.alias} ${name} Enum`);
   }
 
   enumTypeFilterName(name: string) {
-    return this.typeName(`${this.tableMetadata.name} ${name} Enum Filter`);
+    return this.typeName(`${this.tableMetadata.alias} ${name} Enum Filter`);
   }
 
   groupByName() {
-    return this.typeName(`${this.tableMetadata.name} Group By`);
+    return this.typeName(`${this.tableMetadata.alias} Group By`);
   }
 
   having() {
-    return this.typeName(`${this.tableMetadata.name} having`);
+    return this.typeName(`${this.tableMetadata.alias} having`);
   }
 
   aggregateResultsName() {
-    return this.typeName(`aggregate ${this.tableMetadata.name} results`);
+    return this.typeName(`aggregate ${this.tableMetadata.alias} results`);
   }
 
   aggregateRootTypeName() {
-    return this.typeName(`aggregate ${this.tableMetadata.name}`);
+    return this.typeName(`aggregate ${this.tableMetadata.alias}`);
   }
 
   aggregateTypeName(aggregateType: string) {
-    return this.typeName(`${aggregateType} ${this.tableMetadata.name}`);
+    return this.typeName(`${aggregateType} ${this.tableMetadata.alias}`);
   }
 
   aggregateTypeFilterInputName(aggregateType: string) {
     return this.typeName(
-      `${aggregateType} ${this.tableMetadata.name} filter input`
+      `${aggregateType} ${this.tableMetadata.alias} filter input`
     );
   }
 
   aggregateTypeSortInputName(aggregateType: string) {
     return this.typeName(
-      `${aggregateType} ${this.tableMetadata.name} sort input`
+      `${aggregateType} ${this.tableMetadata.alias} sort input`
     );
   }
 
@@ -157,7 +157,7 @@ export class TableTranslator {
   getCompositeKeyNames(compositeKeys: string[]) {
     const casing = this.getTypeNameCasing();
     return mergeTransform(
-      [this.tableMetadata.name, ...compositeKeys, 'key'],
+      [this.tableMetadata.alias, ...compositeKeys, 'key'],
       casing
     );
   }
