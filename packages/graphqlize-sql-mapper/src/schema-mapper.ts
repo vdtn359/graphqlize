@@ -42,6 +42,7 @@ export class SchemaMapper implements DatabaseMapper {
   ) {
     const { introspect = true } = options;
     this.instance = knex({
+      searchPath: options.schema,
       // @ts-ignore: only applicable for mysql
       typeCast(field, next) {
         if (field.type === 'TINY') {

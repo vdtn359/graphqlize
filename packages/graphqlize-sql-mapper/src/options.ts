@@ -8,6 +8,7 @@ export type TableOptions = Partial<IntrospectionTableResult> & {
 };
 
 export interface SchemaOptions {
+  schema?: string;
   allowWindowFunctions?: boolean;
   version?: string;
   versionFile?: string;

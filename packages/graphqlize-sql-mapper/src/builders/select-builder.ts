@@ -572,6 +572,7 @@ export class SelectBuilder {
     }
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   private convertFieldsToAlias(fields: Record<string, any>) {
     const select: Record<string, any> = {};
     const mapping: Record<string, any> = {};
@@ -584,13 +585,18 @@ export class SelectBuilder {
         callback: (context, { alias }, value) => {
           if (value === true) {
             const fieldAlias = [operation, alias, context.key].join('_');
+            const isCountingId = context.key === 'id' && operation === 'count';
             const columnPath =
               context.key === '_all'
                 ? this.knex.raw('*')
                 : this.knex.raw('??', `${alias}.${context.key}`);
             select[fieldAlias] =
               operation !== 'group'
-                ? this.knex.raw(`${operation}(${columnPath.toQuery()})`)
+                ? this.knex.raw(
+                    `${operation}(${
+                      isCountingId ? 'DISTINCT' : ''
+                    }${columnPath.toQuery()})`
+                  )
                 : columnPath;
             return {
               value: fieldAlias,
