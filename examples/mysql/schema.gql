@@ -1,22 +1,22 @@
 type Query {
   getInstrument(by: GetInstrumentInput!): Instrument
   listInstruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
-  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!], groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResult
+  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!], groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResult!
   getOrchestra(by: GetOrchestraInput!): Orchestra
   listOrchestras(filter: ListOrchestrasInput, pagination: Pagination = {limit: 20}, sort: [SortOrchestra!]): Orchestras!
-  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: [SortOrchestra!], groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResult
+  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: [SortOrchestra!], groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResult!
   getSession(by: GetSessionInput!): Session
   listSessions(filter: ListSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortSession!]): Sessions!
-  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: [SortSession!], groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResult
+  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: [SortSession!], groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResult!
   getStat(by: GetStatInput!): Stat
   listStats(filter: ListStatsInput, pagination: Pagination = {limit: 20}, sort: [SortStat!]): Stats!
-  aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: [SortStat!], groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResult
+  aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: [SortStat!], groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResult!
   getUserSession(by: GetUserSessionInput!): UserSession
   listUserSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
-  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!], groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResult
+  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!], groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResult!
   getUser(by: GetUserInput!): User
   listUsers(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
-  aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!], groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResult
+  aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!], groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResult!
 }
 
 type Instrument {

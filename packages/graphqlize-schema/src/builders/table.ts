@@ -556,7 +556,7 @@ export class TableBuilder {
 
     this.composer.Query.addFields({
       [this.aggregateMethodName(objectTypesName)]: {
-        type: aggregateObjectType,
+        type: new GraphQLNonNull(aggregateObjectType.getType()),
         resolve: (parent, args) => {
           const pagination = args.pagination
             ? this.normalisePagination(args.pagination)
