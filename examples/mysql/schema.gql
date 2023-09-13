@@ -900,6 +900,7 @@ type AggregateInstrumentsResult {
 type AggregateInstrument {
   group: JSON
   count: CountInstrument
+  countDistinct: CountInstrument
   avg: AvgInstrument
   sum: SumInstrument
   min: MinInstrument
@@ -1186,6 +1187,7 @@ type AggregateOrchestrasResult {
 type AggregateOrchestra {
   group: JSON
   count: CountOrchestra
+  countDistinct: CountOrchestra
   avg: AvgOrchestra
   sum: SumOrchestra
   min: MinOrchestra
@@ -1233,6 +1235,7 @@ type AggregateSessionsResult {
 type AggregateSession {
   group: JSON
   count: CountSession
+  countDistinct: CountSession
   avg: AvgSession
   sum: SumSession
   min: MinSession
@@ -1312,6 +1315,7 @@ type AggregateStatsResult {
 type AggregateStat {
   group: JSON
   count: CountStat
+  countDistinct: CountStat
   avg: AvgStat
   sum: SumStat
   min: MinStat
@@ -1355,6 +1359,7 @@ type AggregateUserSessionsResult {
 type AggregateUserSession {
   group: JSON
   count: CountUserSession
+  countDistinct: CountUserSession
   avg: AvgUserSession
   sum: SumUserSession
   min: MinUserSession
@@ -1450,6 +1455,7 @@ type AggregateUsersResult {
 type AggregateUser {
   group: JSON
   count: CountUser
+  countDistinct: CountUser
   avg: AvgUser
   sum: SumUser
   min: MinUser

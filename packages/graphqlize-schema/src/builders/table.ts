@@ -341,6 +341,7 @@ export class TableBuilder {
         tc.addFields({
           group: 'JSON',
           count: this.buildCountAggregateObjectTC(),
+          countDistinct: this.buildCountAggregateObjectTC(),
           avg: this.buildAvgAggregateObjectTC(),
           sum: this.buildOtherAggregateObjectTC('sum'),
           min: this.buildOtherAggregateObjectTC('min'),

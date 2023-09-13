@@ -583,9 +583,11 @@ export class SelectBuilder {
         alias: this.topWhereBuilder.getAlias(),
         tableMetadata: this.metadata,
         callback: (context, { alias }, value) => {
+          const isDistinct = operation === 'countDistinct';
+          const sqlOperation =
+            operation === 'countDistinct' ? 'count' : operation;
           if (value === true) {
             const fieldAlias = [operation, alias, context.key].join('_');
-            const isCountingId = context.key === 'id' && operation === 'count';
             const columnPath =
               context.key === '_all'
                 ? this.knex.raw('*')
@@ -593,8 +595,8 @@ export class SelectBuilder {
             select[fieldAlias] =
               operation !== 'group'
                 ? this.knex.raw(
-                    `${operation}(${
-                      isCountingId ? 'DISTINCT' : ''
+                    `${sqlOperation}(${
+                      isDistinct ? 'DISTINCT ' : ''
                     }${columnPath.toQuery()})`
                   )
                 : columnPath;
