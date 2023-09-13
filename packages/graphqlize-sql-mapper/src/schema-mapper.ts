@@ -297,7 +297,7 @@ export class SchemaMapper implements DatabaseMapper {
     }
 
     for (const [table, tableInfo] of Object.entries(result)) {
-      this.buildHasMany(tableInfo.foreignKeys, table);
+      this.buildHasMany(table, tableInfo);
     }
   }
 
@@ -322,13 +322,12 @@ export class SchemaMapper implements DatabaseMapper {
     }, {});
   }
 
-  private buildHasMany(
-    foreignKeys: IntrospectionTableResult['foreignKeys'],
-    table: string
-  ) {
-    for (const foreignKey of Object.values(foreignKeys)) {
+  private buildHasMany(table: string, tableInfo: IntrospectionTableResult) {
+    for (const foreignKey of Object.values(tableInfo.foreignKeys)) {
       if (table !== foreignKey.referenceTable) {
-        this.tables[foreignKey.referenceTable].hasMany[pluralize(table)] = {
+        this.tables[foreignKey.referenceTable].hasMany[
+          pluralize(tableInfo.alias)
+        ] = {
           columns: foreignKey.referenceColumns,
           table: foreignKey.referenceTable,
           referenceTable: table,
