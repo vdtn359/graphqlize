@@ -587,7 +587,9 @@ export class SelectBuilder {
           const sqlOperation =
             operation === 'countDistinct' ? 'count' : operation;
           if (value === true) {
-            const fieldAlias = [operation, alias, context.key].join('_');
+            const fieldAlias = [operation, alias, context.key]
+              .join('_')
+              .toLowerCase();
             const columnPath =
               context.key === '_all'
                 ? this.knex.raw('*')
