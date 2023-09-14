@@ -8,6 +8,7 @@ export interface BaseDialect {
   minute(knex: Knex, name: string): Knex.Raw;
   second(knex: Knex, name: string): Knex.Raw;
   dayOfWeek(knex: Knex, name: string): Knex.Raw;
+  yearMonth(knex: Knex, name: string): Knex.Raw;
   day(knex: Knex, name: string): Knex.Raw;
   transform(value: any): any;
 }

@@ -31,6 +31,10 @@ export class MysqlDialect extends DefaultDialect implements BaseDialect {
     return knex.raw(`DATE_FORMAT(${name}, '%Y-%m-%d')`);
   }
 
+  yearMonth(knex: Knex, name: string) {
+    return knex.raw(`CAST(EXTRACT(YEAR_MONTH FROM ${name}) AS CHAR)`);
+  }
+
   day(knex: Knex, name: string): any {
     return knex.raw(`DAY(${name})`);
   }

@@ -139,6 +139,13 @@ export class WhereBuilder {
           filterValue: value,
           type,
         });
+      case '_yearMonth':
+        return this.columnFilter({
+          knexBuilder,
+          column: dialectHandler.yearMonth(this.knex, column),
+          filterValue: value,
+          type,
+        });
       case '_month':
         return this.columnFilter({
           knexBuilder,
@@ -181,7 +188,7 @@ export class WhereBuilder {
           filterValue: value,
           type,
         });
-      case '_dow':
+      case '_dayOfWeek':
         return this.columnFilter({
           knexBuilder,
           column: dialectHandler.dayOfWeek(this.knex, column),

@@ -99,9 +99,10 @@ export class AggregateInputBuilder {
       tc.addFields({
         _year: groupByDateTc.getType(),
         _month: groupByDateTc.getType(),
+        _yearMonth: groupByDateTc.getType(),
         _date: groupByDateTc.getType(),
         _day: groupByDateTc.getType(),
-        _dow: groupByDateTc.getType(),
+        _dayOfWeek: groupByDateTc.getType(),
       });
     }
   }

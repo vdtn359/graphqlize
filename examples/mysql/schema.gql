@@ -200,11 +200,12 @@ input DateFilter {
   _notIn: [Date]
   _year: NumberFilter
   _month: NumberFilter
+  _yearMonth: StringFilter
   _day: NumberFilter
   _hour: NumberFilter
   _minute: NumberFilter
   _second: NumberFilter
-  _dow: NumberFilter
+  _dayOfWeek: NumberFilter
   _date: StringFilter
 }
 
@@ -1079,9 +1080,10 @@ input InstrumentsGroupBy {
   orchestraId: Boolean
   _year: InstrumentsGroupByDate
   _month: InstrumentsGroupByDate
+  _yearMonth: InstrumentsGroupByDate
   _date: InstrumentsGroupByDate
   _day: InstrumentsGroupByDate
-  _dow: InstrumentsGroupByDate
+  _dayOfWeek: InstrumentsGroupByDate
   user: UsersGroupBy
   orchestra: OrchestrasGroupBy
 }
@@ -1105,9 +1107,10 @@ input UsersGroupBy {
   mentorId: Boolean
   _year: UsersGroupByDate
   _month: UsersGroupByDate
+  _yearMonth: UsersGroupByDate
   _date: UsersGroupByDate
   _day: UsersGroupByDate
-  _dow: UsersGroupByDate
+  _dayOfWeek: UsersGroupByDate
   stats: StatsGroupBy
   mentor: UsersGroupBy
   instruments: InstrumentsGroupBy
@@ -1129,9 +1132,10 @@ input StatsGroupBy {
   updatedAt: Boolean
   _year: StatsGroupByDate
   _month: StatsGroupByDate
+  _yearMonth: StatsGroupByDate
   _date: StatsGroupByDate
   _day: StatsGroupByDate
-  _dow: StatsGroupByDate
+  _dayOfWeek: StatsGroupByDate
   user: UsersGroupBy
   users: UsersGroupBy
 }
@@ -1150,9 +1154,10 @@ input UserSessionsGroupBy {
   sessionId: Boolean
   _year: UserSessionsGroupByDate
   _month: UserSessionsGroupByDate
+  _yearMonth: UserSessionsGroupByDate
   _date: UserSessionsGroupByDate
   _day: UserSessionsGroupByDate
-  _dow: UserSessionsGroupByDate
+  _dayOfWeek: UserSessionsGroupByDate
   user: UsersGroupBy
   session: SessionsGroupBy
 }
@@ -1174,9 +1179,10 @@ input SessionsGroupBy {
   updatedAt: Boolean
   _year: SessionsGroupByDate
   _month: SessionsGroupByDate
+  _yearMonth: SessionsGroupByDate
   _date: SessionsGroupByDate
   _day: SessionsGroupByDate
-  _dow: SessionsGroupByDate
+  _dayOfWeek: SessionsGroupByDate
   userSessions: UserSessionsGroupBy
 }
 
@@ -1194,9 +1200,10 @@ input OrchestrasGroupBy {
   updatedAt: Boolean
   _year: OrchestrasGroupByDate
   _month: OrchestrasGroupByDate
+  _yearMonth: OrchestrasGroupByDate
   _date: OrchestrasGroupByDate
   _day: OrchestrasGroupByDate
-  _dow: OrchestrasGroupByDate
+  _dayOfWeek: OrchestrasGroupByDate
   instruments: InstrumentsGroupBy
 }
 

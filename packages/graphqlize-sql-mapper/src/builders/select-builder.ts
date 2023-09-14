@@ -604,8 +604,9 @@ export class SelectBuilder {
               case '_year':
               case '_month':
               case '_date':
+              case '_yearMonth':
               case '_day':
-              case '_dow': {
+              case '_dayOfWeek': {
                 aliasPaths.push(parentKey);
                 const functionName: keyof BaseDialect = parentKey.replace(
                   '_',

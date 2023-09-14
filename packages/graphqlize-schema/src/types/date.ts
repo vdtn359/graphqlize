@@ -23,11 +23,12 @@ export function buildDateFilter(
       _notIn: '[Date]',
       _year: numberFilter.getType(),
       _month: numberFilter.getType(),
+      _yearMonth: stringFilter.getType(),
       _day: numberFilter.getType(),
       _hour: numberFilter.getType(),
       _minute: numberFilter.getType(),
       _second: numberFilter.getType(),
-      _dow: numberFilter.getType(),
+      _dayOfWeek: numberFilter.getType(),
       _date: stringFilter.getType(),
     });
   });

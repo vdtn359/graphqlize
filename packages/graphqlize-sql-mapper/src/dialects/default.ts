@@ -22,6 +22,10 @@ export class DefaultDialect implements BaseDialect {
     return knex.raw(`DATE_PART('YEAR', ${name})`);
   }
 
+  yearMonth(knex: Knex, name: string) {
+    return knex.raw(`TO_CHAR(${name}, 'YYYYMM')`);
+  }
+
   month(knex: Knex, name: string) {
     return knex.raw(`DATE_PART('MONTH', ${name})`);
   }
