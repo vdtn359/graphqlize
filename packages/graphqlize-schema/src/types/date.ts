@@ -27,7 +27,7 @@ export function buildDateFilter(
       _hour: numberFilter.getType(),
       _minute: numberFilter.getType(),
       _second: numberFilter.getType(),
-      _dayOfWeek: numberFilter.getType(),
+      _dow: numberFilter.getType(),
       _date: stringFilter.getType(),
     });
   });

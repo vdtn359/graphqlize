@@ -13,6 +13,8 @@ import { omit } from 'lodash';
 import { WhereBuilder } from './where-builder';
 import type { SchemaMapper } from '../schema-mapper';
 import { generateAlias } from '../utils';
+import { getDialectHandler } from '../dialects/factory';
+import { BaseDialect } from '../dialects/base';
 
 export class SelectBuilder {
   private readonly metadata: TableMetadata;
@@ -528,6 +530,9 @@ export class SelectBuilder {
       return results.map((result: any) =>
         map({ ...aggregateMapping, ...groupMapping }, (value) => {
           if (typeof value !== 'object') {
+            if (result[value] instanceof Date) {
+              return result[value].toISOString();
+            }
             return result[value];
           }
           return undefined;
@@ -576,6 +581,7 @@ export class SelectBuilder {
   private convertFieldsToAlias(fields: Record<string, any>) {
     const select: Record<string, any> = {};
     const mapping: Record<string, any> = {};
+    const dialectHandler = getDialectHandler(this.knexBuilder.client.dialect);
 
     for (const [operation, fieldValue] of Object.entries(fields)) {
       mapping[operation] = this.resolveAndJoinAlias({
@@ -586,14 +592,38 @@ export class SelectBuilder {
           const isDistinct = operation === 'countDistinct';
           const sqlOperation =
             operation === 'countDistinct' ? 'count' : operation;
+          const parentKey = context.parent?.key;
           if (value === true) {
-            const fieldAlias = [operation, alias, context.key]
-              .join('_')
-              .toLowerCase();
-            const columnPath =
+            // leaf node
+            let columnPath =
               context.key === '_all'
                 ? this.knex.raw('*')
                 : this.knex.raw('??', `${alias}.${context.key}`);
+            const aliasPaths = [operation, alias];
+            switch (parentKey) {
+              case '_year':
+              case '_month':
+              case '_date':
+              case '_day':
+              case '_dow': {
+                aliasPaths.push(parentKey);
+                const functionName: keyof BaseDialect = parentKey.replace(
+                  '_',
+                  ''
+                ) as any;
+                columnPath = dialectHandler[functionName](
+                  this.knex,
+                  columnPath.toQuery()
+                );
+                break;
+              }
+              default:
+                break;
+            }
+
+            const fieldAlias = [...aliasPaths, context.key]
+              .join('_')
+              .toLowerCase();
             select[fieldAlias] =
               operation !== 'group'
                 ? this.knex.raw(

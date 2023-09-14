@@ -31,7 +31,7 @@ export class DefaultDialect implements BaseDialect {
   }
 
   date(knex: Knex, name: string) {
-    return knex.raw(`DATE(${name})`);
+    return knex.raw(`TO_CHAR(${name}, 'YYYY-MM-DD')`);
   }
 
   json(knex: Knex, column: string, field: string) {

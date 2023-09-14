@@ -181,7 +181,7 @@ export class WhereBuilder {
           filterValue: value,
           type,
         });
-      case '_dayOfWeek':
+      case '_dow':
         return this.columnFilter({
           knexBuilder,
           column: dialectHandler.dayOfWeek(this.knex, column),

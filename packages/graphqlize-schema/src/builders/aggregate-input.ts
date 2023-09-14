@@ -1,6 +1,7 @@
 import type { TableMetadata } from '@vdtn359/graphqlize-mapper';
-import { SchemaComposer } from 'graphql-compose';
+import { InputTypeComposer, SchemaComposer } from 'graphql-compose';
 import { GraphQLList, GraphQLNonNull } from 'graphql/type';
+import { GraphQLScalarType } from 'graphql';
 import type { TableBuilder } from './table';
 import { TableTranslator } from './translator';
 
@@ -50,6 +51,8 @@ export class AggregateInputBuilder {
           },
         });
       }
+      this.buildGroupByDate(tc);
+
       const schemaBuilder = this.tableBuilder.getSchemaBuilder();
       for (const [column, foreignKey] of Object.entries({
         ...this.metadata.belongsTo,
@@ -68,6 +71,39 @@ export class AggregateInputBuilder {
         });
       }
     });
+  }
+
+  private buildGroupByDate(tc: InputTypeComposer) {
+    const timestampFields = Object.keys(this.metadata.columns).filter(
+      (columnName) => {
+        const column = this.metadata.columns[columnName];
+        return (
+          column.type instanceof GraphQLScalarType &&
+          column.type.name === 'DateTime'
+        );
+      }
+    );
+    if (timestampFields.length) {
+      const groupByDateTc = this.composer.getOrCreateITC(
+        this.translator.groupByDateName(),
+        (groupDateTc) => {
+          for (const columnName of timestampFields) {
+            groupDateTc.addFields({
+              [this.translator.columnName(columnName)]: {
+                type: 'Boolean',
+              },
+            });
+          }
+        }
+      );
+      tc.addFields({
+        _year: groupByDateTc.getType(),
+        _month: groupByDateTc.getType(),
+        _date: groupByDateTc.getType(),
+        _day: groupByDateTc.getType(),
+        _dow: groupByDateTc.getType(),
+      });
+    }
   }
 
   private buildHaving() {

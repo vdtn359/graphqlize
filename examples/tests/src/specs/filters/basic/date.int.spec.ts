@@ -159,7 +159,7 @@ describe('Date filters', () => {
 
   it('dayOfWeek', async () => {
     const { body: response } = await listUsersQuery(server, {
-      filter: { createdAt: { _dayOfWeek: { _eq: 2 } } },
+      filter: { createdAt: { _dow: { _eq: 2 } } },
     });
     expectUserMatchesUserResponse(user, response.data.listUsers.records[0]);
     expect(response.data.listUsers.count).toEqual(1);

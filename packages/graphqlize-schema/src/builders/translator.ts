@@ -81,6 +81,10 @@ export class TableTranslator {
     return this.typeName(`${this.tableMetadata.alias} Group By`);
   }
 
+  groupByDateName() {
+    return this.typeName(`${this.tableMetadata.alias} Group By Date`);
+  }
+
   having() {
     return this.typeName(`${this.tableMetadata.alias} having`);
   }
@@ -130,6 +134,9 @@ export class TableTranslator {
     if (name === '_all') {
       return name;
     }
+    if (name.startsWith('_')) {
+      return name;
+    }
     return name
       .split('__')
       .map((part) => transform(part, this.casing))
@@ -169,7 +176,7 @@ export class TableTranslator {
         ret[key] = value.map((element: any) => this.reverseToDB(element));
         return;
       }
-      if (['_not', '_count', '_sum', '_avg', '_max', '_min'].includes(key)) {
+      if (key.startsWith('_')) {
         // eslint-disable-next-line no-param-reassign
         ret[key] = this.reverseToDB(value);
         return;

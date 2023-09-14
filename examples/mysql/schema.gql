@@ -204,7 +204,7 @@ input DateFilter {
   _hour: NumberFilter
   _minute: NumberFilter
   _second: NumberFilter
-  _dayOfWeek: NumberFilter
+  _dow: NumberFilter
   _date: StringFilter
 }
 
@@ -1077,8 +1077,19 @@ input InstrumentsGroupBy {
   updatedAt: Boolean
   userId: Boolean
   orchestraId: Boolean
+  _year: InstrumentsGroupByDate
+  _month: InstrumentsGroupByDate
+  _date: InstrumentsGroupByDate
+  _day: InstrumentsGroupByDate
+  _dow: InstrumentsGroupByDate
   user: UsersGroupBy
   orchestra: OrchestrasGroupBy
+}
+
+input InstrumentsGroupByDate {
+  purchaseDate: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input UsersGroupBy {
@@ -1092,11 +1103,21 @@ input UsersGroupBy {
   createdAt: Boolean
   updatedAt: Boolean
   mentorId: Boolean
+  _year: UsersGroupByDate
+  _month: UsersGroupByDate
+  _date: UsersGroupByDate
+  _day: UsersGroupByDate
+  _dow: UsersGroupByDate
   stats: StatsGroupBy
   mentor: UsersGroupBy
   instruments: InstrumentsGroupBy
   userSessions: UserSessionsGroupBy
   students: UsersGroupBy
+}
+
+input UsersGroupByDate {
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input StatsGroupBy {
@@ -1106,8 +1127,18 @@ input StatsGroupBy {
   views: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  _year: StatsGroupByDate
+  _month: StatsGroupByDate
+  _date: StatsGroupByDate
+  _day: StatsGroupByDate
+  _dow: StatsGroupByDate
   user: UsersGroupBy
   users: UsersGroupBy
+}
+
+input StatsGroupByDate {
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input UserSessionsGroupBy {
@@ -1117,8 +1148,19 @@ input UserSessionsGroupBy {
   updatedAt: Boolean
   userId: Boolean
   sessionId: Boolean
+  _year: UserSessionsGroupByDate
+  _month: UserSessionsGroupByDate
+  _date: UserSessionsGroupByDate
+  _day: UserSessionsGroupByDate
+  _dow: UserSessionsGroupByDate
   user: UsersGroupBy
   session: SessionsGroupBy
+}
+
+input UserSessionsGroupByDate {
+  time: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input SessionsGroupBy {
@@ -1130,7 +1172,19 @@ input SessionsGroupBy {
   location: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  _year: SessionsGroupByDate
+  _month: SessionsGroupByDate
+  _date: SessionsGroupByDate
+  _day: SessionsGroupByDate
+  _dow: SessionsGroupByDate
   userSessions: UserSessionsGroupBy
+}
+
+input SessionsGroupByDate {
+  start: Boolean
+  end: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input OrchestrasGroupBy {
@@ -1138,7 +1192,17 @@ input OrchestrasGroupBy {
   name: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  _year: OrchestrasGroupByDate
+  _month: OrchestrasGroupByDate
+  _date: OrchestrasGroupByDate
+  _day: OrchestrasGroupByDate
+  _dow: OrchestrasGroupByDate
   instruments: InstrumentsGroupBy
+}
+
+input OrchestrasGroupByDate {
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 """"""

@@ -28,7 +28,7 @@ export class MysqlDialect extends DefaultDialect implements BaseDialect {
   }
 
   date(knex: Knex, name: string): any {
-    return knex.raw(`DATE(${name})`);
+    return knex.raw(`DATE_FORMAT(${name}, '%Y-%m-%d')`);
   }
 
   day(knex: Knex, name: string): any {

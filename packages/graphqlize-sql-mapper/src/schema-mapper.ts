@@ -66,7 +66,10 @@ export class SchemaMapper implements DatabaseMapper {
     this.inspector = introspect ? schemaInspector(this.instance) : null;
   }
 
-  private transformResult(record: Record<string, any>, table: string) {
+  private transformResult(
+    record: Record<string, any>,
+    table: string
+  ): Record<string, any> {
     const tableMetadata = this.getTableMetadata(table);
     // eslint-disable-next-line sonarjs/cognitive-complexity
     return mapValues(record, (value, key) => {

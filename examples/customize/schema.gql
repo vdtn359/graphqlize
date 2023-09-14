@@ -193,7 +193,7 @@ input DateFilter {
   _hour: NumberFilter
   _minute: NumberFilter
   _second: NumberFilter
-  _dayOfWeek: NumberFilter
+  _dow: NumberFilter
   _date: StringFilter
 }
 
