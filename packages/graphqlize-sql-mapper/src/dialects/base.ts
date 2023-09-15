@@ -10,5 +10,6 @@ export interface BaseDialect {
   dayOfWeek(knex: Knex, name: string): Knex.Raw;
   yearMonth(knex: Knex, name: string): Knex.Raw;
   day(knex: Knex, name: string): Knex.Raw;
+  json(knex: Knex, name: string, field: string): Knex.Raw;
   transform(value: any): any;
 }

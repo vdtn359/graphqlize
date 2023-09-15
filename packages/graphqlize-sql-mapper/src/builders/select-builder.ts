@@ -27,6 +27,8 @@ export class SelectBuilder {
 
   private readonly knex: Knex;
 
+  private readonly dialectHandler: BaseDialect;
+
   private readonly schemaMapper: SchemaMapper;
 
   private readonly aliasMap: Record<string, number>;
@@ -103,6 +105,7 @@ export class SelectBuilder {
       this.knex.select().queryContext({
         table: this.metadata.name,
       });
+    this.dialectHandler = getDialectHandler(this.knexBuilder.client.dialect);
 
     this.topWhereBuilder = new WhereBuilder({
       filter: this.filter,
@@ -411,7 +414,7 @@ export class SelectBuilder {
   // eslint-disable-next-line sonarjs/cognitive-complexity
   private applySort(sorts: Record<string, any>[], orderBy = true) {
     const fields: {
-      column: string;
+      column: any;
       order?: SortDirection;
       nulls?: NullsDirection;
     }[] = [];
@@ -422,39 +425,35 @@ export class SelectBuilder {
         tableMetadata: this.metadata,
         callback: (context, { alias, tableMetadata }, value) => {
           if (
-            context.key &&
-            ['_count', '_max', '_min', '_sum', '_avg'].includes(context.key)
-          ) {
-            const [key, sortValue] = Object.entries(value)[0] as [string, any];
-            const column =
-              key === '_all'
-                ? '*'
-                : this.knex.raw('??', `${alias}.${key}`).toQuery();
-            const operation = context.key.replace('_', '');
-            const orderExpression = this.knex.raw(
-              `${operation}(${column})`
-            ) as any;
-            if (orderBy) {
-              this.knexBuilder.orderBy(
-                orderExpression,
-                sortValue.direction,
-                sortValue.nulls
-              );
-            }
-            fields.push({
-              column: orderExpression,
-              order: value.direction,
-              nulls: value.nulls,
-            });
-            return {
-              value: sortValue,
-              stop: true,
-            };
-          }
-          if (
             tableMetadata.columns[context.key!] &&
             typeof value.direction === 'string'
           ) {
+            if (context.parent?.key && context.parent.key.startsWith('_')) {
+              const { expression: orderExpression } = this.buildSelectField({
+                parentKey: context.parent?.key,
+                key: context.key!,
+                tableAlias: alias,
+              });
+
+              if (orderBy) {
+                this.knexBuilder.orderBy(
+                  orderExpression as any,
+                  value.direction,
+                  value.nulls
+                );
+              }
+
+              fields.push({
+                column: orderExpression,
+                order: value.direction,
+                nulls: value.nulls,
+              });
+
+              return {
+                value,
+                stop: true,
+              };
+            }
             const fieldName = `${alias}.${context.key}`;
             if (orderBy) {
               this.knexBuilder.orderBy(fieldName, value.direction, value.nulls);
@@ -581,58 +580,22 @@ export class SelectBuilder {
   private convertFieldsToAlias(fields: Record<string, any>) {
     const select: Record<string, any> = {};
     const mapping: Record<string, any> = {};
-    const dialectHandler = getDialectHandler(this.knexBuilder.client.dialect);
 
     for (const [operation, fieldValue] of Object.entries(fields)) {
       mapping[operation] = this.resolveAndJoinAlias({
         fields: fieldValue,
         alias: this.topWhereBuilder.getAlias(),
         tableMetadata: this.metadata,
-        callback: (context, { alias }, value) => {
-          const isDistinct = operation === 'countDistinct';
-          const sqlOperation =
-            operation === 'countDistinct' ? 'count' : operation;
-          const parentKey = context.parent?.key;
+        callback: (context, { alias: tableAlias }, value) => {
           if (value === true) {
+            const { alias: fieldAlias, expression } = this.buildSelectField({
+              parentKey:
+                operation === 'group' ? context.parent?.key : operation,
+              key: context.key ?? '',
+              tableAlias,
+            });
             // leaf node
-            let columnPath =
-              context.key === '_all'
-                ? this.knex.raw('*')
-                : this.knex.raw('??', `${alias}.${context.key}`);
-            const aliasPaths = [operation, alias];
-            switch (parentKey) {
-              case '_year':
-              case '_month':
-              case '_date':
-              case '_yearMonth':
-              case '_day':
-              case '_dayOfWeek': {
-                aliasPaths.push(parentKey);
-                const functionName: keyof BaseDialect = parentKey.replace(
-                  '_',
-                  ''
-                ) as any;
-                columnPath = dialectHandler[functionName](
-                  this.knex,
-                  columnPath.toQuery()
-                );
-                break;
-              }
-              default:
-                break;
-            }
-
-            const fieldAlias = [...aliasPaths, context.key]
-              .join('_')
-              .toLowerCase();
-            select[fieldAlias] =
-              operation !== 'group'
-                ? this.knex.raw(
-                    `${sqlOperation}(${
-                      isDistinct ? 'DISTINCT ' : ''
-                    }${columnPath.toQuery()})`
-                  )
-                : columnPath;
+            select[fieldAlias] = expression;
             return {
               value: fieldAlias,
               stop: true,
@@ -645,6 +608,67 @@ export class SelectBuilder {
     return {
       select,
       mapping,
+    };
+  }
+
+  private buildSelectField({
+    parentKey,
+    key,
+    tableAlias,
+  }: {
+    parentKey?: string;
+    key: string;
+    tableAlias: string;
+  }) {
+    const operation = (parentKey?.replace('_', '') as any) ?? '';
+    const isDistinct = operation === 'countDistinct';
+    let aggregateOperation: string | null = null;
+    // leaf node
+    let columnPath =
+      key === '_all'
+        ? this.knex.raw('*')
+        : this.knex.raw('??', `${tableAlias}.${key}`);
+    const aliasPaths = [tableAlias, parentKey].filter(Boolean);
+    switch (operation) {
+      case 'year':
+      case 'month':
+      case 'date':
+      case 'yearMonth':
+      case 'day':
+      case 'dayOfWeek': {
+        aliasPaths.push(operation);
+        // @ts-ignore
+        columnPath = this.dialectHandler[operation](
+          this.knex,
+          columnPath.toQuery()
+        );
+        break;
+      }
+      default:
+        if (
+          operation &&
+          ['count', 'countDistinct', 'max', 'min', 'sum', 'avg'].includes(
+            operation
+          )
+        ) {
+          aggregateOperation = isDistinct ? 'count' : operation;
+          aliasPaths.push(aggregateOperation as string);
+        }
+        break;
+    }
+
+    const fieldAlias = [...aliasPaths, key].join('_').toLowerCase();
+    const expression = aggregateOperation
+      ? this.knex.raw(
+          `${aggregateOperation}(${
+            isDistinct ? 'DISTINCT ' : ''
+          }${columnPath.toQuery()})`
+        )
+      : columnPath;
+
+    return {
+      alias: fieldAlias,
+      expression,
     };
   }
 
@@ -724,5 +748,9 @@ export class SelectBuilder {
 
   getForeignKey() {
     return this.foreignKey;
+  }
+
+  getDialectHandler() {
+    return this.dialectHandler;
   }
 }

@@ -4,7 +4,6 @@ import type {
 } from '@vdtn359/graphqlize-mapper';
 import { Knex } from 'knex';
 import type { SchemaMapper } from '../schema-mapper';
-import { getDialectHandler } from '../dialects/factory';
 import type { SelectBuilder } from './select-builder';
 
 export class WhereBuilder {
@@ -68,7 +67,7 @@ export class WhereBuilder {
     value: any;
     type?: string;
   }) {
-    const dialectHandler = getDialectHandler(knexBuilder.client.dialect);
+    const dialectHandler = this.selectBuilder.getDialectHandler();
     const value = dialectHandler.transform(originalValue);
     switch (operator) {
       case '_eq':

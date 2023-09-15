@@ -283,6 +283,7 @@ export class ListInputBuilder {
   ) {
     tc.addFields({
       _count: this.buildCountAggregationSort(sortOption),
+      _countDistinct: this.buildCountAggregationSort(sortOption),
       _avg: this.buildOtherAggregationSort('avg', sortOption),
       _sum: this.buildOtherAggregationSort('sum', sortOption),
       _min: this.buildOtherAggregationSort('min', sortOption),

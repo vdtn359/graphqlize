@@ -543,6 +543,7 @@ input SortUser {
   userSessions: SortUserSession
   students: SortUser
   _count: CountUsersSortInput
+  _countDistinct: CountUsersSortInput
   _avg: AvgUsersSortInput
   _sum: SumUsersSortInput
   _min: MinUsersSortInput
@@ -574,6 +575,7 @@ input SortStat {
   user: SortUser
   users: SortUser
   _count: CountStatsSortInput
+  _countDistinct: CountStatsSortInput
   _avg: AvgStatsSortInput
   _sum: SumStatsSortInput
   _min: MinStatsSortInput
@@ -630,6 +632,7 @@ input SortInstrument {
   user: SortUser
   orchestra: SortOrchestra
   _count: CountInstrumentsSortInput
+  _countDistinct: CountInstrumentsSortInput
   _avg: AvgInstrumentsSortInput
   _sum: SumInstrumentsSortInput
   _min: MinInstrumentsSortInput
@@ -643,6 +646,7 @@ input SortOrchestra {
   updatedAt: SortOption
   instruments: SortInstrument
   _count: CountOrchestrasSortInput
+  _countDistinct: CountOrchestrasSortInput
   _avg: AvgOrchestrasSortInput
   _sum: SumOrchestrasSortInput
   _min: MinOrchestrasSortInput
@@ -719,6 +723,7 @@ input SortUserSession {
   user: SortUser
   session: SortSession
   _count: CountUserSessionsSortInput
+  _countDistinct: CountUserSessionsSortInput
   _avg: AvgUserSessionsSortInput
   _sum: SumUserSessionsSortInput
   _min: MinUserSessionsSortInput
@@ -736,6 +741,7 @@ input SortSession {
   updatedAt: SortOption
   userSessions: SortUserSession
   _count: CountSessionsSortInput
+  _countDistinct: CountSessionsSortInput
   _avg: AvgSessionsSortInput
   _sum: SumSessionsSortInput
   _min: MinSessionsSortInput
