@@ -9,7 +9,7 @@ import { Repository } from './repository';
 export class AggregateResolver extends DefaultResolver {
   private mapper: DatabaseMapper;
 
-  private repository: Repository;
+  protected repository: Repository;
 
   constructor({
     mapper,
@@ -54,8 +54,31 @@ export class AggregateResolver extends DefaultResolver {
     return results.map((item: any) => translator.deepConvertFromDB(item));
   }
 
+  async resolveCount(
+    { filter, groupBy, having }: Record<string, any>,
+    args: any,
+    context: any,
+    info: GraphQLResolveInfo
+  ) {
+    const fields = this.parseResolveInfo(info);
+    const translator = this.tableBuilder.getTranslator();
+    const transformedFilter = filter
+      ? translator.reverseToDB(filter)
+      : undefined;
+    const transformedGroupBy = groupBy
+      ? translator.reverseToDB(groupBy)
+      : undefined;
+
+    return this.repository.aggregateCount({
+      fields,
+      filter: transformedFilter,
+      groupBy: transformedGroupBy,
+      having,
+    });
+  }
+
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  private parseResolveInfo(info: GraphQLResolveInfo) {
+  protected parseResolveInfo(info: GraphQLResolveInfo) {
     const resolveTree = (parseResolveInfo(info) as ResolveTree) ?? {};
     const result = {};
     const queue: { object: any; tree: ResolveTree }[] = [

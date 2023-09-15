@@ -59,6 +59,13 @@ export interface TableMapper<T> {
     pagination?: Pagination;
     sort?: Record<string, any>[];
   }): Promise<any>;
+
+  aggregateCountByFilter(param: {
+    filter?: Record<string, any>;
+    having?: Record<string, any>;
+    groupBy?: Record<string, any>;
+    fields: Record<string, any>;
+  }): Promise<number>;
 }
 
 export interface DatabaseMapper {

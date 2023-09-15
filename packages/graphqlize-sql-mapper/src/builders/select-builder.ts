@@ -507,9 +507,9 @@ export class SelectBuilder {
     );
   }
 
-  async aggregate() {
+  aggregateBuilder() {
     if (this.fields) {
-      const knexBuilder = this.build();
+      this.build();
       const { select: aggregateFields, mapping: aggregateMapping } =
         this.convertFieldsToAlias(this.fields);
       const { select: groupFields, mapping: groupMapping } =
@@ -524,10 +524,23 @@ export class SelectBuilder {
       for (const groupField of Object.values(groupFields ?? {})) {
         this.knexBuilder.groupByRaw(groupField);
       }
+      return {
+        query: this.knexBuilder,
+        fields: {
+          ...aggregateMapping,
+          ...groupMapping,
+        },
+      };
+    }
+    return null;
+  }
 
-      const results = await knexBuilder;
+  async aggregate() {
+    const aggregateQuery = this.aggregateBuilder();
+    if (aggregateQuery?.fields) {
+      const results = await this.knexBuilder;
       return results.map((result: any) =>
-        map({ ...aggregateMapping, ...groupMapping }, (value) => {
+        map(aggregateQuery.fields, (value) => {
           if (typeof value !== 'object') {
             if (result[value] instanceof Date) {
               return result[value].toISOString();
@@ -539,6 +552,18 @@ export class SelectBuilder {
       );
     }
     return null;
+  }
+
+  async aggregateCount() {
+    const aggregateQuery = this.aggregateBuilder();
+    if (aggregateQuery?.query) {
+      const queryBuilder = this.knex.select().from({
+        main: aggregateQuery.query.select(1) as any,
+      });
+      const [result = {}] = await queryBuilder.count();
+      return result.count ?? result['count(*)'] ?? 0;
+    }
+    return 0;
   }
 
   private applyHaving(havingFilter: Record<string, any>) {

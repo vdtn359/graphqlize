@@ -229,4 +229,23 @@ export class Repository<T = any> {
       sort,
     });
   }
+
+  aggregateCount({
+    filter,
+    fields,
+    having,
+    groupBy,
+  }: {
+    filter?: Record<string, any>;
+    groupBy?: Record<string, any>;
+    having?: Record<string, any>;
+    fields: Record<string, any>;
+  }) {
+    return this.tableMapper.aggregateCountByFilter({
+      filter,
+      fields,
+      groupBy,
+      having,
+    });
+  }
 }

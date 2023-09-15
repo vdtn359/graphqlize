@@ -28,6 +28,7 @@ import { buildEnumType } from '../types/enum';
 import { AggregateInputBuilder } from './aggregate-input';
 import { AggregateResolver } from '../resolvers/aggregate';
 import { HasCountResolver } from '../resolvers/has-count';
+import { AggregateCountResolver } from '../resolvers/aggregate-count';
 
 export class TableBuilder {
   private readonly metadata: TableMetadata;
@@ -41,6 +42,8 @@ export class TableBuilder {
   private readonly listResolver: DefaultResolver;
 
   private readonly aggregateResolver: DefaultResolver;
+
+  private readonly aggregateCountResolver: DefaultResolver;
 
   private readonly countResolver: DefaultResolver;
 
@@ -85,6 +88,12 @@ export class TableBuilder {
     });
 
     this.aggregateResolver = new AggregateResolver({
+      mapper: this.mapper,
+      tableBuilder: this,
+      repository: this.repository,
+    });
+
+    this.aggregateCountResolver = new AggregateCountResolver({
       mapper: this.mapper,
       tableBuilder: this,
       repository: this.repository,
@@ -364,7 +373,8 @@ export class TableBuilder {
           offset: 'Int',
           count: {
             type: 'Int',
-            resolve: () => null,
+            resolve: (parent, args, context, info) =>
+              this.aggregateCountResolver.resolve(parent, args, context, info),
           },
         });
       }

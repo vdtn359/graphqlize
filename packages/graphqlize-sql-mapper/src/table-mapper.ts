@@ -86,4 +86,27 @@ export class SqlTableMapper<T = any> implements TableMapper<T> {
     });
     return queryBuilder.aggregate();
   }
+
+  aggregateCountByFilter({
+    filter,
+    fields,
+    groupBy,
+    having,
+  }: {
+    filter?: Record<string, any>;
+    having?: Record<string, any>;
+    groupBy?: Record<string, any>;
+    fields: Record<string, any>;
+  }): Promise<number> {
+    const selectBuilder = new SelectBuilder({
+      filter,
+      fields,
+      groupBy,
+      having,
+      knex: this.knex,
+      metadata: this.tableMetadata,
+      schemaMapper: this.schemaMapper,
+    });
+    return selectBuilder.aggregateCount();
+  }
 }

@@ -53,7 +53,10 @@ describe('Has many nested associations', () => {
     const { body: response } = await sendQuery(server, {
       query: gql`
         query Query {
-          listUsers(filter: { students: { username: { _like: "jack%" } } }) {
+          listUsers(
+            filter: { students: { username: { _like: "jack%" } } }
+            sort: [{ username: { direction: ASC } }]
+          ) {
             records {
               students {
                 records {
