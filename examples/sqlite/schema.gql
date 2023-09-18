@@ -1,22 +1,22 @@
 type Query {
   getStat(by: GetStatInput!): Stat
   listStats(filter: ListStatsInput, pagination: Pagination = {limit: 20}, sort: [SortStat!]): Stats!
-  aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: [SortStat!], groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResult
+  aggregateStats(filter: ListStatsInput, pagination: Pagination, sort: [SortStat!], groupBy: StatsGroupBy, having: StatsHaving): AggregateStatsResult!
   getUser(by: GetUserInput!): User
   listUsers(filter: ListUsersInput, pagination: Pagination = {limit: 20}, sort: [SortUser!]): Users!
-  aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!], groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResult
+  aggregateUsers(filter: ListUsersInput, pagination: Pagination, sort: [SortUser!], groupBy: UsersGroupBy, having: UsersHaving): AggregateUsersResult!
   getOrchestra(by: GetOrchestraInput!): Orchestra
   listOrchestras(filter: ListOrchestrasInput, pagination: Pagination = {limit: 20}, sort: [SortOrchestra!]): Orchestras!
-  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: [SortOrchestra!], groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResult
+  aggregateOrchestras(filter: ListOrchestrasInput, pagination: Pagination, sort: [SortOrchestra!], groupBy: OrchestrasGroupBy, having: OrchestrasHaving): AggregateOrchestrasResult!
   getInstrument(by: GetInstrumentInput!): Instrument
   listInstruments(filter: ListInstrumentsInput, pagination: Pagination = {limit: 20}, sort: [SortInstrument!]): Instruments!
-  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!], groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResult
+  aggregateInstruments(filter: ListInstrumentsInput, pagination: Pagination, sort: [SortInstrument!], groupBy: InstrumentsGroupBy, having: InstrumentsHaving): AggregateInstrumentsResult!
   getSession(by: GetSessionInput!): Session
   listSessions(filter: ListSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortSession!]): Sessions!
-  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: [SortSession!], groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResult
+  aggregateSessions(filter: ListSessionsInput, pagination: Pagination, sort: [SortSession!], groupBy: SessionsGroupBy, having: SessionsHaving): AggregateSessionsResult!
   getUserSession(by: GetUserSessionInput!): UserSession
   listUserSessions(filter: ListUserSessionsInput, pagination: Pagination = {limit: 20}, sort: [SortUserSession!]): UserSessions!
-  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!], groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResult
+  aggregateUserSessions(filter: ListUserSessionsInput, pagination: Pagination, sort: [SortUserSession!], groupBy: UserSessionsGroupBy, having: UserSessionsHaving): AggregateUserSessionsResult!
 }
 
 type Stat {
@@ -173,6 +173,7 @@ input DateFilter {
   _notIn: [Date]
   _year: NumberFilter
   _month: NumberFilter
+  _yearMonth: StringFilter
   _day: NumberFilter
   _hour: NumberFilter
   _minute: NumberFilter
@@ -552,6 +553,7 @@ input SortInstrument {
   orchestra: SortOrchestra
   user: SortUser
   _count: CountInstrumentsSortInput
+  _countDistinct: CountInstrumentsSortInput
   _avg: AvgInstrumentsSortInput
   _sum: SumInstrumentsSortInput
   _min: MinInstrumentsSortInput
@@ -580,6 +582,7 @@ input SortOrchestra {
   updatedAt: SortOption
   instruments: SortInstrument
   _count: CountOrchestrasSortInput
+  _countDistinct: CountOrchestrasSortInput
   _avg: AvgOrchestrasSortInput
   _sum: SumOrchestrasSortInput
   _min: MinOrchestrasSortInput
@@ -627,6 +630,7 @@ input SortUser {
   userSessions: SortUserSession
   students: SortUser
   _count: CountUsersSortInput
+  _countDistinct: CountUsersSortInput
   _avg: AvgUsersSortInput
   _sum: SumUsersSortInput
   _min: MinUsersSortInput
@@ -643,6 +647,7 @@ input SortStat {
   user: SortUser
   users: SortUser
   _count: CountStatsSortInput
+  _countDistinct: CountStatsSortInput
   _avg: AvgStatsSortInput
   _sum: SumStatsSortInput
   _min: MinStatsSortInput
@@ -697,6 +702,7 @@ input SortUserSession {
   session: SortSession
   user: SortUser
   _count: CountUserSessionsSortInput
+  _countDistinct: CountUserSessionsSortInput
   _avg: AvgUserSessionsSortInput
   _sum: SumUserSessionsSortInput
   _min: MinUserSessionsSortInput
@@ -714,6 +720,7 @@ input SortSession {
   updatedAt: SortOption
   userSessions: SortUserSession
   _count: CountSessionsSortInput
+  _countDistinct: CountSessionsSortInput
   _avg: AvgSessionsSortInput
   _sum: SumSessionsSortInput
   _min: MinSessionsSortInput
@@ -907,6 +914,7 @@ type AggregateStatsResult {
 type AggregateStat {
   group: JSON
   count: CountStat
+  countDistinct: CountStat
   avg: AvgStat
   sum: SumStat
   min: MinStat
@@ -1011,8 +1019,19 @@ input StatsGroupBy {
   views: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  _year: StatsGroupByDate
+  _month: StatsGroupByDate
+  _yearMonth: StatsGroupByDate
+  _date: StatsGroupByDate
+  _day: StatsGroupByDate
+  _dayOfWeek: StatsGroupByDate
   user: UsersGroupBy
   users: UsersGroupBy
+}
+
+input StatsGroupByDate {
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input UsersGroupBy {
@@ -1026,11 +1045,22 @@ input UsersGroupBy {
   createdAt: Boolean
   updatedAt: Boolean
   mentorId: Boolean
+  _year: UsersGroupByDate
+  _month: UsersGroupByDate
+  _yearMonth: UsersGroupByDate
+  _date: UsersGroupByDate
+  _day: UsersGroupByDate
+  _dayOfWeek: UsersGroupByDate
   mentor: UsersGroupBy
   stats: StatsGroupBy
   instruments: InstrumentsGroupBy
   userSessions: UserSessionsGroupBy
   students: UsersGroupBy
+}
+
+input UsersGroupByDate {
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input InstrumentsGroupBy {
@@ -1042,8 +1072,20 @@ input InstrumentsGroupBy {
   updatedAt: Boolean
   userId: Boolean
   orchestraId: Boolean
+  _year: InstrumentsGroupByDate
+  _month: InstrumentsGroupByDate
+  _yearMonth: InstrumentsGroupByDate
+  _date: InstrumentsGroupByDate
+  _day: InstrumentsGroupByDate
+  _dayOfWeek: InstrumentsGroupByDate
   orchestra: OrchestrasGroupBy
   user: UsersGroupBy
+}
+
+input InstrumentsGroupByDate {
+  purchaseDate: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input OrchestrasGroupBy {
@@ -1051,7 +1093,18 @@ input OrchestrasGroupBy {
   name: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  _year: OrchestrasGroupByDate
+  _month: OrchestrasGroupByDate
+  _yearMonth: OrchestrasGroupByDate
+  _date: OrchestrasGroupByDate
+  _day: OrchestrasGroupByDate
+  _dayOfWeek: OrchestrasGroupByDate
   instruments: InstrumentsGroupBy
+}
+
+input OrchestrasGroupByDate {
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input UserSessionsGroupBy {
@@ -1061,8 +1114,20 @@ input UserSessionsGroupBy {
   updatedAt: Boolean
   userId: Boolean
   sessionId: Boolean
+  _year: UserSessionsGroupByDate
+  _month: UserSessionsGroupByDate
+  _yearMonth: UserSessionsGroupByDate
+  _date: UserSessionsGroupByDate
+  _day: UserSessionsGroupByDate
+  _dayOfWeek: UserSessionsGroupByDate
   session: SessionsGroupBy
   user: UsersGroupBy
+}
+
+input UserSessionsGroupByDate {
+  time: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 input SessionsGroupBy {
@@ -1074,7 +1139,20 @@ input SessionsGroupBy {
   location: Boolean
   createdAt: Boolean
   updatedAt: Boolean
+  _year: SessionsGroupByDate
+  _month: SessionsGroupByDate
+  _yearMonth: SessionsGroupByDate
+  _date: SessionsGroupByDate
+  _day: SessionsGroupByDate
+  _dayOfWeek: SessionsGroupByDate
   userSessions: UserSessionsGroupBy
+}
+
+input SessionsGroupByDate {
+  start: Boolean
+  end: Boolean
+  createdAt: Boolean
+  updatedAt: Boolean
 }
 
 """"""
@@ -1122,6 +1200,7 @@ type AggregateUsersResult {
 type AggregateUser {
   group: JSON
   count: CountUser
+  countDistinct: CountUser
   avg: AvgUser
   sum: SumUser
   min: MinUser
@@ -1179,6 +1258,7 @@ type AggregateOrchestrasResult {
 type AggregateOrchestra {
   group: JSON
   count: CountOrchestra
+  countDistinct: CountOrchestra
   avg: AvgOrchestra
   sum: SumOrchestra
   min: MinOrchestra
@@ -1243,6 +1323,7 @@ type AggregateInstrumentsResult {
 type AggregateInstrument {
   group: JSON
   count: CountInstrument
+  countDistinct: CountInstrument
   avg: AvgInstrument
   sum: SumInstrument
   min: MinInstrument
@@ -1341,6 +1422,7 @@ type AggregateSessionsResult {
 type AggregateSession {
   group: JSON
   count: CountSession
+  countDistinct: CountSession
   avg: AvgSession
   sum: SumSession
   min: MinSession
@@ -1413,6 +1495,7 @@ type AggregateUserSessionsResult {
 type AggregateUserSession {
   group: JSON
   count: CountUserSession
+  countDistinct: CountUserSession
   avg: AvgUserSession
   sum: SumUserSession
   min: MinUserSession

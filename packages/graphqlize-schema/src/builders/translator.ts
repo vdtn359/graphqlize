@@ -170,6 +170,9 @@ export class TableTranslator {
   }
 
   reverseToDB(fields: Record<string, any>) {
+    if (!fields || typeof fields !== 'object') {
+      return fields;
+    }
     return objectTransform(fields, (ret: any, value, key) => {
       if (['_and', '_or'].includes(key)) {
         // eslint-disable-next-line no-param-reassign
